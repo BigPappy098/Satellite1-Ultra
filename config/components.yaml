@@ -38,7 +38,7 @@ active_drivers:
     bolt_circle_mm: 93.3
     mounting_hole_diameter_mm: 4.0
     mounting_holes: 4
-    depth_mm: 63.4
+    depth_mm: 62.9
     displacement_l: 0.10
     price_usd: 36.99
     source: references/manufacturer/Dayton_ND91-4_spec_2026-02-26.pdf

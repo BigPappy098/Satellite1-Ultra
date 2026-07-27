@@ -10,9 +10,9 @@
 
 ## Active phase
 
-Phase 3 — functional mechanical skeleton. Phase 1 is complete and Phase 2 has
-selected the baseline electroacoustic components; exact acoustic volume will be
-fed back after bracing and sealing geometry is complete.
+Phase 5 — quantitative validation. The complete serviceable functional part set
+and removable industrial-design cage are modeled; exact B-rep volume, tolerance,
+fastener, wall, stability, and release-export gates are now being generated.
 
 ## Completed evidence
 
@@ -39,15 +39,24 @@ fed back after bracing and sealing geometry is complete.
 - `ENGINEERING_ESTIMATE`: preliminary 3.2 L / 50 Hz model calls for 30.80 g
   moving mass per SB radiator, 11.60 g above published Mms. Simulation outputs
   and volume/leak/mass sensitivity plots are generated.
-- `VERIFIED_DIGITALLY`: Phase-3 manufactured skeleton parts are valid single
-  B-rep solids, fit 256 mm build bounds, clear the official mid-plate, and have
-  no modeled driver/radiator keep-out collisions.
+- `VERIFIED_DIGITALLY`: all 17 functional manufactured parts and seven fit
+  coupons are valid single B-rep solids and fit the 256 mm build envelope.
+- `VERIFIED_DIGITALLY`: the sealed functional assembly has no unclassified
+  volumetric collisions; the sole interference is the intentional TPU wire
+  gland compression in the pressure divider.
+- `VERIFIED_DIGITALLY`: the vented electronics shroud clears every selected
+  official upper-stack solid, including the public Batch 1 HAT assembly.
+- `VERIFIED_DIGITALLY`: the active-driver and opposed-radiator envelopes clear
+  one another, the acoustic floor, the pressure divider, and the protective
+  grille cage at full modeled mechanical excursion.
+- `ENGINEERING_ESTIMATE`: a removable 120 × 120 × 9 mm steel-plate ballast
+  stack provides approximately 1.02 kg low in the base without exposing
+  electronics to wet casting material.
 
 ## Open work
 
-- Finish the divider/cabinet fastening interface, gasket geometry, sealed wire
-  gland, bracing, base, removable ballast, bottom service cover, and grilles.
-- Replace preliminary acoustic volume with exact final B-rep-derived net volume.
+- Replace preliminary acoustic volume with exact final B-rep-derived net volume
+  and regenerate the passive-radiator tuning analysis.
 - Complete tolerance, wall-thickness, screw/tool-access, stability, export, mesh,
   drawing, render, documentation, and packaging gates.
 - Add the Batch 2 external-antenna/USB-C service adapter.
@@ -63,9 +72,9 @@ fed back after bracing and sealing geometry is complete.
 
 ## Next autonomous action
 
-Complete the sealed functional part set and cabinet fasteners, generate STEP
-round trips from the B-rep skeleton, then run the full assembly collision and
-exact-volume reports before industrial styling.
+Generate exact-volume, collision, clearance, wall, tolerance, fastener, and
+stability reports; feed the resulting net volume back into the acoustic model,
+then generate release exports and drawing/render sheets.
 
 ## Release gate
 

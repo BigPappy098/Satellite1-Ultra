@@ -2,16 +2,32 @@
 
 from __future__ import annotations
 
+from itertools import combinations
+
 import cadquery as cq
 import pytest
 
 from satellite1_ultra.geometry import (
     DesignParameters,
     active_driver_carrier,
+    anti_slip_ring,
+    ballast_cartridge,
+    ballast_cartridge_lid,
+    base_skirt,
+    bottom_service_plate,
+    cable_gland,
+    divider_gasket,
+    driver_carrier_gasket,
+    driver_gasket,
     driver_keepout,
+    electronics_shroud,
     main_cabinet,
+    outer_grille_cage,
     passive_radiator_carrier,
+    passive_radiator_carrier_gasket,
+    passive_radiator_gasket,
     passive_radiator_keepout,
+    placed_functional_parts,
     pressure_divider,
     rounded_prism,
 )
@@ -26,6 +42,19 @@ from satellite1_ultra.official import MID_PLATE, load_part
         pressure_divider,
         active_driver_carrier,
         passive_radiator_carrier,
+        divider_gasket,
+        driver_gasket,
+        driver_carrier_gasket,
+        passive_radiator_gasket,
+        passive_radiator_carrier_gasket,
+        cable_gland,
+        base_skirt,
+        bottom_service_plate,
+        ballast_cartridge,
+        ballast_cartridge_lid,
+        electronics_shroud,
+        outer_grille_cage,
+        anti_slip_ring,
     ],
 )
 def test_manufactured_parts_are_valid_single_solids(builder: object) -> None:
@@ -44,6 +73,19 @@ def test_all_manufactured_parts_fit_build_volume() -> None:
         pressure_divider(),
         active_driver_carrier(),
         passive_radiator_carrier(),
+        divider_gasket(),
+        driver_gasket(),
+        driver_carrier_gasket(),
+        passive_radiator_gasket(),
+        passive_radiator_carrier_gasket(),
+        cable_gland(),
+        base_skirt(),
+        bottom_service_plate(),
+        ballast_cartridge(),
+        ballast_cartridge_lid(),
+        electronics_shroud(),
+        outer_grille_cage(),
+        anti_slip_ring(),
     ):
         box = shape.BoundingBox()
         assert max(box.xlen, box.ylen, box.zlen) <= 256.0
@@ -83,8 +125,8 @@ def test_keepouts_clear_acoustic_floor_and_divider() -> None:
 @pytest.mark.geometry
 def test_main_pressure_boundary_has_expected_openings() -> None:
     shape = main_cabinet()
-    assert len(shape.Shells()) == 1
     assert len(shape.Solids()) == 1
+    assert all(shell.Closed() for shell in shape.Shells())
 
 
 @pytest.mark.geometry
@@ -92,6 +134,32 @@ def test_main_pressure_boundary_has_expected_openings() -> None:
 def test_divider_clears_official_mid_plate() -> None:
     overlap = pressure_divider().intersect(load_part(MID_PLATE)).Volume()
     assert overlap < 0.01
+
+
+@pytest.mark.geometry
+@pytest.mark.requires_official_assets
+def test_electronics_shroud_clears_complete_official_upper_stack() -> None:
+    from satellite1_ultra.official import BATCH1_HAT, UPPER_STACK
+
+    shroud = electronics_shroud()
+    for official_part in (*UPPER_STACK, BATCH1_HAT):
+        assert shroud.intersect(load_part(official_part)).Volume() < 0.01
+
+
+@pytest.mark.geometry
+def test_functional_assembly_has_only_classified_interference() -> None:
+    parts = placed_functional_parts()
+    intended_interference = {frozenset(("pressure_divider", "wire_gland"))}
+    detected: set[frozenset[str]] = set()
+    for (first_name, first), (second_name, second) in combinations(parts.items(), 2):
+        volume = first.intersect(second).Volume()
+        pair = frozenset((first_name, second_name))
+        if volume > 0.01:
+            detected.add(pair)
+            assert pair in intended_interference, (
+                f"invalid collision: {first_name}/{second_name} = {volume:.3f} mm^3"
+            )
+    assert detected == intended_interference
 
 
 def test_cadquery_shape_type_contract() -> None:

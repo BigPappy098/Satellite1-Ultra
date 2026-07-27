@@ -11,17 +11,18 @@ enclosure:
   outer_width: 160.0
   outer_depth: 160.0
   corner_radius: 20.0
-  acoustic_top_z: -31.0
+  acoustic_top_z: -33.0
   acoustic_bottom_z: -194.0
-  base_bottom_z: -212.0
+  base_bottom_z: -216.0
   wall_thickness: 4.0
   baffle_thickness: 6.0
   divider_thickness: 4.0
-  acoustic_floor_thickness: 6.0
+  acoustic_floor_thickness: 8.0
   bottom_plate_thickness: 4.0
   print_clearance: 0.30
   radial_print_clearance: 0.20
-  driver_axis_z: -87.0
+  carrier_recess: 8.0
+  driver_axis_z: -88.0
   passive_radiator_axis_z: -129.0
 
 sealing:
@@ -47,8 +48,8 @@ acoustics:
   damping_volume_fraction: 0.02
 
 ballast:
-  target_mass_g: 1200
-  maximum_mass_g: 1800
+  target_mass_g: 1100
+  maximum_mass_g: 1250
   cartridge_material: steel_plate_stack
 
 printing:

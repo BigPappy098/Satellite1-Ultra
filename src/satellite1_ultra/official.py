@@ -57,6 +57,14 @@ LOCK_RING = OfficialPart(
     ("DIY Enclosures/Squircle Enclosures/Geometry Files/STEP/Squircle Top/Lock Ring.step"),
     (0.15, 0.16, 0.18, 1.0),
 )
+SPEAKER_CHAMBER_25W = OfficialPart(
+    "official_25w_speaker_chamber",
+    (
+        "DIY Enclosures/Squircle Enclosures/Geometry Files/STEP/"
+        "Speaker Chamber/25-Watt Speaker Chamber.step"
+    ),
+    (0.25, 0.28, 0.32, 1.0),
+)
 BATCH1_HAT = OfficialPart(
     "official_hat_batch1_rev4_1",
     "assets/Hat R2024.12.06.step",
