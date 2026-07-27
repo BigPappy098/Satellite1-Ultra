@@ -3,45 +3,100 @@
   "evidence": "VERIFIED_DIGITALLY",
   "clearances": [
     {
-      "feature": "passive radiator outward excursion to grille guard",
-      "nominal_mm": 3.0,
+      "feature": "passive-radiator outward excursion to grille guard",
+      "nominal_mm": 10.0,
       "minimum_mm": 2.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "active driver flange to removable grille guard",
-      "nominal_mm": 7.0,
+      "feature": "active-driver clamp ring to grille guard",
+      "nominal_mm": 8.0,
       "minimum_mm": 2.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "active driver rear motor to cabinet rear inner wall",
-      "nominal_mm": 94.1,
+      "feature": "active-driver motor to cabinet rear inner wall",
+      "nominal_mm": 112.1,
       "minimum_mm": 10.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "passive radiator rear excursion to center plane",
-      "nominal_mm": 33.7,
+      "feature": "passive-radiator rear excursion to cabinet centre plane",
+      "nominal_mm": 22.700000000000003,
       "minimum_mm": 10.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "driver lower envelope to acoustic floor",
-      "nominal_mm": 46.400000000000006,
+      "feature": "driver envelope to acoustic floor",
+      "nominal_mm": 38.400000000000006,
       "minimum_mm": 8.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "radiator lower envelope to acoustic floor",
-      "nominal_mm": -4.0,
-      "minimum_mm": -5.0,
-      "note": "Flange overhang is outside the pressure cavity; basket/floor collision is separately tested.",
+      "feature": "radiator bore to acoustic floor",
+      "nominal_mm": 18.900000000000006,
+      "minimum_mm": 4.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "radiator clamp-ring seating land inside the cabinet height (lower)",
+      "nominal_mm": 7.699999999999989,
+      "minimum_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "radiator clamp-ring seating land inside the cabinet height (upper)",
+      "nominal_mm": 12.700000000000003,
+      "minimum_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "driver clamp-ring seating land inside the cabinet height (lower)",
+      "nominal_mm": 38.69999999999999,
+      "minimum_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "driver clamp-ring seating land inside the cabinet height (upper)",
+      "nominal_mm": 3.700000000000003,
+      "minimum_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "driver clamp ring within the flat cabinet face",
+      "nominal_mm": 1.0,
+      "minimum_mm": 0.5,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "driver clamp-ring insert land to component seat wall",
+      "nominal_mm": 2.0,
+      "minimum_mm": 1.5,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "radiator clamp-ring insert land to component seat wall",
+      "nominal_mm": 1.6000000000000014,
+      "minimum_mm": 1.5,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "radiator clamp-ring insert land to the ledge sidewall",
+      "nominal_mm": 3.200000000000003,
+      "minimum_mm": 2.4,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -59,6 +114,100 @@
       "maximum_mm": 0.6,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "official mid-plate seating plane to divider boss tops",
+      "nominal_mm": 0.0,
+      "minimum_mm": 0.0,
+      "maximum_mm": 0.01,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "pressure_divider seats on official_mid_plate",
+      "nominal_mm": 0.0,
+      "minimum_mm": 0.0,
+      "maximum_mm": 0.01,
+      "note": "Face contact is the design intent for this interface.",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "pressure_divider to official_mid_plate_threads",
+      "nominal_mm": 6.599999999999984,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "pressure_divider to official_top_plate",
+      "nominal_mm": 7.895,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "pressure_divider to official_pcb_spacer",
+      "nominal_mm": 10.860705358769293,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "pressure_divider to official_lock_ring",
+      "nominal_mm": 7.9999999999999885,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "pressure_divider to official_hat_batch1_rev4_1",
+      "nominal_mm": 10.150000095367432,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "electronics_shroud to official_mid_plate",
+      "nominal_mm": 1.1433691756272424,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "electronics_shroud to official_mid_plate_threads",
+      "nominal_mm": 4.219894326347278,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "electronics_shroud to official_top_plate",
+      "nominal_mm": 8.528255629899471,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "electronics_shroud to official_pcb_spacer",
+      "nominal_mm": 14.987245516570331,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "electronics_shroud to official_lock_ring",
+      "nominal_mm": 1.9398549473841689,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "electronics_shroud to official_hat_batch1_rev4_1",
+      "nominal_mm": 13.412267094297887,
+      "minimum_mm": 0.3,
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     }
   ],
   "tolerance_note": "Physical coupon corrections are applied through config/physical_compensation.yaml."

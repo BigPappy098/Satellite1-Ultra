@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "evidence": "VERIFIED_DIGITALLY",
+  "method": "swept placement search for a Core-sized clearance box in the bay",
+  "core_clearance_extent_mm": [
+    70.48847198486328,
+    36.12488842010498,
+    13.970000460743904
+  ],
+  "bay_z_range_mm": [
+    -27.5,
+    -6.8
+  ],
+  "bay_height_mm": 20.7,
+  "first_free_placement_xy_mm": [
+    -6.0,
+    -10.0
+  ],
+  "note": "The official assets do not fix the Core's position in the stack, so the enclosure is validated against a Core-sized free volume instead of an asserted placement.",
+  "physical_gate": {
+    "evidence": "REQUIRES_PHYSICAL_VALIDATION",
+    "requirement": "Confirm Core mounting against a physical development kit."
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "status": "PASS",
+  "evidence": "VERIFIED_DIGITALLY",
+  "method": "directed dependency graph over the documented assembly steps",
+  "acyclic": true,
+  "unresolved_dependencies": [],
+  "assembly_order": [
+    "install all heat-set inserts",
+    "load the steel ballast, close the cartridge lid",
+    "fit the active-driver gasket and driver, install the clamp ring",
+    "fit both radiator gaskets and radiators, install both clamp rings",
+    "route the speaker pair through the divider and fit the TPU gland",
+    "fit the divider gasket and bolt the pressure divider to the cabinet",
+    "bolt the base skirt up into the acoustic floor",
+    "connect the boards and bolt the electronics shroud to the divider",
+    "seat the ballast cartridge and close the bottom service plate",
+    "seat the official mid-plate and upper stack on the divider bosses",
+    "slide on the grille cage and bolt it to the service plate",
+    "stretch the TPU anti-slip ring onto the base"
+  ],
+  "disassembly_order": [
+    "stretch the TPU anti-slip ring onto the base",
+    "slide on the grille cage and bolt it to the service plate",
+    "seat the official mid-plate and upper stack on the divider bosses",
+    "seat the ballast cartridge and close the bottom service plate",
+    "connect the boards and bolt the electronics shroud to the divider",
+    "bolt the base skirt up into the acoustic floor",
+    "fit the divider gasket and bolt the pressure divider to the cabinet",
+    "route the speaker pair through the divider and fit the TPU gland",
+    "fit both radiator gaskets and radiators, install both clamp rings",
+    "fit the active-driver gasket and driver, install the clamp ring",
+    "load the steel ballast, close the cartridge lid",
+    "install all heat-set inserts"
+  ],
+  "tool_access": [
+    {
+      "step": "install all heat-set inserts",
+      "insertion_direction": "per-feature, see fastener schedule",
+      "removal_direction": "reverse of per-feature, see fastener schedule",
+      "tool": "temperature-controlled M3 insert tip",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "fit the active-driver gasket and driver, install the clamp ring",
+      "insertion_direction": "-Y",
+      "removal_direction": "reverse of -Y",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "fit both radiator gaskets and radiators, install both clamp rings",
+      "insertion_direction": "+/-X",
+      "removal_direction": "reverse of +/-X",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "route the speaker pair through the divider and fit the TPU gland",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "hand",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "fit the divider gasket and bolt the pressure divider to the cabinet",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "load the steel ballast, close the cartridge lid",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "bolt the base skirt up into the acoustic floor",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "seat the ballast cartridge and close the bottom service plate",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "connect the boards and bolt the electronics shroud to the divider",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "seat the official mid-plate and upper stack on the divider bosses",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "slide on the grille cage and bolt it to the service plate",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "stretch the TPU anti-slip ring onto the base",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "hand",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    }
+  ],
+  "service_tasks": [
+    {
+      "task": "replace the active driver",
+      "remove": [
+        "anti_slip_ring",
+        "outer_grille_cage",
+        "active_driver_clamp_ring"
+      ],
+      "tool": "2.0 mm hex key",
+      "opens_pressure_boundary": true,
+      "gasket_replacement_required": true,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "task": "replace a passive radiator or retune its added mass",
+      "remove": [
+        "anti_slip_ring",
+        "outer_grille_cage",
+        "passive_radiator_clamp_ring"
+      ],
+      "tool": "2.0 mm hex key",
+      "opens_pressure_boundary": true,
+      "gasket_replacement_required": true,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "task": "replace the boards",
+      "remove": [
+        "official upper stack",
+        "electronics_shroud"
+      ],
+      "tool": "2.0 mm hex key",
+      "opens_pressure_boundary": false,
+      "gasket_replacement_required": false,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "task": "change the ballast mass",
+      "remove": [
+        "anti_slip_ring",
+        "outer_grille_cage",
+        "bottom_service_plate"
+      ],
+      "tool": "2.0 mm hex key",
+      "opens_pressure_boundary": false,
+      "gasket_replacement_required": false,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "task": "replace any gasket",
+      "remove": [
+        "anti_slip_ring",
+        "outer_grille_cage",
+        "clamp ring or pressure divider"
+      ],
+      "tool": "2.0 mm hex key",
+      "opens_pressure_boundary": true,
+      "gasket_replacement_required": true,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    }
+  ],
+  "trapped_part_check": {
+    "status": "PASS",
+    "note": "Every part is removed along the reverse of its insertion direction with no other part obstructing that direction; the graph has a single source and no cycles."
+  },
+  "physical_gate": {
+    "evidence": "REQUIRES_PHYSICAL_VALIDATION",
+    "requirement": "Perform one full assembly and disassembly on printed parts."
+  }
+}

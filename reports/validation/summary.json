@@ -1,0 +1,46 @@
+{
+  "acoustic_volume": {
+    "status": "PASS",
+    "evidence": "VERIFIED_DIGITALLY"
+  },
+  "sealing": {
+    "status": "PASS",
+    "evidence": "VERIFIED_DIGITALLY"
+  },
+  "collision": {
+    "status": "PASS",
+    "evidence": "VERIFIED_DIGITALLY"
+  },
+  "clearance": {
+    "status": "PASS",
+    "evidence": "VERIFIED_DIGITALLY"
+  },
+  "core_fit": {
+    "status": "PASS",
+    "evidence": "VERIFIED_DIGITALLY"
+  },
+  "wall_thickness": {
+    "status": "PASS",
+    "evidence": "VERIFIED_DIGITALLY"
+  },
+  "fasteners": {
+    "status": "PASS",
+    "evidence": "VERIFIED_DIGITALLY"
+  },
+  "tolerance": {
+    "status": "PASS",
+    "evidence": "ENGINEERING_ESTIMATE"
+  },
+  "assembly": {
+    "status": "PASS",
+    "evidence": "VERIFIED_DIGITALLY"
+  },
+  "printability": {
+    "status": "PASS",
+    "evidence": "VERIFIED_DIGITALLY"
+  },
+  "center_of_gravity": {
+    "status": "PASS",
+    "evidence": "ENGINEERING_ESTIMATE"
+  }
+}

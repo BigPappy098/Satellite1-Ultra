@@ -46,37 +46,77 @@ def threaded_interface_coupon(
     return chamber.intersect(cast(cq.Shape, clip.val()))
 
 
-def active_driver_coupon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """ND91-4 cutout, frame, and bolt-circle fit coupon."""
+def _component_seat_coupon(
+    pad_diameter: float,
+    seat_diameter: float,
+    seat_depth: float,
+    bore_diameter: float,
+    bolt_circle: float,
+    ledge_diameter: float,
+    ledge_depth: float,
+    parameters: DesignParameters,
+) -> cq.Shape:
+    """A one-to-one slice of the real cabinet mount: ledge, seat, bore, inserts."""
     p = parameters
-    plate = cq.Workplane("XY").circle(p.driver_carrier_diameter / 2.0).extrude(3.0)
-    plate = plate.cut(cq.Workplane("XY").circle(p.driver_print_cutout_diameter / 2.0).extrude(3.0))
-    radius = p.driver_bolt_circle / 2.0
-    points = [
-        (radius * cos(pi / 4.0 + i * pi / 2.0), radius * sin(pi / 4.0 + i * pi / 2.0))
-        for i in range(4)
-    ]
-    return cast(
-        cq.Shape,
-        plate.faces(">Z").workplane().pushPoints(points).hole(p.driver_mount_hole_diameter).val(),
+    thickness = max(ledge_depth + p.insert_bore_depth + p.pad_backing, seat_depth + p.pad_backing)
+    coupon = cq.Workplane("XY").circle(pad_diameter / 2.0).extrude(thickness)
+    if ledge_diameter:
+        coupon = coupon.cut(
+            cq.Workplane("XY", origin=(0.0, 0.0, thickness - ledge_depth))
+            .circle(ledge_diameter / 2.0)
+            .extrude(ledge_depth)
+        )
+    coupon = coupon.cut(
+        cq.Workplane("XY", origin=(0.0, 0.0, thickness - seat_depth))
+        .circle(seat_diameter / 2.0)
+        .extrude(seat_depth)
+    )
+    coupon = coupon.cut(cq.Workplane("XY").circle(bore_diameter / 2.0).extrude(thickness))
+    radius = bolt_circle / 2.0
+    solid = cast(cq.Shape, coupon.val())
+    for index in range(4):
+        angle = pi / 4.0 + index * pi / 2.0
+        x, y = radius * cos(angle), radius * sin(angle)
+        solid = solid.cut(
+            cq.Solid.makeCylinder(
+                p.insert_bore_diameter / 2.0,
+                p.insert_bore_depth,
+                cq.Vector(x, y, thickness - ledge_depth),
+                cq.Vector(0.0, 0.0, -1.0),
+            )
+        )
+    return solid
+
+
+def active_driver_coupon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """ND91-4 seat, bore, clamp-ring bolt circle and insert fit coupon."""
+    p = parameters
+    return _component_seat_coupon(
+        p.driver_pad_diameter,
+        p.driver_seat_diameter,
+        p.driver_seat_depth,
+        p.driver_bore_diameter,
+        p.driver_clamp_bolt_circle,
+        0.0,
+        0.0,
+        p,
     )
 
 
 def passive_radiator_coupon(
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> cq.Shape:
-    """SB12PACR-00 cutout, frame, and bolt-circle fit coupon."""
+    """SB12PACR-00 ledge, seat, bore, clamp-ring bolt circle and insert coupon."""
     p = parameters
-    plate = cq.Workplane("XY").circle(p.pr_carrier_diameter / 2.0).extrude(3.0)
-    plate = plate.cut(cq.Workplane("XY").circle(p.pr_print_cutout_diameter / 2.0).extrude(3.0))
-    radius = p.pr_bolt_circle / 2.0
-    points = [
-        (radius * cos(pi / 4.0 + i * pi / 2.0), radius * sin(pi / 4.0 + i * pi / 2.0))
-        for i in range(4)
-    ]
-    return cast(
-        cq.Shape,
-        plate.faces(">Z").workplane().pushPoints(points).hole(p.pr_mount_hole_diameter).val(),
+    return _component_seat_coupon(
+        p.pr_pad_diameter,
+        p.pr_seat_diameter,
+        p.pr_seat_depth,
+        p.pr_bore_diameter,
+        p.pr_clamp_bolt_circle,
+        p.pr_ledge_diameter,
+        p.pr_ledge_depth,
+        p,
     )
 
 
@@ -89,7 +129,7 @@ def heat_set_insert_coupon(
         cq.Shape,
         cq.Workplane("XY").box(60.0, 20.0, 10.0, centered=(True, True, False)).val(),
     )
-    for x, diameter in zip((-22.5, -7.5, 7.5, 22.5), (4.4, 4.5, 4.6, 4.7), strict=True):
+    for x, diameter in zip((-22.5, -7.5, 7.5, 22.5), (4.0, 4.1, 4.2, 4.3), strict=True):
         coupon = coupon.cut(
             cq.Solid.makeCylinder(
                 diameter / 2.0,
@@ -122,8 +162,8 @@ def gasket_compression_coupon_base(
         for y in (-10.0, 10.0):
             coupon = coupon.cut(
                 cq.Solid.makeCylinder(
-                    p.insert_outer_diameter / 2.0,
-                    p.insert_depth,
+                    p.insert_bore_diameter / 2.0,
+                    p.insert_bore_depth,
                     cq.Vector(x, y, 8.0),
                     cq.Vector(0.0, 0.0, -1.0),
                 )
@@ -142,7 +182,7 @@ def gasket_compression_coupon_cap(
         cap.faces(">Z")
         .workplane()
         .pushPoints([(x, y) for x in (-24.0, 24.0) for y in (-10.0, 10.0)])
-        .hole(p.driver_mount_hole_diameter)
+        .hole(p.fastener_clearance_diameter)
         .val(),
     )
 

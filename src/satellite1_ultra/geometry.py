@@ -1,4 +1,32 @@
-"""Authoritative parametric B-rep geometry for Satellite1 Ultra."""
+"""Authoritative parametric B-rep geometry for Satellite1 Ultra.
+
+Every manufactured part in this module is a true OpenCascade B-rep solid built
+from primitive solids and booleans.  No mesh, voxel, SDF or marching-cubes
+geometry is used anywhere in the manufacturing path.
+
+Master coordinate system (see README.md):
+
+* origin  -- centre of the official Satellite1 mid-plate interface plane
+* +Z      -- upward, toward the microphones
+* -Y      -- active-driver front
+* +/-X    -- opposed passive radiators
+
+Acoustic-component mounting
+---------------------------
+
+Each acoustic component (one active driver on -Y, two opposed passive radiators
+on +/-X) is retained by a printed *clamp ring* that bolts into blind heat-set
+inserts placed well outboard of the component bolt circle.  The component is
+sandwiched:
+
+    cabinet seat -> component gasket -> component flange -> clamp ring -> M3
+
+The clamp ring bottoms out on a continuous cabinet land, so gasket compression
+is set by geometry rather than by torque, and the acoustic pressure boundary is
+one uninterrupted gasket annulus.  The component's own bolt circle is left
+unused, which is what makes the mount driver-agnostic and, critically, is what
+keeps every fastener feature clear of the component through-bore.
+"""
 
 from __future__ import annotations
 
@@ -8,13 +36,16 @@ from typing import cast
 
 import cadquery as cq
 
+Vector3 = tuple[float, float, float]
+
 
 @dataclass(frozen=True)
 class DesignParameters:
     """All principal dimensions in the documented master coordinate system."""
 
+    # --- cabinet envelope -------------------------------------------------
     outer_width: float = 160.0
-    outer_depth: float = 160.0
+    outer_depth: float = 180.0
     corner_radius: float = 20.0
     wall_thickness: float = 4.0
     acoustic_top_z: float = -33.0
@@ -23,36 +54,71 @@ class DesignParameters:
     divider_thickness: float = 4.0
     base_bottom_z: float = -216.0
     bottom_plate_thickness: float = 4.0
-    driver_axis_z: float = -88.0
+
+    # --- active driver ----------------------------------------------------
+    driver_axis_z: float = -96.0
     driver_cutout_diameter: float = 88.5
     driver_outer_diameter: float = 103.2
-    driver_carrier_diameter: float = 108.0
-    driver_bolt_circle: float = 93.3
-    driver_mount_hole_diameter: float = 3.4
+    driver_flange_thickness: float = 3.0
     driver_depth: float = 62.9
-    pr_axis_z: float = -129.0
+    driver_clamp_ring_diameter: float = 118.0
+    driver_clamp_bolt_circle: float = 112.0
+    driver_pad_diameter: float = 126.0
+
+    # --- passive radiators ------------------------------------------------
+    pr_axis_z: float = -116.0
     pr_cutout_diameter: float = 102.0
     pr_outer_diameter: float = 122.0
-    pr_carrier_diameter: float = 128.0
-    pr_bolt_circle: float = 111.5
-    pr_mount_hole_diameter: float = 3.4
+    pr_flange_thickness: float = 4.0
     pr_depth: float = 38.3
     pr_rear_excursion: float = 9.0
-    carrier_thickness: float = 6.0
-    carrier_recess: float = 8.0
+    pr_clamp_ring_diameter: float = 140.0
+    pr_clamp_bolt_circle: float = 130.0
+    pr_pad_diameter: float = 144.0
+    pr_ledge_depth: float = 5.0
+
+    # --- shared component-mount construction ------------------------------
+    clamp_ring_thickness: float = 5.0
+    clamp_lip: float = 1.0
+    pad_backing: float = 3.0
+
+    # --- fasteners --------------------------------------------------------
     insert_outer_diameter: float = 4.6
+    insert_bore_diameter: float = 4.2
     insert_depth: float = 5.7
+    insert_bore_extra: float = 1.5
     boss_outer_diameter: float = 9.4
+    fastener_clearance_diameter: float = 3.4
+    fastener_head_diameter: float = 6.5
+
+    # --- sealing ----------------------------------------------------------
     gasket_thickness: float = 2.0
-    gasket_land_width: float = 5.0
-    cable_passage_diameter: float = 8.0
+    gasket_land_width: float = 4.0
+    gasket_compression_fraction: float = 0.25
+
+    # --- manufacturing allowances ----------------------------------------
+    component_bore_clearance: float = 0.20
+    print_clearance: float = 0.30
+
+    # --- official interface ----------------------------------------------
     official_mount_x: float = 45.0534
     official_mount_y: float = 31.5467
-    gasket_compression_fraction: float = 0.25
-    print_clearance: float = 0.30
+    official_interface_z: float = -6.8
+
+    # --- miscellaneous ----------------------------------------------------
+    cable_passage_x: float = 34.0
+    cable_passage_y: float = 64.0
+    cable_passage_diameter: float = 8.0
+    grille_width_margin: float = 32.0
+    grille_depth_margin: float = 24.0
+    brace_rib_width: float = 5.0
+    brace_rib_depth: float = 8.0
     board_revision: str = "public_batch_1"
     ballast_mass_g: float = 1100.0
 
+    # ------------------------------------------------------------------ #
+    # Derived quantities
+    # ------------------------------------------------------------------ #
     @property
     def inner_width(self) -> float:
         return self.outer_width - 2.0 * self.wall_thickness
@@ -66,6 +132,10 @@ class DesignParameters:
         return self.corner_radius - self.wall_thickness
 
     @property
+    def cavity_bottom_z(self) -> float:
+        return self.acoustic_bottom_z + self.acoustic_floor_thickness
+
+    @property
     def compressed_gasket_thickness(self) -> float:
         return self.gasket_thickness * (1.0 - self.gasket_compression_fraction)
 
@@ -74,17 +144,67 @@ class DesignParameters:
         return self.acoustic_top_z + self.compressed_gasket_thickness
 
     @property
-    def driver_print_cutout_diameter(self) -> float:
-        return self.driver_cutout_diameter + 2.0 * self.print_clearance
+    def insert_bore_depth(self) -> float:
+        """Printed bore is deeper than the insert so screws cannot bottom out."""
+        return self.insert_depth + self.insert_bore_extra
+
+    # -- active driver ----------------------------------------------------
+    @property
+    def driver_bore_diameter(self) -> float:
+        return self.driver_cutout_diameter + self.component_bore_clearance
 
     @property
-    def pr_print_cutout_diameter(self) -> float:
-        return self.pr_cutout_diameter + 2.0 * self.print_clearance
+    def driver_seat_diameter(self) -> float:
+        return self.driver_outer_diameter + 2.0 * self.print_clearance
+
+    @property
+    def driver_seat_depth(self) -> float:
+        """Seat sits deep enough that the clamp lip reaches the recessed flange."""
+        return self.compressed_gasket_thickness + self.driver_flange_thickness + self.clamp_lip
+
+    @property
+    def driver_pad_depth(self) -> float:
+        return max(
+            self.insert_bore_depth + self.pad_backing,
+            self.driver_seat_depth + self.pad_backing,
+        )
+
+    # -- passive radiators -------------------------------------------------
+    @property
+    def pr_bore_diameter(self) -> float:
+        return self.pr_cutout_diameter + self.component_bore_clearance
+
+    @property
+    def pr_seat_diameter(self) -> float:
+        return self.pr_outer_diameter + 2.0 * self.print_clearance
+
+    @property
+    def pr_ledge_diameter(self) -> float:
+        return self.pr_clamp_ring_diameter + 2.0 * self.print_clearance
+
+    @property
+    def pr_seat_depth(self) -> float:
+        return (
+            self.pr_ledge_depth
+            + self.compressed_gasket_thickness
+            + self.pr_flange_thickness
+            + self.clamp_lip
+        )
+
+    @property
+    def pr_pad_depth(self) -> float:
+        return max(
+            self.pr_ledge_depth + self.insert_bore_depth + self.pad_backing,
+            self.pr_seat_depth + self.pad_backing,
+        )
 
 
 DEFAULT_PARAMETERS = DesignParameters()
 
 
+# ---------------------------------------------------------------------- #
+# Primitive helpers
+# ---------------------------------------------------------------------- #
 def rounded_prism(
     width: float,
     depth: float,
@@ -122,415 +242,435 @@ def rounded_prism(
 def _radial_cylinder(
     radius: float,
     length: float,
-    start: tuple[float, float, float],
-    direction: tuple[float, float, float],
+    start: Vector3,
+    direction: Vector3,
+) -> cq.Shape:
+    return cq.Solid.makeCylinder(radius, length, cq.Vector(*start), cq.Vector(*direction))
+
+
+def _offset(point: Vector3, direction: Vector3, distance: float) -> Vector3:
+    return (
+        point[0] + direction[0] * distance,
+        point[1] + direction[1] * distance,
+        point[2] + direction[2] * distance,
+    )
+
+
+def _mount_basis(inward: Vector3) -> tuple[Vector3, Vector3]:
+    """Return two unit vectors spanning the plane normal to ``inward``."""
+    if abs(inward[2]) > 0.5:
+        raise ValueError("acoustic mounts are horizontal by design")
+    return (0.0, 0.0, 1.0), (
+        inward[1] * 1.0 - inward[2] * 0.0,
+        inward[2] * 0.0 - inward[0] * 1.0,
+        0.0,
+    )
+
+
+def _bolt_points(
+    face_point: Vector3,
+    inward: Vector3,
+    bolt_circle: float,
+    phase: float = pi / 4.0,
+) -> tuple[Vector3, ...]:
+    """Four equally spaced points on ``bolt_circle`` in the mount face plane."""
+    axis_u, axis_v = _mount_basis(inward)
+    radius = bolt_circle / 2.0
+    points: list[Vector3] = []
+    for index in range(4):
+        angle = phase + index * pi / 2.0
+        offset_u = radius * cos(angle)
+        offset_v = radius * sin(angle)
+        points.append(
+            (
+                face_point[0] + axis_u[0] * offset_u + axis_v[0] * offset_v,
+                face_point[1] + axis_u[1] * offset_u + axis_v[1] * offset_v,
+                face_point[2] + axis_u[2] * offset_u + axis_v[2] * offset_v,
+            )
+        )
+    return tuple(points)
+
+
+def _depth_cylinder(
+    radius: float,
+    depth_from_face: float,
+    length: float,
+    face_point: Vector3,
+    inward: Vector3,
+) -> cq.Shape:
+    return _radial_cylinder(radius, length, _offset(face_point, inward, depth_from_face), inward)
+
+
+# ---------------------------------------------------------------------- #
+# Acoustic component mount
+# ---------------------------------------------------------------------- #
+@dataclass(frozen=True)
+class MountSpec:
+    """Complete description of one clamp-ring acoustic component mount."""
+
+    face_point: Vector3
+    inward: Vector3
+    pad_diameter: float
+    pad_depth: float
+    ledge_diameter: float
+    ledge_depth: float
+    seat_diameter: float
+    seat_depth: float
+    bore_diameter: float
+    bolt_circle: float
+
+
+def driver_mount(parameters: DesignParameters = DEFAULT_PARAMETERS) -> MountSpec:
+    p = parameters
+    return MountSpec(
+        face_point=(0.0, -p.outer_depth / 2.0, p.driver_axis_z),
+        inward=(0.0, 1.0, 0.0),
+        pad_diameter=p.driver_pad_diameter,
+        pad_depth=p.driver_pad_depth,
+        ledge_diameter=0.0,
+        ledge_depth=0.0,
+        seat_diameter=p.driver_seat_diameter,
+        seat_depth=p.driver_seat_depth,
+        bore_diameter=p.driver_bore_diameter,
+        bolt_circle=p.driver_clamp_bolt_circle,
+    )
+
+
+def passive_radiator_mount(
+    side: int,
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> MountSpec:
+    if side not in (-1, 1):
+        raise ValueError("side must be -1 or +1")
+    p = parameters
+    return MountSpec(
+        face_point=(side * p.outer_width / 2.0, 0.0, p.pr_axis_z),
+        inward=(-float(side), 0.0, 0.0),
+        pad_diameter=p.pr_pad_diameter,
+        pad_depth=p.pr_pad_depth,
+        ledge_diameter=p.pr_ledge_diameter,
+        ledge_depth=p.pr_ledge_depth,
+        seat_diameter=p.pr_seat_diameter,
+        seat_depth=p.pr_seat_depth,
+        bore_diameter=p.pr_bore_diameter,
+        bolt_circle=p.pr_clamp_bolt_circle,
+    )
+
+
+def acoustic_mounts(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> dict[str, MountSpec]:
+    return {
+        "active_driver": driver_mount(parameters),
+        "pr_-1": passive_radiator_mount(-1, parameters),
+        "pr_+1": passive_radiator_mount(1, parameters),
+    }
+
+
+def _apply_mount(
+    cabinet: cq.Shape,
+    envelope: cq.Shape,
+    mount: MountSpec,
+    parameters: DesignParameters,
+) -> cq.Shape:
+    """Fuse the internal mounting pad, then cut ledge, seat, bore and inserts."""
+    p = parameters
+    face, inward = mount.face_point, mount.inward
+
+    pad = _depth_cylinder(mount.pad_diameter / 2.0, 0.0, mount.pad_depth, face, inward)
+    cabinet = cabinet.fuse(pad.intersect(envelope))
+
+    if mount.ledge_diameter > 0.0:
+        cabinet = cabinet.cut(
+            _depth_cylinder(
+                mount.ledge_diameter / 2.0,
+                -1.0,
+                mount.ledge_depth + 1.0,
+                face,
+                inward,
+            )
+        )
+    cabinet = cabinet.cut(
+        _depth_cylinder(mount.seat_diameter / 2.0, -1.0, mount.seat_depth + 1.0, face, inward)
+    )
+    cabinet = cabinet.cut(
+        _depth_cylinder(mount.bore_diameter / 2.0, -1.0, mount.pad_depth + 3.0, face, inward)
+    )
+    for point in _bolt_points(face, inward, mount.bolt_circle):
+        cabinet = cabinet.cut(
+            _depth_cylinder(
+                p.insert_bore_diameter / 2.0,
+                mount.ledge_depth,
+                p.insert_bore_depth,
+                point,
+                inward,
+            )
+        )
+    return cabinet
+
+
+# ---------------------------------------------------------------------- #
+# Fastener patterns
+# ---------------------------------------------------------------------- #
+def top_fastener_positions(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[tuple[float, float], ...]:
+    """Eight divider-to-cabinet fastener positions, inboard of the gasket land."""
+    p = parameters
+    x_edge = p.outer_width / 2.0 - 18.0
+    y_edge = p.outer_depth / 2.0 - 18.0
+    return (
+        (-45.0, -y_edge),
+        (45.0, -y_edge),
+        (-45.0, y_edge),
+        (45.0, y_edge),
+        (-x_edge, -45.0),
+        (-x_edge, 45.0),
+        (x_edge, -45.0),
+        (x_edge, 45.0),
+    )
+
+
+def base_fastener_positions(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[tuple[float, float], ...]:
+    """Four base-skirt-to-cabinet fastener positions, clear of the ballast tray."""
+    p = parameters
+    x = p.outer_width / 2.0 - 10.0
+    y = p.outer_depth / 2.0 - 20.0
+    return ((-x, -y), (x, -y), (-x, y), (x, y))
+
+
+def bottom_plate_fastener_positions(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[tuple[float, float], ...]:
+    """Four service-plate fastener positions in the base skirt."""
+    p = parameters
+    x = p.outer_width / 2.0 - p.corner_radius + p.corner_radius * 0.75 / 2**0.5
+    y = p.outer_depth / 2.0 - p.corner_radius + p.corner_radius * 0.75 / 2**0.5
+    return ((-x, -y), (x, -y), (-x, y), (x, y))
+
+
+def shroud_fastener_positions(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[tuple[float, float], ...]:
+    """Four electronics-shroud fastener positions, clear of the official stack.
+
+    They sit outboard of the official mid-plate footprint (|x|, |y| <= 55 mm)
+    and inboard of the shroud's tapered inner wall at the tab height.
+    """
+    p = parameters
+    x = p.outer_width / 2.0 - 18.0
+    y = p.outer_depth / 2.0 - 26.0
+    return ((-x, 0.0), (x, 0.0), (0.0, -y), (0.0, y))
+
+
+def cage_fastener_positions(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[tuple[float, float], ...]:
+    """Four grille-cage retention positions on the bottom service plate."""
+    p = parameters
+    x = p.outer_width / 2.0 - 12.0
+    y = p.outer_depth / 2.0 - 18.0
+    return ((-x, 0.0), (x, 0.0), (0.0, -y), (0.0, y))
+
+
+def official_mount_positions(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[tuple[float, float], ...]:
+    """The four official mid-plate mount points, DERIVED_FROM_OFFICIAL_CAD."""
+    p = parameters
+    return tuple(
+        (x, y)
+        for x in (-p.official_mount_x, p.official_mount_x)
+        for y in (-p.official_mount_y, p.official_mount_y)
+    )
+
+
+def _blind_insert(
+    x: float,
+    y: float,
+    z: float,
+    direction: float,
+    parameters: DesignParameters,
 ) -> cq.Shape:
     return cq.Solid.makeCylinder(
+        parameters.insert_bore_diameter / 2.0,
+        parameters.insert_bore_depth,
+        cq.Vector(x, y, z),
+        cq.Vector(0.0, 0.0, direction),
+    )
+
+
+def _compression_stop(
+    x: float,
+    y: float,
+    z: float,
+    direction: float,
+    radius: float,
+    parameters: DesignParameters,
+) -> cq.Shape:
+    """Local raised land that hard-stops a bolted joint at target compression."""
+    return cq.Solid.makeCylinder(
         radius,
-        length,
-        cq.Vector(*start),
-        cq.Vector(*direction),
+        parameters.compressed_gasket_thickness,
+        cq.Vector(x, y, z),
+        cq.Vector(0.0, 0.0, direction),
     )
 
 
-def _bolt_positions(bolt_circle: float, axis_z: float) -> tuple[tuple[float, float], ...]:
-    radius = bolt_circle / 2.0
-    return tuple(
-        (
-            radius * cos(pi / 4.0 + index * pi / 2.0),
-            axis_z + radius * sin(pi / 4.0 + index * pi / 2.0),
-        )
-        for index in range(4)
-    )
-
-
-def _top_fastener_positions() -> tuple[tuple[float, float], ...]:
-    return (
-        (-45.0, -75.3),
-        (45.0, -75.3),
-        (-45.0, 75.3),
-        (45.0, 75.3),
-        (-75.3, -45.0),
-        (-75.3, 45.0),
-        (75.3, -45.0),
-        (75.3, 45.0),
-    )
-
-
+# ---------------------------------------------------------------------- #
+# Structural cabinet
+# ---------------------------------------------------------------------- #
 def main_cabinet(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Structural acoustic cabinet with integral floor and blind insert bosses."""
+    """Structural acoustic cabinet: walls, floor, mounts, bracing, interfaces."""
     p = parameters
     height = p.acoustic_top_z - p.acoustic_bottom_z
-    outer = rounded_prism(
+    envelope = rounded_prism(
         p.outer_width,
         p.outer_depth,
         height,
         p.acoustic_bottom_z,
         p.corner_radius,
     )
-    cavity_bottom = p.acoustic_bottom_z + p.acoustic_floor_thickness
-    inner = rounded_prism(
+    cavity = rounded_prism(
         p.inner_width,
         p.inner_depth,
-        p.acoustic_top_z - cavity_bottom + 1.0,
-        cavity_bottom,
+        p.acoustic_top_z - p.cavity_bottom_z + 1.0,
+        p.cavity_bottom_z,
         p.inner_corner_radius,
     )
-    cabinet = outer.cut(inner)
+    cabinet = envelope.cut(cavity)
 
-    half_depth = p.outer_depth / 2.0
-    half_width = p.outer_width / 2.0
-    cutter_length = p.wall_thickness + p.carrier_recess + 2.0
-    cabinet = cabinet.cut(
-        _radial_cylinder(
-            p.driver_carrier_diameter / 2.0 + p.print_clearance,
-            p.carrier_recess,
-            (0.0, -half_depth, p.driver_axis_z),
-            (0.0, 1.0, 0.0),
-        )
-    )
-    cabinet = cabinet.cut(
-        _radial_cylinder(
-            p.driver_print_cutout_diameter / 2.0,
-            cutter_length,
-            (0.0, -half_depth - 1.0, p.driver_axis_z),
-            (0.0, 1.0, 0.0),
-        )
-    )
-    for side in (-1.0, 1.0):
-        start_x = side * half_width
-        direction = (-side, 0.0, 0.0)
-        cabinet = cabinet.cut(
-            _radial_cylinder(
-                p.pr_carrier_diameter / 2.0 + p.print_clearance,
-                p.carrier_recess,
-                (start_x, 0.0, p.pr_axis_z),
-                direction,
+    # Vertical wall ribs. Two per wall, clear of every component envelope.
+    rib_height = p.acoustic_top_z - p.cavity_bottom_z
+    half_width = p.inner_width / 2.0
+    half_depth = p.inner_depth / 2.0
+    for offset in (-56.0, 56.0):
+        inset = p.brace_rib_depth / 2.0
+        across = (p.brace_rib_width, p.brace_rib_depth)
+        along = (p.brace_rib_depth, p.brace_rib_width)
+        for centre, size in (
+            ((offset, -half_depth + inset), across),
+            ((offset, half_depth - inset), across),
+            ((-half_width + inset, offset), along),
+            ((half_width - inset, offset), along),
+        ):
+            rib = cq.Workplane("XY", origin=(centre[0], centre[1], p.cavity_bottom_z)).box(
+                size[0],
+                size[1],
+                rib_height,
+                centered=(True, True, False),
             )
-        )
-        cabinet = cabinet.cut(
-            _radial_cylinder(
-                p.pr_print_cutout_diameter / 2.0,
-                cutter_length,
-                (start_x + side, 0.0, p.pr_axis_z),
-                direction,
-            )
-        )
+            cabinet = cabinet.fuse(cast(cq.Shape, rib.val()))
 
-    active_face_y = -half_depth + p.carrier_recess
-    active_seat = _radial_cylinder(
-        p.driver_carrier_diameter / 2.0,
-        2.0,
-        (0.0, active_face_y, p.driver_axis_z),
-        (0.0, 1.0, 0.0),
-    ).cut(
-        _radial_cylinder(
-            p.driver_print_cutout_diameter / 2.0,
-            2.0,
-            (0.0, active_face_y, p.driver_axis_z),
-            (0.0, 1.0, 0.0),
-        )
-    )
-    cabinet = cabinet.fuse(active_seat)
-    active_bolt_radius = p.driver_bolt_circle / 2.0
-    for index, (x, z) in enumerate(_bolt_positions(p.driver_bolt_circle, p.driver_axis_z)):
-        theta = pi / 4.0 + index * pi / 2.0
-        bridge_start_radius = active_bolt_radius - 3.0
-        carrier_radius = p.driver_carrier_diameter / 2.0
-        bridge_end_radius = carrier_radius + 4.0
-        bridge_outer_y = -half_depth + 2.0
-        bridge_inner_y = active_face_y + p.insert_depth + 3.0
-        inner_bridge = (
-            cq.Workplane("XY")
-            .box(
-                carrier_radius - bridge_start_radius,
-                bridge_inner_y - active_face_y,
-                8.0,
-            )
-            .translate(
-                (
-                    (bridge_start_radius + carrier_radius) / 2.0,
-                    (active_face_y + bridge_inner_y) / 2.0,
-                    0.0,
-                )
-            )
-            .rotate((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), -theta * 180.0 / pi)
-            .translate((0.0, 0.0, p.driver_axis_z))
-        )
-        outer_bridge = (
-            cq.Workplane("XY")
-            .box(
-                bridge_end_radius - carrier_radius,
-                bridge_inner_y - bridge_outer_y,
-                8.0,
-            )
-            .translate(
-                (
-                    (carrier_radius + bridge_end_radius) / 2.0,
-                    (bridge_outer_y + bridge_inner_y) / 2.0,
-                    0.0,
-                )
-            )
-            .rotate((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), -theta * 180.0 / pi)
-            .translate((0.0, 0.0, p.driver_axis_z))
-        )
-        cabinet = cabinet.fuse(cast(cq.Shape, inner_bridge.val()))
-        cabinet = cabinet.fuse(cast(cq.Shape, outer_bridge.val()))
-        stop = _radial_cylinder(
-            2.4,
-            p.compressed_gasket_thickness,
-            (x, active_face_y, z),
-            (0.0, -1.0, 0.0),
-        ).cut(
-            _radial_cylinder(
-                p.driver_mount_hole_diameter / 2.0,
-                p.compressed_gasket_thickness,
-                (x, active_face_y, z),
-                (0.0, -1.0, 0.0),
-            )
-        )
-        cabinet = cabinet.fuse(
-            _radial_cylinder(
-                p.boss_outer_diameter / 2.0,
-                p.insert_depth + 3.0,
-                (x, active_face_y, z),
-                (0.0, 1.0, 0.0),
-            )
-        )
-        cabinet = cabinet.fuse(stop)
-        cabinet = cabinet.cut(
-            _radial_cylinder(
-                p.insert_outer_diameter / 2.0,
-                p.insert_depth,
-                (x, active_face_y, z),
-                (0.0, 1.0, 0.0),
-            )
-        )
+    # Rear structural spine, tying the rear panel to floor and top rim.
+    spine = cq.Workplane(
+        "XY",
+        origin=(0.0, half_depth - 5.0, p.cavity_bottom_z),
+    ).box(20.0, 10.0, rib_height, centered=(True, True, False))
+    cabinet = cabinet.fuse(cast(cq.Shape, spine.val()))
 
-    for side in (-1.0, 1.0):
-        face_x = side * (half_width - p.carrier_recess)
-        direction = (-side, 0.0, 0.0)
-        pr_seat = _radial_cylinder(
-            p.pr_carrier_diameter / 2.0,
-            2.0,
-            (face_x, 0.0, p.pr_axis_z),
-            direction,
-        ).cut(
-            _radial_cylinder(
-                p.pr_print_cutout_diameter / 2.0,
-                2.0,
-                (face_x, 0.0, p.pr_axis_z),
-                direction,
-            )
-        )
-        cabinet = cabinet.fuse(pr_seat)
-        pr_bolt_radius = p.pr_bolt_circle / 2.0
-        for index, (y, z) in enumerate(_bolt_positions(p.pr_bolt_circle, p.pr_axis_z)):
-            theta = pi / 4.0 + index * pi / 2.0
-            bridge_start_radius = pr_bolt_radius - 3.0
-            carrier_radius = p.pr_carrier_diameter / 2.0
-            bridge_end_radius = carrier_radius + 4.0
-            bridge_outer_x = half_width - 2.0
-            bridge_inner_x = half_width - p.carrier_recess - p.insert_depth - 3.0
-            inner_bridge = (
-                cq.Workplane("XY")
-                .box(
-                    half_width - p.carrier_recess - bridge_inner_x,
-                    carrier_radius - bridge_start_radius,
-                    8.0,
-                )
-                .translate(
-                    (
-                        side * (half_width - p.carrier_recess + bridge_inner_x) / 2.0,
-                        (bridge_start_radius + carrier_radius) / 2.0,
-                        0.0,
-                    )
-                )
-                .rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), theta * 180.0 / pi)
-                .translate((0.0, 0.0, p.pr_axis_z))
-            )
-            outer_bridge = (
-                cq.Workplane("XY")
-                .box(
-                    bridge_outer_x - bridge_inner_x,
-                    bridge_end_radius - carrier_radius,
-                    8.0,
-                )
-                .translate(
-                    (
-                        side * (bridge_outer_x + bridge_inner_x) / 2.0,
-                        (carrier_radius + bridge_end_radius) / 2.0,
-                        0.0,
-                    )
-                )
-                .rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), theta * 180.0 / pi)
-                .translate((0.0, 0.0, p.pr_axis_z))
-            )
-            cabinet = cabinet.fuse(cast(cq.Shape, inner_bridge.val()))
-            cabinet = cabinet.fuse(cast(cq.Shape, outer_bridge.val()))
-            stop = _radial_cylinder(
-                3.0,
-                p.compressed_gasket_thickness,
-                (face_x, y, z),
-                (side, 0.0, 0.0),
-            ).cut(
-                _radial_cylinder(
-                    p.pr_mount_hole_diameter / 2.0,
-                    p.compressed_gasket_thickness,
-                    (face_x, y, z),
-                    (side, 0.0, 0.0),
-                )
-            )
-            cabinet = cabinet.fuse(
-                _radial_cylinder(
-                    p.boss_outer_diameter / 2.0,
-                    p.insert_depth + 3.0,
-                    (face_x, y, z),
-                    direction,
-                )
-            )
-            cabinet = cabinet.fuse(stop)
-            cabinet = cabinet.cut(
-                _radial_cylinder(
-                    p.insert_outer_diameter / 2.0,
-                    p.insert_depth,
-                    (face_x, y, z),
-                    direction,
-                )
-            )
+    # Acoustic component mounts.
+    for mount in acoustic_mounts(p).values():
+        cabinet = _apply_mount(cabinet, envelope, mount, p)
 
-    top_boss_height = 10.0
-    for x, y in _top_fastener_positions():
-        stop = cq.Solid.makeCylinder(
-            3.0,
-            p.compressed_gasket_thickness,
-            cq.Vector(x, y, p.acoustic_top_z),
-            cq.Vector(0.0, 0.0, 1.0),
-        ).cut(
-            cq.Solid.makeCylinder(
-                p.driver_mount_hole_diameter / 2.0,
-                p.compressed_gasket_thickness,
-                cq.Vector(x, y, p.acoustic_top_z),
-                cq.Vector(0.0, 0.0, 1.0),
-            )
-        )
+    # Divider interface: gasket land, compression stops, blind inserts.
+    for x, y in top_fastener_positions(p):
         boss = cq.Solid.makeCylinder(
             p.boss_outer_diameter / 2.0,
-            top_boss_height,
-            cq.Vector(x, y, p.acoustic_top_z - top_boss_height),
+            10.0,
+            cq.Vector(x, y, p.acoustic_top_z - 10.0),
             cq.Vector(0.0, 0.0, 1.0),
         )
-        insert = cq.Solid.makeCylinder(
-            p.insert_outer_diameter / 2.0,
-            p.insert_depth,
-            cq.Vector(x, y, p.acoustic_top_z),
-            cq.Vector(0.0, 0.0, -1.0),
+        cabinet = cabinet.fuse(boss)
+        cabinet = cabinet.fuse(_compression_stop(x, y, p.acoustic_top_z, 1.0, 3.0, p))
+        cabinet = cabinet.cut(_blind_insert(x, y, p.acoustic_top_z, -1.0, p))
+
+    # Base-skirt interface: local floor pads keep the blind bores well clear of
+    # the acoustic floor's inner face.
+    for x, y in base_fastener_positions(p):
+        pad = cq.Solid.makeCylinder(
+            8.0,
+            4.0,
+            cq.Vector(x, y, p.cavity_bottom_z),
+            cq.Vector(0.0, 0.0, 1.0),
         )
-        cabinet = cabinet.fuse(boss).fuse(stop).cut(insert)
+        cabinet = cabinet.fuse(pad)
+        cabinet = cabinet.cut(_blind_insert(x, y, p.acoustic_bottom_z, 1.0, p))
 
-    for x in (-55.0, 55.0):
-        for y in (-55.0, 55.0):
-            floor_insert = cq.Solid.makeCylinder(
-                p.insert_outer_diameter / 2.0,
-                p.insert_depth,
-                cq.Vector(x, y, p.acoustic_bottom_z),
-                cq.Vector(0.0, 0.0, 1.0),
-            )
-            cabinet = cabinet.cut(floor_insert)
-
-    rear_spine = cq.Workplane(
-        "XY",
-        origin=(0.0, p.inner_depth / 2.0 - 4.0, cavity_bottom + 6.0),
-    ).box(
-        16.0,
-        10.0,
-        p.acoustic_top_z - cavity_bottom - 12.0,
-        centered=(True, True, False),
-    )
-    cabinet = cabinet.fuse(cast(cq.Shape, rear_spine.val()))
     return cabinet
 
 
-def circular_carrier(
+# ---------------------------------------------------------------------- #
+# Clamp rings
+# ---------------------------------------------------------------------- #
+def _clamp_ring(
     outer_diameter: float,
-    cutout_diameter: float,
+    bore_diameter: float,
+    lip_diameter: float,
     bolt_circle: float,
-    thickness: float,
-    hole_diameter: float,
+    parameters: DesignParameters,
 ) -> cq.Shape:
-    """Create a local, flat-on-bed annular carrier with four clearance holes."""
-    carrier = (
+    """Stepped clamp ring: outer face bottoms on the cabinet, lip loads the flange."""
+    p = parameters
+    body = (
         cq.Workplane("XY")
         .circle(outer_diameter / 2.0)
-        .circle(cutout_diameter / 2.0)
-        .extrude(thickness)
+        .circle(bore_diameter / 2.0)
+        .extrude(p.clamp_ring_thickness)
     )
+    lip = (
+        cq.Workplane("XY", origin=(0.0, 0.0, -p.clamp_lip))
+        .circle(lip_diameter / 2.0)
+        .circle(bore_diameter / 2.0)
+        .extrude(p.clamp_lip)
+    )
+    ring = cast(cq.Shape, body.val()).fuse(cast(cq.Shape, lip.val()))
     radius = bolt_circle / 2.0
-    holes = [
-        (radius * cos(pi / 4.0 + index * pi / 2.0), radius * sin(pi / 4.0 + index * pi / 2.0))
-        for index in range(4)
-    ]
-    return cast(
-        cq.Shape, carrier.faces(">Z").workplane().pushPoints(holes).hole(hole_diameter).val()
-    )
-
-
-def active_driver_carrier(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    p = parameters
-    carrier = circular_carrier(
-        p.driver_carrier_diameter,
-        p.driver_print_cutout_diameter,
-        p.driver_bolt_circle,
-        p.carrier_thickness,
-        p.driver_mount_hole_diameter,
-    )
-    for x, y in _bolt_positions(p.driver_bolt_circle, 0.0):
-        stop = cq.Solid.makeCylinder(
-            2.4,
-            p.compressed_gasket_thickness,
-            cq.Vector(x, y, p.carrier_thickness),
-            cq.Vector(0.0, 0.0, 1.0),
-        ).cut(
+    for index in range(4):
+        angle = pi / 4.0 + index * pi / 2.0
+        x, y = radius * cos(angle), radius * sin(angle)
+        ring = ring.cut(
             cq.Solid.makeCylinder(
-                p.driver_mount_hole_diameter / 2.0,
-                p.compressed_gasket_thickness,
-                cq.Vector(x, y, p.carrier_thickness),
+                p.fastener_clearance_diameter / 2.0,
+                p.clamp_ring_thickness,
+                cq.Vector(x, y, 0.0),
                 cq.Vector(0.0, 0.0, 1.0),
             )
         )
-        carrier = carrier.fuse(stop)
-    return carrier
+    return ring
 
 
-def passive_radiator_carrier(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+def active_driver_clamp_ring(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """Retains the active driver against its cabinet seat, glue-free."""
     p = parameters
-    carrier = circular_carrier(
-        p.pr_carrier_diameter,
-        p.pr_print_cutout_diameter,
-        p.pr_bolt_circle,
-        p.carrier_thickness,
-        p.pr_mount_hole_diameter,
+    return _clamp_ring(
+        p.driver_clamp_ring_diameter,
+        p.driver_outer_diameter - 7.2,
+        p.driver_outer_diameter - 0.8,
+        p.driver_clamp_bolt_circle,
+        p,
     )
-    for x, y in _bolt_positions(p.pr_bolt_circle, 0.0):
-        stop = cq.Solid.makeCylinder(
-            3.0,
-            p.compressed_gasket_thickness,
-            cq.Vector(x, y, p.carrier_thickness),
-            cq.Vector(0.0, 0.0, 1.0),
-        ).cut(
-            cq.Solid.makeCylinder(
-                p.pr_mount_hole_diameter / 2.0,
-                p.compressed_gasket_thickness,
-                cq.Vector(x, y, p.carrier_thickness),
-                cq.Vector(0.0, 0.0, 1.0),
-            )
-        )
-        carrier = carrier.fuse(stop)
-    return carrier
 
 
+def passive_radiator_clamp_ring(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """Retains one passive radiator against its cabinet seat, glue-free."""
+    p = parameters
+    return _clamp_ring(
+        p.pr_clamp_ring_diameter,
+        p.pr_outer_diameter - 7.2,
+        p.pr_outer_diameter - 0.8,
+        p.pr_clamp_bolt_circle,
+        p,
+    )
+
+
+# ---------------------------------------------------------------------- #
+# Pressure divider and electronics interface
+# ---------------------------------------------------------------------- #
 def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Airtight divider and exact official four-point mid-plate interface."""
+    """Airtight electronics/acoustic divider carrying the official interface."""
     p = parameters
     z0 = p.divider_bottom_z
     divider = rounded_prism(
@@ -540,7 +680,7 @@ def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
         z0,
         p.corner_radius,
     )
-    cable_x, cable_y = 0.0, 48.0
+    cable_x, cable_y = p.cable_passage_x, p.cable_passage_y
     divider = divider.cut(
         cq.Solid.makeCylinder(
             p.cable_passage_diameter / 2.0,
@@ -549,32 +689,50 @@ def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
             cq.Vector(0.0, 0.0, 1.0),
         )
     )
-    for x, y in _top_fastener_positions():
+    for x, y in top_fastener_positions(p):
         divider = divider.cut(
             cq.Solid.makeCylinder(
-                p.driver_mount_hole_diameter / 2.0,
+                p.fastener_clearance_diameter / 2.0,
                 p.divider_thickness,
                 cq.Vector(x, y, z0),
                 cq.Vector(0.0, 0.0, 1.0),
             )
         )
-    for x in (-p.official_mount_x, p.official_mount_x):
-        for y in (-p.official_mount_y, p.official_mount_y):
-            boss_top_z = -7.0
-            boss = cq.Solid.makeCylinder(
-                p.boss_outer_diameter / 2.0,
-                boss_top_z - z0,
-                cq.Vector(x, y, z0),
-                cq.Vector(0.0, 0.0, 1.0),
+
+    # Official four-point mid-plate interface. The boss tops are coplanar with
+    # the official mid-plate underside so the plate seats on material, and the
+    # bosses are tied together by a rib frame so a 110 mm plate is not carried
+    # on four unsupported stalks.
+    interface_z = p.official_interface_z
+    mounts = official_mount_positions(p)
+    for x, y in mounts:
+        boss = cq.Solid.makeCylinder(
+            p.boss_outer_diameter / 2.0,
+            interface_z - z0,
+            cq.Vector(x, y, z0),
+            cq.Vector(0.0, 0.0, 1.0),
+        )
+        divider = divider.fuse(boss)
+        divider = divider.cut(_blind_insert(x, y, interface_z, -1.0, p))
+    rib_top = interface_z
+    rib_bottom = z0 + p.divider_thickness
+    for axis in ("x", "y"):
+        for sign in (-1.0, 1.0):
+            if axis == "x":
+                origin = (0.0, sign * p.official_mount_y, rib_bottom)
+                size = (2.0 * p.official_mount_x, 5.0)
+            else:
+                origin = (sign * p.official_mount_x, 0.0, rib_bottom)
+                size = (5.0, 2.0 * p.official_mount_y)
+            rib = cq.Workplane("XY", origin=origin).box(
+                size[0],
+                size[1],
+                rib_top - rib_bottom,
+                centered=(True, True, False),
             )
-            insert = cq.Solid.makeCylinder(
-                p.insert_outer_diameter / 2.0,
-                p.insert_depth,
-                cq.Vector(x, y, boss_top_z),
-                cq.Vector(0.0, 0.0, -1.0),
-            )
-            divider = divider.fuse(boss).cut(insert)
-    for x, y in ((-60.0, 0.0), (60.0, 0.0), (0.0, -60.0), (0.0, 60.0)):
+            divider = divider.fuse(cast(cq.Shape, rib.val()))
+
+    for x, y in shroud_fastener_positions(p):
         boss_top_z = z0 + p.divider_thickness + 8.0
         boss = cq.Solid.makeCylinder(
             p.boss_outer_diameter / 2.0,
@@ -582,13 +740,8 @@ def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
             cq.Vector(x, y, z0 + p.divider_thickness),
             cq.Vector(0.0, 0.0, 1.0),
         )
-        insert = cq.Solid.makeCylinder(
-            p.insert_outer_diameter / 2.0,
-            p.insert_depth,
-            cq.Vector(x, y, boss_top_z),
-            cq.Vector(0.0, 0.0, -1.0),
-        )
-        divider = divider.fuse(boss).cut(insert)
+        divider = divider.fuse(boss)
+        divider = divider.cut(_blind_insert(x, y, boss_top_z, -1.0, p))
     return divider
 
 
@@ -651,9 +804,9 @@ def electronics_shroud(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.
         p.outer_depth - 8.0,
         p.corner_radius - 4.0,
         bottom_z - 0.2,
-        110.6,
-        110.6,
-        11.0,
+        112.0,
+        112.0,
+        11.5,
         0.2,
     )
     shroud = outer.cut(inner)
@@ -661,137 +814,80 @@ def electronics_shroud(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.
         vent = cq.Workplane(
             "XY",
             origin=(x, p.outer_depth / 2.0 - 10.0, -16.0),
-        ).box(
-            7.0,
-            24.0,
-            10.0,
-            centered=(True, True, False),
-        )
+        ).box(7.0, 24.0, 10.0, centered=(True, True, False))
         shroud = shroud.cut(cast(cq.Shape, vent.val()))
     tab_z = bottom_z + 8.0
-    for x, y in ((-60.0, 0.0), (60.0, 0.0), (0.0, -60.0), (0.0, 60.0)):
-        tab = cq.Solid.makeCylinder(
-            5.0,
-            3.0,
-            cq.Vector(x, y, tab_z),
-            cq.Vector(0.0, 0.0, 1.0),
-        )
+    for x, y in shroud_fastener_positions(p):
+        tab = cq.Solid.makeCylinder(5.0, 3.0, cq.Vector(x, y, tab_z), cq.Vector(0.0, 0.0, 1.0))
         hole = cq.Solid.makeCylinder(
-            p.driver_mount_hole_diameter / 2.0,
+            p.fastener_clearance_diameter / 2.0,
             3.0,
             cq.Vector(x, y, tab_z),
             cq.Vector(0.0, 0.0, 1.0),
         )
         if x:
-            outer_x = 75.0 if x > 0 else -75.0
-            bridge = cq.Workplane(
-                "XY",
-                origin=((x + outer_x) / 2.0, 0.0, tab_z),
-            ).box(
-                abs(x - outer_x),
-                10.0,
-                3.0,
-                centered=(True, True, False),
+            outer_x = (p.outer_width / 2.0 - 5.0) * (1.0 if x > 0 else -1.0)
+            bridge = cq.Workplane("XY", origin=((x + outer_x) / 2.0, 0.0, tab_z)).box(
+                abs(x - outer_x), 10.0, 3.0, centered=(True, True, False)
             )
         else:
-            outer_y = 75.0 if y > 0 else -75.0
-            bridge = cq.Workplane(
-                "XY",
-                origin=(0.0, (y + outer_y) / 2.0, tab_z),
-            ).box(
-                10.0,
-                abs(y - outer_y),
-                3.0,
-                centered=(True, True, False),
+            outer_y = (p.outer_depth / 2.0 - 5.0) * (1.0 if y > 0 else -1.0)
+            bridge = cq.Workplane("XY", origin=(0.0, (y + outer_y) / 2.0, tab_z)).box(
+                10.0, abs(y - outer_y), 3.0, centered=(True, True, False)
             )
         shroud = shroud.fuse(tab).fuse(cast(cq.Shape, bridge.val())).cut(hole)
     return shroud
 
 
+# ---------------------------------------------------------------------- #
+# Replaceable seals
+# ---------------------------------------------------------------------- #
 def divider_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """Uncompressed replaceable closed-cell divider gasket."""
     p = parameters
-    gasket = rounded_ring(
-        p.outer_width - 2.0,
-        p.outer_depth - 2.0,
-        p.corner_radius - 1.0,
-        p.inner_width + 2.0,
-        p.inner_depth + 2.0,
-        p.inner_corner_radius + 1.0,
+    margin = (p.wall_thickness - p.gasket_land_width / 2.0 - 1.0) / 2.0
+    return rounded_ring(
+        p.outer_width - 2.0 * margin,
+        p.outer_depth - 2.0 * margin,
+        p.corner_radius - margin,
+        p.inner_width + 2.0 * margin,
+        p.inner_depth + 2.0 * margin,
+        p.inner_corner_radius + margin,
         p.gasket_thickness,
     )
-    for x, y in _top_fastener_positions():
-        gasket = gasket.cut(
-            cq.Solid.makeCylinder(
-                3.2,
-                p.gasket_thickness,
-                cq.Vector(x, y, 0.0),
-                cq.Vector(0.0, 0.0, 1.0),
-            )
-        )
-    return gasket
 
 
 def circular_gasket(
     outer_diameter: float,
     inner_diameter: float,
-    bolt_circle: float,
     thickness: float,
-    hole_diameter: float,
 ) -> cq.Shape:
-    """Create a replaceable annular component gasket with fastener holes."""
-    return circular_carrier(
-        outer_diameter,
-        inner_diameter,
-        bolt_circle,
-        thickness,
-        hole_diameter,
+    """Plain replaceable annular component gasket; no fastener penetrations."""
+    return cast(
+        cq.Shape,
+        cq.Workplane("XY")
+        .circle(outer_diameter / 2.0)
+        .circle(inner_diameter / 2.0)
+        .extrude(thickness)
+        .val(),
     )
 
 
 def driver_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     p = parameters
     return circular_gasket(
-        p.driver_outer_diameter,
-        p.driver_print_cutout_diameter,
-        p.driver_bolt_circle,
+        p.driver_seat_diameter,
+        p.driver_bore_diameter + 3.0,
         p.gasket_thickness,
-        5.2,
-    )
-
-
-def driver_carrier_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    p = parameters
-    return circular_gasket(
-        p.driver_carrier_diameter,
-        p.driver_print_cutout_diameter,
-        p.driver_bolt_circle,
-        p.gasket_thickness,
-        5.2,
     )
 
 
 def passive_radiator_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     p = parameters
     return circular_gasket(
-        p.pr_outer_diameter,
-        p.pr_print_cutout_diameter,
-        p.pr_bolt_circle,
+        p.pr_seat_diameter,
+        p.pr_bore_diameter + 3.0,
         p.gasket_thickness,
-        6.4,
-    )
-
-
-def passive_radiator_carrier_gasket(
-    parameters: DesignParameters = DEFAULT_PARAMETERS,
-) -> cq.Shape:
-    p = parameters
-    return circular_gasket(
-        p.pr_carrier_diameter,
-        p.pr_print_cutout_diameter,
-        p.pr_bolt_circle,
-        p.gasket_thickness,
-        6.4,
     )
 
 
@@ -804,84 +900,92 @@ def cable_gland(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     for x in (-1.4, 1.4):
         gland = gland.cut(cq.Workplane("XY", origin=(x, 0.0, 0.0)).circle(0.9).extrude(5.5))
     slot = cq.Workplane("XY", origin=(0.0, 0.0, 0.0)).box(
-        4.6,
-        7.0,
-        5.5,
-        centered=(True, False, False),
+        4.6, 7.0, 5.5, centered=(True, False, False)
     )
     return cast(cq.Shape, gland.cut(slot).val())
 
 
+# ---------------------------------------------------------------------- #
+# Base, ballast and service parts
+# ---------------------------------------------------------------------- #
 def base_skirt(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Non-acoustic ballast/service bay with independent top and bottom fasteners."""
+    """Non-acoustic ballast/service bay, open at top and bottom for service."""
     p = parameters
     height = p.acoustic_bottom_z - p.base_bottom_z
-    outer = rounded_prism(
-        p.outer_width,
-        p.outer_depth,
-        height,
-        p.base_bottom_z,
-        p.corner_radius,
-    )
+    outer = rounded_prism(p.outer_width, p.outer_depth, height, p.base_bottom_z, p.corner_radius)
     cavity = rounded_prism(
         p.inner_width,
         p.inner_depth,
-        height - 3.0 + 1.0,
+        height + 2.0,
         p.base_bottom_z - 1.0,
         p.inner_corner_radius,
     )
     skirt = outer.cut(cavity)
-    ceiling = rounded_prism(
-        p.outer_width,
-        p.outer_depth,
-        3.0,
-        p.acoustic_bottom_z - 3.0,
-        p.corner_radius,
-    )
-    skirt = skirt.fuse(ceiling)
-    for x in (-55.0, 55.0):
-        for y in (-55.0, 55.0):
-            skirt = skirt.cut(
-                cq.Solid.makeCylinder(
-                    p.driver_mount_hole_diameter / 2.0,
-                    3.0,
-                    cq.Vector(x, y, p.acoustic_bottom_z - 3.0),
-                    cq.Vector(0.0, 0.0, 1.0),
-                )
-            )
-    corner = 60.0 + 15.0 / 2**0.5
-    for x in (-corner, corner):
-        for y in (-corner, corner):
-            boss_bottom_z = p.base_bottom_z + p.bottom_plate_thickness
-            boss = cq.Solid.makeCylinder(
-                p.boss_outer_diameter / 2.0,
-                8.0,
-                cq.Vector(x, y, boss_bottom_z),
-                cq.Vector(0.0, 0.0, 1.0),
-            )
-            insert = cq.Solid.makeCylinder(
-                p.insert_outer_diameter / 2.0,
-                p.insert_depth,
-                cq.Vector(x, y, boss_bottom_z),
-                cq.Vector(0.0, 0.0, 1.0),
-            )
-            skirt = skirt.fuse(boss).cut(insert)
-    for x, y, size_x, size_y in (
-        (-83.0, 0.0, 28.0, 10.0),
-        (83.0, 0.0, 28.0, 10.0),
-        (0.0, -83.0, 10.0, 30.0),
-        (0.0, 79.0, 10.0, 22.0),
-    ):
-        relief = cq.Workplane(
-            "XY",
-            origin=(x, y, p.base_bottom_z + p.bottom_plate_thickness),
-        ).box(
-            size_x,
-            size_y,
-            8.5,
-            centered=(True, True, False),
+
+    # Internal bosses that bolt the skirt up into the acoustic floor.
+    for x, y in base_fastener_positions(p):
+        boss_bottom = p.acoustic_bottom_z - 8.0
+        boss = cq.Solid.makeCylinder(
+            p.boss_outer_diameter / 2.0,
+            8.0,
+            cq.Vector(x, y, boss_bottom),
+            cq.Vector(0.0, 0.0, 1.0),
         )
-        skirt = skirt.cut(cast(cq.Shape, relief.val()))
+        gusset = cq.Workplane("XY", origin=(x * 1.06, y * 1.06, boss_bottom)).box(
+            14.0, 14.0, 8.0, centered=(True, True, False)
+        )
+        skirt = skirt.fuse(boss).fuse(cast(cq.Shape, gusset.val()))
+        skirt = skirt.cut(
+            cq.Solid.makeCylinder(
+                p.fastener_clearance_diameter / 2.0,
+                8.0,
+                cq.Vector(x, y, boss_bottom),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+        skirt = skirt.cut(
+            cq.Solid.makeCylinder(
+                p.fastener_head_diameter / 2.0,
+                3.0,
+                cq.Vector(x, y, boss_bottom),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+
+    # Service-plate bosses and blind inserts.
+    for x, y in bottom_plate_fastener_positions(p):
+        boss_bottom_z = p.base_bottom_z + p.bottom_plate_thickness
+        boss = cq.Solid.makeCylinder(
+            p.boss_outer_diameter / 2.0,
+            8.0,
+            cq.Vector(x, y, boss_bottom_z),
+            cq.Vector(0.0, 0.0, 1.0),
+        )
+        skirt = skirt.fuse(boss)
+        skirt = skirt.cut(_blind_insert(x, y, boss_bottom_z, 1.0, p))
+
+    # Pass-throughs for the grille-cage retention bridges. The base bay is
+    # outside the acoustic pressure boundary, so these also vent it.
+    for x, y in cage_fastener_positions(p):
+        bridge_z = p.base_bottom_z + p.bottom_plate_thickness
+        length = p.outer_width
+        if x:
+            origin = (x / abs(x) * p.outer_width / 2.0, y, bridge_z - 1.0)
+            size = (length, 12.0)
+        else:
+            origin = (x, y / abs(y) * p.outer_depth / 2.0, bridge_z - 1.0)
+            size = (12.0, length)
+        slot = cq.Workplane("XY", origin=origin).box(
+            size[0], size[1], 6.0, centered=(True, True, False)
+        )
+        skirt = skirt.cut(cast(cq.Shape, slot.val()))
+
+    # Rear cable/service relief.
+    relief = cq.Workplane(
+        "XY",
+        origin=(0.0, p.outer_depth / 2.0 - 2.0, p.base_bottom_z + p.bottom_plate_thickness + 2.0),
+    ).box(26.0, 12.0, 10.0, centered=(True, True, False))
+    skirt = skirt.cut(cast(cq.Shape, relief.val()))
     return skirt
 
 
@@ -896,21 +1000,19 @@ def bottom_service_plate(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
         0.0,
         p.inner_corner_radius - clearance / 2.0,
     )
-    corner = 60.0 + 15.0 / 2**0.5
-    for x in (-corner, corner):
-        for y in (-corner, corner):
-            plate = plate.cut(
-                cq.Solid.makeCylinder(
-                    p.driver_mount_hole_diameter / 2.0,
-                    p.bottom_plate_thickness,
-                    cq.Vector(x, y, 0.0),
-                    cq.Vector(0.0, 0.0, 1.0),
-                )
-            )
-    for x, y in ((-72.0, 0.0), (72.0, 0.0), (0.0, -72.0), (0.0, 72.0)):
+    for x, y in bottom_plate_fastener_positions(p):
         plate = plate.cut(
             cq.Solid.makeCylinder(
-                p.driver_mount_hole_diameter / 2.0,
+                p.fastener_clearance_diameter / 2.0,
+                p.bottom_plate_thickness,
+                cq.Vector(x, y, 0.0),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+    for x, y in cage_fastener_positions(p):
+        plate = plate.cut(
+            cq.Solid.makeCylinder(
+                p.fastener_clearance_diameter / 2.0,
                 p.bottom_plate_thickness,
                 cq.Vector(x, y, 0.0),
                 cq.Vector(0.0, 0.0, 1.0),
@@ -919,44 +1021,67 @@ def bottom_service_plate(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
     return plate
 
 
+def ballast_tray_extent(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[float, float]:
+    """Outer width and depth of the ballast tray, clear of every base fixing."""
+    p = parameters
+    return (p.outer_width - 40.0, p.outer_depth - 48.0)
+
+
+def ballast_plate_extent(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[float, float, float]:
+    """Steel plate stack that the tray accepts: width, depth, total thickness."""
+    width, depth = ballast_tray_extent(parameters)
+    return (width - 10.0, depth - 10.0, 10.0)
+
+
 def ballast_cartridge(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Removable dry ballast tray for a 120 x 120 x 9 mm steel plate stack."""
-    _ = parameters
-    tray = rounded_prism(132.0, 132.0, 12.5, 0.0, 10.0)
-    cavity = rounded_prism(124.0, 124.0, 11.0, 2.0, 6.0)
+    """Removable dry ballast tray for a two-plate mild-steel stack."""
+    p = parameters
+    width, depth = ballast_tray_extent(p)
+    tray = rounded_prism(width, depth, 14.0, 0.0, 10.0)
+    cavity = rounded_prism(width - 8.0, depth - 8.0, 12.0, 2.0, 6.0)
     return tray.cut(cavity)
 
 
 def ballast_cartridge_lid(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """Compression-retained lid with a clearance tongue; no structural glue."""
-    _ = parameters
-    flange = rounded_prism(132.0, 132.0, 2.0, 1.5, 10.0)
-    tongue = rounded_prism(123.4, 123.4, 1.5, 0.0, 5.7)
+    p = parameters
+    width, depth = ballast_tray_extent(p)
+    flange = rounded_prism(width, depth, 2.0, 1.5, 10.0)
+    tongue = rounded_prism(width - 8.6, depth - 8.6, 1.5, 0.0, 5.7)
     return flange.fuse(tongue)
+
+
+# ---------------------------------------------------------------------- #
+# Industrial-design shell
+# ---------------------------------------------------------------------- #
+def _place_active_disc(shape: cq.Shape, inner_face_y: float, axis_z: float) -> cq.Shape:
+    return shape.rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), 90.0).translate(
+        cq.Vector(0.0, inner_face_y, axis_z)
+    )
+
+
+def _place_pr_disc(shape: cq.Shape, side: int, inner_face_x: float, axis_z: float) -> cq.Shape:
+    return shape.rotate((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), side * 90.0).translate(
+        cq.Vector(side * inner_face_x, 0.0, axis_z)
+    )
 
 
 def outer_grille_cage(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """Removable fabric cage with hard guards over every moving diaphragm."""
     p = parameters
-    width, depth, center_y, radius = 192.0, 184.0, -4.0, 28.0
+    width = p.outer_width + p.grille_width_margin
+    depth = p.outer_depth + p.grille_depth_margin
+    center_y, radius = 0.0, p.corner_radius + 8.0
     bottom_z, top_z, ring_height = p.base_bottom_z, p.acoustic_top_z, 8.0
     bottom_ring = rounded_ring(
-        width,
-        depth,
-        radius,
-        width - 4.0,
-        depth - 4.0,
-        radius - 2.0,
-        ring_height,
+        width, depth, radius, width - 4.0, depth - 4.0, radius - 2.0, ring_height
     ).translate(cq.Vector(0.0, center_y, bottom_z))
     top_ring = rounded_ring(
-        width,
-        depth,
-        radius,
-        width - 4.0,
-        depth - 4.0,
-        radius - 2.0,
-        ring_height,
+        width, depth, radius, width - 4.0, depth - 4.0, radius - 2.0, ring_height
     ).translate(cq.Vector(0.0, center_y, top_z - ring_height))
     cage = bottom_ring.fuse(top_ring)
 
@@ -976,40 +1101,34 @@ def outer_grille_cage(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.S
                 )
             )
 
-    active_guard_local = cast(
-        cq.Shape,
-        cq.Workplane("XY").circle(59.0).circle(53.0).extrude(3.0).val(),
-    )
+    guard_offset_y = p.outer_depth / 2.0 + 13.0
+    guard_offset_x = p.outer_width / 2.0 + 13.0
     active_guard = _place_active_disc(
-        active_guard_local,
-        -93.0,
+        cast(cq.Shape, cq.Workplane("XY").circle(59.0).circle(53.0).extrude(3.0).val()),
+        -guard_offset_y,
         p.driver_axis_z,
     )
     cage = cage.fuse(active_guard)
     for side in (-1, 1):
         cage = cage.fuse(
             _place_pr_disc(
-                cast(
-                    cq.Shape,
-                    cq.Workplane("XY").circle(65.0).circle(62.0).extrude(3.0).val(),
-                ),
+                cast(cq.Shape, cq.Workplane("XY").circle(65.0).circle(62.0).extrude(3.0).val()),
                 side,
-                93.0,
+                guard_offset_x,
                 p.pr_axis_z,
             )
         )
         side_rail = cq.Workplane(
-            "XY",
-            origin=(side * 94.5, 0.0, bottom_z + 5.0),
+            "XY", origin=(side * (guard_offset_x + 1.5), 0.0, bottom_z + 5.0)
         ).box(
             3.0,
             8.0,
-            -186.0 - (bottom_z + 5.0),
+            p.cavity_bottom_z - (bottom_z + 5.0),
             centered=(True, True, False),
         )
         cage = cage.fuse(cast(cq.Shape, side_rail.val()))
 
-    for x, y in ((-72.0, 0.0), (72.0, 0.0), (0.0, -72.0), (0.0, 72.0)):
+    for x, y in cage_fastener_positions(p):
         retention_z = bottom_z + p.bottom_plate_thickness
         boss = cq.Solid.makeCylinder(
             p.boss_outer_diameter / 2.0,
@@ -1018,72 +1137,120 @@ def outer_grille_cage(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.S
             cq.Vector(0.0, 0.0, 1.0),
         )
         if x:
-            target_x = 96.0 if x > 0 else -96.0
-            bridge = cq.Workplane(
-                "XY",
-                origin=((x + target_x) / 2.0, y, retention_z),
-            ).box(
+            target_x = (width / 2.0 - 4.0) * (1.0 if x > 0 else -1.0)
+            bridge = cq.Workplane("XY", origin=((x + target_x) / 2.0, y, retention_z)).box(
                 abs(x - target_x),
                 8.0,
                 ring_height - p.bottom_plate_thickness,
                 centered=(True, True, False),
             )
         else:
-            target_y = center_y + (92.0 if y > 0 else -92.0)
-            bridge = cq.Workplane(
-                "XY",
-                origin=(x, (y + target_y) / 2.0, retention_z),
-            ).box(
+            target_y = center_y + (depth / 2.0 - 4.0) * (1.0 if y > 0 else -1.0)
+            bridge = cq.Workplane("XY", origin=(x, (y + target_y) / 2.0, retention_z)).box(
                 8.0,
                 abs(y - target_y),
                 ring_height - p.bottom_plate_thickness,
                 centered=(True, True, False),
             )
-        insert = cq.Solid.makeCylinder(
-            p.insert_outer_diameter / 2.0,
-            p.insert_depth,
-            cq.Vector(x, y, retention_z),
-            cq.Vector(0.0, 0.0, 1.0),
-        )
-        cage = cage.fuse(boss).fuse(cast(cq.Shape, bridge.val())).cut(insert)
+        cage = cage.fuse(boss).fuse(cast(cq.Shape, bridge.val()))
+        cage = cage.cut(_blind_insert(x, y, retention_z, 1.0, p))
     return cage
+
+
+def support_polygon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> tuple[float, float]:
+    """Half-width and half-depth of the ground contact patch."""
+    p = parameters
+    return (
+        (p.outer_width + p.grille_width_margin) / 2.0 - 1.0,
+        (p.outer_depth + p.grille_depth_margin) / 2.0 - 1.0,
+    )
 
 
 def anti_slip_ring(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """Stretch-fit TPU perimeter foot defining the support polygon."""
-    _ = parameters
-    return rounded_ring(190.0, 182.0, 27.0, 184.0, 176.0, 24.0, 2.0)
-
-
-def _place_active_disc(shape: cq.Shape, inner_face_y: float, axis_z: float) -> cq.Shape:
-    return shape.rotate((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), 90.0).translate(
-        cq.Vector(0.0, inner_face_y, axis_z)
+    p = parameters
+    half_x, half_y = support_polygon(p)
+    return rounded_ring(
+        2.0 * half_x,
+        2.0 * half_y,
+        p.corner_radius + 7.0,
+        2.0 * half_x - 6.0,
+        2.0 * half_y - 6.0,
+        p.corner_radius + 4.0,
+        2.0,
     )
 
 
-def _place_pr_disc(
-    shape: cq.Shape,
+# ---------------------------------------------------------------------- #
+# Component envelopes
+# ---------------------------------------------------------------------- #
+def driver_keepout(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """Conservative ND91-4 envelope: flange, full-diameter basket collar, motor.
+
+    The basket collar is modelled at the manufacturer's recommended cutout
+    diameter for the first 8 mm behind the mounting plane, so any printed
+    feature that intrudes into the cutout is detected rather than passing
+    through an optimistic cone.
+    """
+    p = parameters
+    face_y = -p.outer_depth / 2.0 + p.driver_seat_depth - p.compressed_gasket_thickness
+    inward = (0.0, 1.0, 0.0)
+    face: Vector3 = (0.0, face_y, p.driver_axis_z)
+    flange = _depth_cylinder(
+        p.driver_outer_diameter / 2.0,
+        -p.driver_flange_thickness,
+        p.driver_flange_thickness,
+        face,
+        inward,
+    )
+    collar = _depth_cylinder(p.driver_cutout_diameter / 2.0, 0.0, 8.0, face, inward)
+    remaining = p.driver_depth - p.driver_flange_thickness - 8.0
+    basket = cq.Solid.makeCone(
+        p.driver_cutout_diameter / 2.0,
+        21.0,
+        remaining - 3.0,
+        cq.Vector(*_offset(face, inward, 8.0)),
+        cq.Vector(*inward),
+    )
+    motor = _depth_cylinder(21.0, 8.0 + remaining - 3.0, 3.0, face, inward)
+    return flange.fuse(collar).fuse(basket).fuse(motor)
+
+
+def passive_radiator_keepout(
     side: int,
-    inner_face_x: float,
-    axis_z: float,
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> cq.Shape:
-    return shape.rotate((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), side * 90.0).translate(
-        cq.Vector(side * inner_face_x, 0.0, axis_z)
+    """SB12PACR-00 frame plus full rear/outward excursion and tuning-mass envelope."""
+    if side not in (-1, 1):
+        raise ValueError("side must be -1 or +1")
+    p = parameters
+    face_x = side * (p.outer_width / 2.0 - p.pr_seat_depth + p.compressed_gasket_thickness)
+    inward: Vector3 = (-float(side), 0.0, 0.0)
+    face: Vector3 = (face_x, 0.0, p.pr_axis_z)
+    flange = _depth_cylinder(
+        p.pr_outer_diameter / 2.0, -p.pr_flange_thickness, p.pr_flange_thickness, face, inward
     )
+    basket = _depth_cylinder(p.pr_cutout_diameter / 2.0, 0.0, p.pr_depth, face, inward)
+    rear_excursion = _depth_cylinder(18.0, p.pr_depth, p.pr_rear_excursion, face, inward)
+    outward_excursion = _depth_cylinder(
+        40.0, -p.pr_flange_thickness - p.pr_rear_excursion, p.pr_rear_excursion, face, inward
+    )
+    return flange.fuse(basket).fuse(rear_excursion).fuse(outward_excursion)
 
 
+# ---------------------------------------------------------------------- #
+# Assemblies
+# ---------------------------------------------------------------------- #
 def placed_functional_parts(
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> dict[str, cq.Shape]:
     """Return functional parts and component envelopes in master coordinates."""
     p = parameters
     compressed = replace(p, gasket_thickness=p.compressed_gasket_thickness)
-    pocket_bottom = p.outer_width / 2.0 - p.carrier_recess
-    active_pocket_y = -pocket_bottom
-    active_carrier_inner_y = active_pocket_y - p.compressed_gasket_thickness
-    pr_carrier_inner_x = pocket_bottom + p.compressed_gasket_thickness
+    driver_seat_y = -p.outer_depth / 2.0 + p.driver_seat_depth
+    pr_seat_x = p.outer_width / 2.0 - p.pr_seat_depth
     parts: dict[str, cq.Shape] = {
-        "anti_slip_ring": anti_slip_ring(p).translate(cq.Vector(0.0, -4.0, p.base_bottom_z - 2.0)),
+        "anti_slip_ring": anti_slip_ring(p).translate(cq.Vector(0.0, 0.0, p.base_bottom_z - 2.0)),
         "outer_grille_cage": outer_grille_cage(p),
         "main_cabinet": main_cabinet(p),
         "divider_gasket": divider_gasket(compressed).translate(
@@ -1091,21 +1258,14 @@ def placed_functional_parts(
         ),
         "pressure_divider": pressure_divider(p),
         "electronics_shroud": electronics_shroud(p),
-        "wire_gland": cable_gland(p).translate(cq.Vector(0.0, 48.0, p.divider_bottom_z)),
-        "active_carrier_gasket": _place_active_disc(
-            driver_carrier_gasket(compressed),
-            active_pocket_y,
-            p.driver_axis_z,
-        ),
-        "active_driver_carrier": _place_active_disc(
-            active_driver_carrier(p),
-            active_carrier_inner_y,
-            p.driver_axis_z,
+        "wire_gland": cable_gland(p).translate(
+            cq.Vector(p.cable_passage_x, p.cable_passage_y, p.divider_bottom_z)
         ),
         "active_driver_gasket": _place_active_disc(
-            driver_gasket(compressed),
-            active_carrier_inner_y - p.carrier_thickness,
-            p.driver_axis_z,
+            driver_gasket(compressed), driver_seat_y, p.driver_axis_z
+        ),
+        "active_driver_clamp_ring": _place_active_disc(
+            active_driver_clamp_ring(p), -p.outer_depth / 2.0, p.driver_axis_z
         ),
         "driver_envelope": driver_keepout(p),
         "base_skirt": base_skirt(p),
@@ -1116,26 +1276,17 @@ def placed_functional_parts(
             cq.Vector(0.0, 0.0, p.base_bottom_z + p.bottom_plate_thickness)
         ),
         "ballast_cartridge_lid": ballast_cartridge_lid(p).translate(
-            cq.Vector(0.0, 0.0, p.base_bottom_z + p.bottom_plate_thickness + 11.0)
+            cq.Vector(0.0, 0.0, p.base_bottom_z + p.bottom_plate_thickness + 12.5)
         ),
     }
     for side in (-1, 1):
-        parts[f"pr_{side:+d}_carrier_gasket"] = _place_pr_disc(
-            passive_radiator_carrier_gasket(compressed),
-            side,
-            pocket_bottom,
-            p.pr_axis_z,
+        parts[f"pr_{side:+d}_gasket"] = _place_pr_disc(
+            passive_radiator_gasket(compressed), side, pr_seat_x, p.pr_axis_z
         )
-        parts[f"pr_{side:+d}_carrier"] = _place_pr_disc(
-            passive_radiator_carrier(p),
+        parts[f"pr_{side:+d}_clamp_ring"] = _place_pr_disc(
+            passive_radiator_clamp_ring(p),
             side,
-            pr_carrier_inner_x,
-            p.pr_axis_z,
-        )
-        parts[f"pr_{side:+d}_component_gasket"] = _place_pr_disc(
-            passive_radiator_gasket(compressed),
-            side,
-            pr_carrier_inner_x + p.carrier_thickness,
+            p.outer_width / 2.0 - p.pr_ledge_depth,
             p.pr_axis_z,
         )
         parts[f"pr_{side:+d}_envelope"] = passive_radiator_keepout(side, p)
@@ -1166,87 +1317,13 @@ def functional_assembly(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq
     return assembly
 
 
-def driver_keepout(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Dimensionally conservative ND91-4 envelope derived from its drawing."""
-    p = parameters
-    face_y = -p.outer_depth / 2.0 - (
-        p.carrier_thickness - p.carrier_recess + 2.0 * p.compressed_gasket_thickness
-    )
-    flange = _radial_cylinder(
-        p.driver_outer_diameter / 2.0,
-        5.0,
-        (0.0, face_y, p.driver_axis_z),
-        (0.0, -1.0, 0.0),
-    )
-    basket = cq.Solid.makeCone(
-        44.25,
-        21.0,
-        57.0,
-        cq.Vector(0.0, face_y, p.driver_axis_z),
-        cq.Vector(0.0, 1.0, 0.0),
-    )
-    motor = _radial_cylinder(
-        21.0,
-        p.driver_depth - 57.0,
-        (0.0, face_y + 57.0, p.driver_axis_z),
-        (0.0, 1.0, 0.0),
-    )
-    return flange.fuse(basket).fuse(motor)
-
-
-def passive_radiator_keepout(
-    side: int,
-    parameters: DesignParameters = DEFAULT_PARAMETERS,
-) -> cq.Shape:
-    """SB12PACR-00 basket plus full rear excursion/tuning-mass envelope."""
-    if side not in (-1, 1):
-        raise ValueError("side must be -1 or +1")
-    p = parameters
-    face_x = side * (
-        p.outer_width / 2.0
-        + p.carrier_thickness
-        - p.carrier_recess
-        + 2.0 * p.compressed_gasket_thickness
-    )
-    direction = (-float(side), 0.0, 0.0)
-    flange = _radial_cylinder(
-        p.pr_outer_diameter / 2.0,
-        3.0,
-        (face_x, 0.0, p.pr_axis_z),
-        (float(side), 0.0, 0.0),
-    )
-    basket = _radial_cylinder(
-        p.pr_cutout_diameter / 2.0,
-        p.pr_depth,
-        (face_x, 0.0, p.pr_axis_z),
-        direction,
-    )
-    excursion = _radial_cylinder(
-        18.0,
-        p.pr_rear_excursion,
-        (face_x - side * p.pr_depth, 0.0, p.pr_axis_z),
-        direction,
-    )
-    outward_excursion = _radial_cylinder(
-        40.0,
-        p.pr_rear_excursion,
-        (face_x, 0.0, p.pr_axis_z),
-        (float(side), 0.0, 0.0),
-    )
-    return flange.fuse(basket).fuse(excursion).fuse(outward_excursion)
-
-
 def skeleton_assembly(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Assembly:
-    """Functional Phase-3 assembly, excluding official upper stack and styling."""
+    """Structural skeleton, excluding official upper stack and cosmetic styling."""
     p = parameters
     assembly = cq.Assembly(name="satellite1_ultra_skeleton")
     assembly.add(main_cabinet(p), name="main_cabinet", color=cq.Color(0.15, 0.17, 0.20))
     assembly.add(pressure_divider(p), name="pressure_divider", color=cq.Color(0.25, 0.28, 0.32))
-    assembly.add(
-        driver_keepout(p),
-        name="driver_keepout",
-        color=cq.Color(0.75, 0.35, 0.10, 0.45),
-    )
+    assembly.add(driver_keepout(p), name="driver_keepout", color=cq.Color(0.75, 0.35, 0.10, 0.45))
     for side in (-1, 1):
         assembly.add(
             passive_radiator_keepout(side, p),

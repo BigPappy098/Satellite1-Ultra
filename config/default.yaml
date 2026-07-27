@@ -9,33 +9,56 @@ hardware:
 
 enclosure:
   outer_width: 160.0
-  outer_depth: 160.0
+  outer_depth: 180.0
   corner_radius: 20.0
+  cable_passage_x: 34.0
+  cable_passage_y: 64.0
+  grille_width_margin: 32.0
+  grille_depth_margin: 24.0
   acoustic_top_z: -33.0
   acoustic_bottom_z: -194.0
   base_bottom_z: -216.0
   wall_thickness: 4.0
-  baffle_thickness: 6.0
   divider_thickness: 4.0
   acoustic_floor_thickness: 8.0
   bottom_plate_thickness: 4.0
   print_clearance: 0.30
-  radial_print_clearance: 0.20
-  carrier_recess: 8.0
-  driver_axis_z: -88.0
-  passive_radiator_axis_z: -129.0
+  component_bore_clearance: 0.20
+  brace_rib_width: 5.0
+  brace_rib_depth: 8.0
+  driver_axis_z: -96.0
+  passive_radiator_axis_z: -116.0
+
+component_mounts:
+  # Clamp-ring acoustic component mounts. Fasteners are deliberately outboard
+  # of the component bolt circle so that no fastener feature can break into the
+  # component through-bore; see reports/CLAUDE_TAKEOVER_AUDIT.md finding F-002.
+  clamp_ring_thickness: 5.0
+  clamp_lip: 1.0
+  pad_backing: 3.0
+  driver_clamp_ring_diameter: 118.0
+  driver_clamp_bolt_circle: 112.0
+  driver_pad_diameter: 126.0
+  pr_clamp_ring_diameter: 140.0
+  pr_clamp_bolt_circle: 130.0
+  pr_pad_diameter: 144.0
+  pr_ledge_depth: 5.0
 
 sealing:
   gasket_thickness: 2.0
   target_compression_fraction: 0.25
-  gasket_land_width: 5.0
+  gasket_land_width: 4.0
 
 fasteners:
   primary_size: M3
   primary_pitch: 0.5
   insert_outer_diameter: 4.6
+  insert_bore_diameter: 4.2
   insert_length: 5.7
+  insert_bore_extra: 1.5
   minimum_boss_wall: 2.4
+  clearance_diameter: 3.4
+  head_clearance_diameter: 6.5
 
 acoustics:
   active_driver: dayton_nd91_4
@@ -46,6 +69,10 @@ acoustics:
   target_tuning_hz: 50.0
   leakage_q: 7.0
   damping_volume_fraction: 0.02
+  amplifier_voltage_rms: 10.0
+  amplifier_peak_current_a: 6.0
+  recommended_high_pass_hz: 38.0
+  recommended_high_pass_order: 4
 
 ballast:
   target_mass_g: 1100

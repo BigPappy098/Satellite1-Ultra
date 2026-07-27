@@ -1,19 +1,17 @@
 {
   "status": "PASS",
   "evidence": "VERIFIED_DIGITALLY",
-  "gross_inner_prism_l": 3.5012899010558054,
-  "connected_air_before_damping_l": 2.7041714344908345,
-  "modeled_intrusions_and_components_l": 0.797118466564971,
+  "method": "exact OCCT B-rep volume of the connected air domain",
+  "gross_inner_prism_l": 3.9664099010558056,
+  "connected_air_after_printed_intrusions_l": 3.7440059865867155,
+  "printed_intrusion_l": 0.22240391446908983,
+  "driver_displacement_l": 0.1,
+  "radiator_displacement_l_each": 0.06,
+  "component_displacement_l": 0.22,
+  "air_before_damping_l": 3.5240059865867157,
   "damping_allowance_fraction": 0.02,
-  "damping_displacement_l": 0.05408342868981669,
-  "net_acoustic_volume_l": 2.6500880058010177,
-  "pressure_boundary": [
-    "integral cabinet walls and acoustic floor",
-    "compressed divider gasket",
-    "compressed active-carrier and driver gaskets",
-    "two compressed radiator-carrier and component gaskets",
-    "TPU interference gland around speaker wire"
-  ],
+  "damping_displacement_l": 0.07048011973173432,
+  "net_acoustic_volume_l": 3.453525866854981,
   "physical_gate": {
     "evidence": "REQUIRES_PHYSICAL_VALIDATION",
     "requirement": "Measure water-equivalent or gas-displacement volume on the sealed print."

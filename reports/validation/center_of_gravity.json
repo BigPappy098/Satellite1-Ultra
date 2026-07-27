@@ -1,191 +1,168 @@
 {
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
-  "total_mass_g": 3026.8364109632876,
+  "method": "B-rep volume x material density, plus catalogued component masses",
+  "total_mass_g": 3222.1289345136665,
   "center_of_gravity_mm": {
-    "x": 1.511541158148231e-08,
-    "y": -3.53615749753454,
-    "z": -143.16816283076022
+    "x": 0.001701728145813576,
+    "y": -6.040655221887339,
+    "z": -139.24866543582004
   },
-  "cg_height_above_support_mm": 74.83183716923978,
+  "cg_height_above_support_mm": 78.75133456417996,
   "support_polygon_mm": {
     "x_half": 95.0,
-    "front_y": -95.0,
-    "rear_y": 87.0
+    "y_half": 101.0
   },
   "static_tipping_angles_deg": {
-    "+X": 51.77237026864192,
-    "-X": 51.772370277504685,
-    "+Y": 50.42487614150154,
-    "-Y": 50.711424595698865
+    "+X": 50.342074414920916,
+    "-X": 50.34308295431748,
+    "+Y": 53.65755308678355,
+    "-Y": 50.330528353005086
   },
-  "minimum_tipping_angle_deg": 50.42487614150154,
+  "minimum_tipping_angle_deg": 50.330528353005086,
   "ballast": {
     "material": "three removable 120 x 120 x 3 mm mild-steel plates",
     "mass_g": 1017.3599999999999,
     "three_g_retention_load_n": 29.930680331999994,
     "design_factor_of_safety": 5.0,
-    "retainer_design_load_n": 149.65340166
+    "retainer_design_load_n": 149.65340166,
+    "moisture_containment": "dry plate stack in a closed printed cartridge; no wet casting"
   },
   "mass_elements": [
     {
-      "name": "active_driver_carrier",
-      "mass_g": 18.608093581422747,
-      "x_mm": -5.451587438029482e-13,
-      "y_mm": -76.51166530729486,
-      "z_mm": -88.00000000000004,
+      "name": "active_driver_clamp_ring",
+      "mass_g": 20.655232794760746,
+      "x_mm": -6.121105558404192e-13,
+      "y_mm": -92.3450161441517,
+      "z_mm": -96.00000000000007,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "ballast_cartridge",
-      "mass_g": 59.49571160950544,
-      "x_mm": 3.0914348036834607e-15,
-      "y_mm": 4.0564858799656e-15,
-      "z_mm": -208.64772428803286,
+      "mass_g": 58.072176006882174,
+      "x_mm": -2.090530007262299e-15,
+      "y_mm": 8.311846762341486e-15,
+      "z_mm": -208.0638619390998,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "ballast_cartridge_lid",
-      "mass_g": 61.49913173209899,
-      "x_mm": 9.800372112980645e-16,
-      "y_mm": 9.600394406824436e-16,
-      "z_mm": -199.19418986707618,
+      "mass_g": 55.73268773209902,
+      "x_mm": -4.0089998584827625e-16,
+      "y_mm": -5.928528337684887e-17,
+      "z_mm": -197.69138738234957,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "base_skirt",
-      "mass_g": 128.76209904251843,
-      "x_mm": 1.6509797237877493e-14,
-      "y_mm": 2.622795850344471e-15,
-      "z_mm": -199.57815984287967,
+      "mass_g": 63.14699543913253,
+      "x_mm": -8.116211358162493e-14,
+      "y_mm": -1.33604709793868,
+      "z_mm": -204.42086165657688,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "bottom_service_plate",
-      "mass_g": 96.91506233932498,
-      "x_mm": -2.6509198586417193e-15,
-      "y_mm": 2.193875060377603e-15,
+      "mass_g": 109.87490233932499,
+      "x_mm": 1.2045486838592407e-15,
+      "y_mm": -2.6456332872502085e-15,
       "z_mm": -213.99999999999997,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "electronics_shroud",
-      "mass_g": 66.93530664444718,
-      "x_mm": 2.82728183526728e-08,
-      "y_mm": -0.9696494955369348,
-      "z_mm": -14.354469156013252,
+      "mass_g": 65.0152744761535,
+      "x_mm": -4.574876446271986e-08,
+      "y_mm": -0.6778848579734665,
+      "z_mm": -14.880463158921074,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "main_cabinet",
-      "mass_g": 513.4686625937596,
-      "x_mm": 8.54180771363138e-08,
-      "y_mm": 7.6137841699556486,
-      "z_mm": -140.4279249041451,
+      "mass_g": 726.7106475444008,
+      "x_mm": 1.7283412189043284e-08,
+      "y_mm": 4.191390656252253,
+      "z_mm": -135.96105624777118,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "outer_grille_cage",
-      "mass_g": 63.53462017553664,
-      "x_mm": -1.0650211555366552e-12,
-      "y_mm": -12.405390133656393,
-      "z_mm": -128.60133783002885,
+      "mass_g": 66.35168702637584,
+      "x_mm": -4.730886098636285e-13,
+      "y_mm": -10.673048897185142,
+      "z_mm": -128.0538811503342,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
-      "name": "pr_+1_carrier",
-      "mass_g": 29.42378357231478,
-      "x_mm": 76.51570575654965,
-      "y_mm": -7.028204150135096e-15,
-      "z_mm": -128.99999999999935,
+      "name": "pr_+1_clamp_ring",
+      "mass_g": 28.055113546940646,
+      "x_mm": 77.36427030913008,
+      "y_mm": -7.42554015669957e-15,
+      "z_mm": -115.9999999999991,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
-      "name": "pr_-1_carrier",
-      "mass_g": 29.423783572314772,
-      "x_mm": -76.51570575654968,
-      "y_mm": -1.3446608234302591e-14,
-      "z_mm": -129.0000000000006,
+      "name": "pr_-1_clamp_ring",
+      "mass_g": 28.055113546940657,
+      "x_mm": -77.36427030913009,
+      "y_mm": -8.46744813879255e-15,
+      "z_mm": -116.00000000000065,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "pressure_divider",
-      "mass_g": 115.2266643946501,
-      "x_mm": -6.093335610723839e-15,
-      "y_mm": -0.08961936692610876,
-      "z_mm": -28.823237151015483,
-      "basis": "ENGINEERING_ESTIMATE"
-    },
-    {
-      "name": "active_carrier_gasket",
-      "mass_g": 0.6400975923340374,
-      "x_mm": -5.427363621896269e-13,
-      "y_mm": -72.75000000000003,
-      "z_mm": -87.99999999999997,
+      "mass_g": 159.23324285885863,
+      "x_mm": -0.04593659512219411,
+      "y_mm": -0.0864688849359564,
+      "z_mm": -26.638807828143875,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "active_driver_gasket",
-      "mass_g": 0.46095141285573404,
-      "x_mm": -7.499682754027807e-13,
-      "y_mm": -80.25000000000003,
-      "z_mm": -88.00000000000006,
+      "mass_g": 0.4180271907205872,
+      "x_mm": -9.033436306503937e-13,
+      "y_mm": -85.24999999999999,
+      "z_mm": -96.00000000000003,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "divider_gasket",
-      "mass_g": 0.2565601214646115,
-      "x_mm": -5.334053091578058e-13,
-      "y_mm": -4.305461545258177e-14,
-      "z_mm": -32.249999999999766,
+      "mass_g": 0.4273407014822318,
+      "x_mm": 2.394299293153303e-16,
+      "y_mm": 7.66175773809057e-15,
+      "z_mm": -32.249999999999986,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
-      "name": "pr_+1_carrier_gasket",
-      "mass_g": 1.006106828284583,
-      "x_mm": 72.74999999999994,
-      "y_mm": -9.423931931909008e-15,
-      "z_mm": -128.99999999999943,
+      "name": "pr_+1_gasket",
+      "mass_g": 0.7004471418498901,
+      "x_mm": 69.25000000000001,
+      "y_mm": -1.79621934486434e-14,
+      "z_mm": -115.99999999999918,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
-      "name": "pr_+1_component_gasket",
-      "mass_g": 0.7410349481379439,
-      "x_mm": 80.24999999999996,
-      "y_mm": -4.694538689467946e-15,
-      "z_mm": -128.99999999999935,
-      "basis": "ENGINEERING_ESTIMATE"
-    },
-    {
-      "name": "pr_-1_carrier_gasket",
-      "mass_g": 1.0061068282845829,
-      "x_mm": -72.74999999999993,
-      "y_mm": -8.779850253109475e-15,
-      "z_mm": -129.00000000000054,
-      "basis": "ENGINEERING_ESTIMATE"
-    },
-    {
-      "name": "pr_-1_component_gasket",
-      "mass_g": 0.7410349481379436,
-      "x_mm": -80.24999999999999,
-      "y_mm": -6.857708477752199e-15,
-      "z_mm": -129.00000000000063,
+      "name": "pr_-1_gasket",
+      "mass_g": 0.7004471418498894,
+      "x_mm": -69.25,
+      "y_mm": -1.7034813507662328e-14,
+      "z_mm": -116.00000000000077,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "anti_slip_ring",
-      "mass_g": 4.955192822398178,
-      "x_mm": 3.942519876477305e-14,
-      "y_mm": -3.999999999999971,
-      "z_mm": -216.99999999999983,
+      "mass_g": 5.243192822398165,
+      "x_mm": -2.268882931097076e-14,
+      "y_mm": 8.659222929691593e-14,
+      "z_mm": -217.00000000000028,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "wire_gland",
-      "mass_g": 0.3764062034965701,
-      "x_mm": -6.313652999564524e-16,
-      "y_mm": 47.04408111062581,
-      "z_mm": -27.924777948657205,
+      "mass_g": 0.37640620349657056,
+      "x_mm": 34.0,
+      "y_mm": 63.044081110625825,
+      "z_mm": -27.92477794865721,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
@@ -200,24 +177,24 @@
       "name": "Dayton ND91-4",
       "mass_g": 250.0,
       "x_mm": 0,
-      "y_mm": -48.0,
-      "z_mm": -88.0,
+      "y_mm": -78.0,
+      "z_mm": -96.0,
       "basis": "DERIVED_FROM_MANUFACTURER_DRAWING"
     },
     {
       "name": "left SB12PACR-00",
       "mass_g": 78.0,
-      "x_mm": -60.0,
+      "x_mm": -70.0,
       "y_mm": 0,
-      "z_mm": -129.0,
+      "z_mm": -116.0,
       "basis": "DERIVED_FROM_MANUFACTURER_DRAWING"
     },
     {
       "name": "right SB12PACR-00",
       "mass_g": 78.0,
-      "x_mm": 60.0,
+      "x_mm": 70.0,
       "y_mm": 0,
-      "z_mm": -129.0,
+      "z_mm": -116.0,
       "basis": "DERIVED_FROM_MANUFACTURER_DRAWING"
     },
     {

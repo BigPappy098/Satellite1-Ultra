@@ -39,6 +39,10 @@ active_drivers:
     mounting_hole_diameter_mm: 4.0
     mounting_holes: 4
     depth_mm: 62.9
+    flange_thickness_mm: 3.0
+    flange_thickness_evidence: ENGINEERING_ESTIMATE
+    flange_thickness_note: Not dimensioned on the published drawing; verify on coupon_active_driver before printing the cabinet.
+    vd_cm3: 12.2
     displacement_l: 0.10
     price_usd: 36.99
     source: references/manufacturer/Dayton_ND91-4_spec_2026-02-26.pdf
@@ -102,6 +106,8 @@ active_drivers:
     mounting_hole_diameter_mm: 4.0
     mounting_holes: 4
     depth_mm: 40.0
+    flange_thickness_mm: 3.0
+    flange_thickness_evidence: ENGINEERING_ESTIMATE
     displacement_l: 0.09
     price_usd: 45.0
     source: references/manufacturer/Tectonic_TEBM65C20F-4_rev1.2.pdf
@@ -251,6 +257,9 @@ passive_radiators:
     mounting_hole_diameter_mm: 4.3
     mounting_holes: 4
     depth_mm: 38.3
+    flange_thickness_mm: 4.0
+    flange_thickness_evidence: ENGINEERING_ESTIMATE
+    flange_thickness_note: Not dimensioned on the published drawing; verify on coupon_passive_radiator before printing the cabinet.
     displacement_l_estimate: 0.06
     adjustable_mass_thread: M6
     price_usd_each: 45.0
@@ -274,6 +283,8 @@ passive_radiators:
     mounting_hole_diameter_mm: 4.0
     mounting_holes: 4
     depth_mm: 55.1
+    flange_thickness_mm: 4.0
+    flange_thickness_evidence: ENGINEERING_ESTIMATE
     displacement_l_estimate: 0.07
     adjustable_mass_thread: threaded_post
     price_usd_each: 25.0

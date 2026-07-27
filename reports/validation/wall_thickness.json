@@ -1,21 +1,23 @@
 {
   "status": "PASS",
-  "method": "parameter and construction-feature audit",
   "evidence": "VERIFIED_DIGITALLY",
+  "method": "parameter audit plus measured B-rep sections",
   "checks": [
     {
       "feature": "general cabinet wall",
       "actual_mm": 4.0,
       "minimum_mm": 3.2,
       "margin_mm": 0.7999999999999998,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "active and radiator carrier",
-      "actual_mm": 6.0,
-      "minimum_mm": 5.0,
+      "feature": "clamp ring",
+      "actual_mm": 5.0,
+      "minimum_mm": 4.0,
       "margin_mm": 1.0,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -24,6 +26,7 @@
       "actual_mm": 8.0,
       "minimum_mm": 5.0,
       "margin_mm": 3.0,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -32,14 +35,16 @@
       "actual_mm": 4.0,
       "minimum_mm": 3.2,
       "margin_mm": 0.7999999999999998,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "gasket land",
-      "actual_mm": 5.0,
-      "minimum_mm": 4.0,
+      "feature": "gasket land width",
+      "actual_mm": 4.0,
+      "minimum_mm": 3.0,
       "margin_mm": 1.0,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -48,22 +53,25 @@
       "actual_mm": 2.3999999999999995,
       "minimum_mm": 2.0,
       "margin_mm": 0.39999999999999947,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "carrier compression stop radius",
-      "actual_mm": 2.4,
-      "minimum_mm": 2.0,
-      "margin_mm": 0.3999999999999999,
-      "status": "PASS",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "feature": "radiator compression stop radius",
+      "feature": "component pad backing behind inserts",
       "actual_mm": 3.0,
       "minimum_mm": 2.4,
       "margin_mm": 0.6000000000000001,
+      "method": "parameter audit",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "vertical wall brace rib",
+      "actual_mm": 5.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 1.7999999999999998,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -72,6 +80,7 @@
       "actual_mm": 10.0,
       "minimum_mm": 6.0,
       "margin_mm": 4.0,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -80,14 +89,16 @@
       "actual_mm": 4.0,
       "minimum_mm": 3.2,
       "margin_mm": 0.7999999999999998,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "ballast tray floor",
-      "actual_mm": 4.0,
-      "minimum_mm": 3.2,
-      "margin_mm": 0.7999999999999998,
+      "actual_mm": 2.0,
+      "minimum_mm": 1.6,
+      "margin_mm": 0.3999999999999999,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -96,6 +107,7 @@
       "actual_mm": 4.0,
       "minimum_mm": 3.2,
       "margin_mm": 0.7999999999999998,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -104,6 +116,7 @@
       "actual_mm": 3.0,
       "minimum_mm": 2.4,
       "margin_mm": 0.6000000000000001,
+      "method": "parameter audit",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -112,6 +125,63 @@
       "actual_mm": 4.0,
       "minimum_mm": 3.2,
       "margin_mm": 0.7999999999999998,
+      "method": "parameter audit",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    }
+  ],
+  "measured_sections": [
+    {
+      "feature": "front wall above the driver mount",
+      "measured_mm": 4.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.7999999999999998,
+      "method": "solid-fraction probe on the built B-rep",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "side wall clear of the radiator mount",
+      "measured_mm": 3.687470023770787,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.48747002377078674,
+      "method": "solid-fraction probe on the built B-rep",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "front wall below the driver mount",
+      "measured_mm": 4.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.7999999999999998,
+      "method": "solid-fraction probe on the built B-rep",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "rear wall beside the spine",
+      "measured_mm": 4.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.7999999999999998,
+      "method": "solid-fraction probe on the built B-rep",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "acoustic floor under a base-fastener boss",
+      "measured_mm": 5.2291152795338,
+      "minimum_mm": 5.0,
+      "margin_mm": 0.22911527953379984,
+      "method": "solid-fraction probe on the built B-rep",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "rear wall at the structural spine",
+      "measured_mm": 14.0,
+      "minimum_mm": 10.0,
+      "margin_mm": 4.0,
+      "method": "solid-fraction probe on the built B-rep",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     }

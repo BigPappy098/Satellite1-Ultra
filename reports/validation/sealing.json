@@ -1,0 +1,109 @@
+{
+  "status": "PASS",
+  "evidence": "VERIFIED_DIGITALLY",
+  "method": "solid-fraction probes on the authoritative B-rep",
+  "pressure_boundary": [
+    "integral cabinet walls, acoustic floor and component mounting pads",
+    "compressed 2 mm EPDM divider gasket on a continuous 4 mm rim land",
+    "compressed 2 mm EPDM active-driver gasket on a continuous seat land",
+    "two compressed 2 mm EPDM radiator gaskets on continuous seat lands",
+    "TPU interference gland around the speaker-wire pair",
+    "all cabinet fasteners are blind heat-set inserts; none crosses the boundary"
+  ],
+  "checks": [
+    {
+      "feature": "active_driver: gasket-land annulus continuity behind the seat",
+      "measured_solid_fraction": 0.9999999999999993,
+      "minimum_solid_fraction": 1.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY",
+      "note": "A fraction below 1.0 means a radial path bypasses the component gasket and vents the chamber to ambient."
+    },
+    {
+      "feature": "active_driver: seat sidewall is solid over the full seat depth",
+      "measured_solid_fraction": 1.0,
+      "minimum_solid_fraction": 0.999999,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "active_driver: clamp inserts are blind, backed by pad material",
+      "measured_solid_fraction": 1.0,
+      "minimum_solid_fraction": 0.999999,
+      "backing_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr_-1: gasket-land annulus continuity behind the seat",
+      "measured_solid_fraction": 0.9999999999999979,
+      "minimum_solid_fraction": 1.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY",
+      "note": "A fraction below 1.0 means a radial path bypasses the component gasket and vents the chamber to ambient."
+    },
+    {
+      "feature": "pr_-1: seat sidewall is solid over the full seat depth",
+      "measured_solid_fraction": 1.0,
+      "minimum_solid_fraction": 0.999999,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr_-1: clamp inserts are blind, backed by pad material",
+      "measured_solid_fraction": 1.0,
+      "minimum_solid_fraction": 0.999999,
+      "backing_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr_+1: gasket-land annulus continuity behind the seat",
+      "measured_solid_fraction": 0.9999999999999987,
+      "minimum_solid_fraction": 1.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY",
+      "note": "A fraction below 1.0 means a radial path bypasses the component gasket and vents the chamber to ambient."
+    },
+    {
+      "feature": "pr_+1: seat sidewall is solid over the full seat depth",
+      "measured_solid_fraction": 1.0000000000000115,
+      "minimum_solid_fraction": 0.999999,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr_+1: clamp inserts are blind, backed by pad material",
+      "measured_solid_fraction": 1.0,
+      "minimum_solid_fraction": 0.999999,
+      "backing_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "divider gasket land is a continuous closed rim",
+      "measured_solid_fraction": 0.9999999999999948,
+      "minimum_solid_fraction": 0.999999,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "divider fastener inserts are blind inside the chamber",
+      "measured_solid_fraction": 1.0,
+      "minimum_solid_fraction": 0.999999,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "base-skirt inserts are blind below the acoustic floor",
+      "measured_solid_fraction": 1.0,
+      "minimum_solid_fraction": 0.999999,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    }
+  ],
+  "physical_gate": {
+    "evidence": "REQUIRES_PHYSICAL_VALIDATION",
+    "requirement": "Pressure-decay test the sealed cabinet: pressurise to 1 kPa and record decay over 60 s; target leakage Q >= 7."
+  }
+}

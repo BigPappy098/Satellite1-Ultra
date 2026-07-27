@@ -22,7 +22,7 @@ from satellite1_ultra.coupons import COUPONS
 from satellite1_ultra.geometry import (
     DEFAULT_PARAMETERS,
     DesignParameters,
-    active_driver_carrier,
+    active_driver_clamp_ring,
     anti_slip_ring,
     ballast_cartridge,
     ballast_cartridge_lid,
@@ -30,13 +30,11 @@ from satellite1_ultra.geometry import (
     bottom_service_plate,
     cable_gland,
     divider_gasket,
-    driver_carrier_gasket,
     driver_gasket,
     electronics_shroud,
     main_cabinet,
     outer_grille_cage,
-    passive_radiator_carrier,
-    passive_radiator_carrier_gasket,
+    passive_radiator_clamp_ring,
     passive_radiator_gasket,
     pressure_divider,
 )
@@ -65,16 +63,14 @@ PARTS: dict[str, PartDefinition] = {
     "main_cabinet": PartDefinition(main_cabinet, 1, "ASA", "upright, acoustic floor on bed"),
     "pressure_divider": PartDefinition(pressure_divider, 1, "ASA", "flat, acoustic face on bed"),
     "electronics_shroud": PartDefinition(electronics_shroud, 1, "ASA", "wide divider end on bed"),
-    "active_driver_carrier": PartDefinition(active_driver_carrier, 1, "ASA", "flat"),
-    "passive_radiator_carrier": PartDefinition(passive_radiator_carrier, 2, "ASA", "flat"),
+    "active_driver_clamp_ring": PartDefinition(
+        active_driver_clamp_ring, 1, "ASA", "lip face up, flat on bed"
+    ),
+    "passive_radiator_clamp_ring": PartDefinition(
+        passive_radiator_clamp_ring, 2, "ASA", "lip face up, flat on bed"
+    ),
     "divider_gasket": PartDefinition(divider_gasket, 1, "2 mm closed-cell EPDM", "flat"),
-    "driver_carrier_gasket": PartDefinition(
-        driver_carrier_gasket, 1, "2 mm closed-cell EPDM", "flat"
-    ),
     "driver_gasket": PartDefinition(driver_gasket, 1, "2 mm closed-cell EPDM", "flat"),
-    "passive_radiator_carrier_gasket": PartDefinition(
-        passive_radiator_carrier_gasket, 2, "2 mm closed-cell EPDM", "flat"
-    ),
     "passive_radiator_gasket": PartDefinition(
         passive_radiator_gasket, 2, "2 mm closed-cell EPDM", "flat"
     ),

@@ -1,51 +1,69 @@
 {
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
+  "assumed_printed_dimensional_tolerance_mm": 0.15,
   "stacks": [
     {
       "interface": "divider gasket closure",
-      "nominal_gap_mm": 1.5,
-      "part_tolerance_mm": 0.15,
-      "gasket_tolerance_mm": 0.2,
-      "worst_compression_fraction": 0.425,
+      "nominal_compression_mm": 0.5,
+      "worst_compression_fraction": 0.42500000000000004,
       "limit": "15-45% compression",
       "status": "PASS",
-      "evidence": "ENGINEERING_ESTIMATE"
+      "evidence": "ENGINEERING_ESTIMATE",
+      "part_tolerance_mm": 0.15
     },
     {
-      "interface": "component carrier radial fit",
+      "interface": "component gasket closure at the clamp-ring hard stop",
+      "nominal_compression_mm": 0.5,
+      "worst_compression_fraction": 0.42500000000000004,
+      "limit": "15-45% compression",
+      "status": "PASS",
+      "evidence": "ENGINEERING_ESTIMATE",
+      "part_tolerance_mm": 0.15
+    },
+    {
+      "interface": "clamp ring radial fit in the cabinet seat",
       "nominal_radial_clearance_mm": 0.3,
-      "part_tolerance_mm": 0.15,
       "worst_remaining_clearance_mm": 0.15,
       "limit": "non-negative after coupon correction",
       "status": "PASS",
-      "evidence": "ENGINEERING_ESTIMATE"
+      "evidence": "ENGINEERING_ESTIMATE",
+      "part_tolerance_mm": 0.15
     },
     {
       "interface": "M3 insert boss wall",
       "nominal_wall_mm": 2.3999999999999995,
-      "part_tolerance_mm": 0.15,
       "worst_wall_mm": 2.2499999999999996,
-      "limit": "\u22652.0 mm",
+      "limit": ">= 2.0 mm",
       "status": "PASS",
-      "evidence": "ENGINEERING_ESTIMATE"
+      "evidence": "ENGINEERING_ESTIMATE",
+      "part_tolerance_mm": 0.15
     },
     {
-      "interface": "official four-point mount",
+      "interface": "insert land between clamp bore and component seat",
+      "nominal_land_mm": 2.0,
+      "worst_land_mm": 1.7,
+      "limit": ">= 1.2 mm",
+      "status": "PASS",
+      "evidence": "ENGINEERING_ESTIMATE",
+      "part_tolerance_mm": 0.15
+    },
+    {
+      "interface": "official four-point mount position",
       "nominal_position_mm": [
         45.0534,
         31.5467
       ],
-      "hole_radial_allowance_mm": 0.3,
-      "position_tolerance_mm": 0.15,
-      "limit": "coupon must assemble by hand without force",
+      "worst_position_error_mm": 0.15,
+      "limit": "<= 0.20 mm; coupon must assemble by hand",
       "status": "PASS",
-      "evidence": "ENGINEERING_ESTIMATE"
+      "evidence": "ENGINEERING_ESTIMATE",
+      "part_tolerance_mm": 0.15
     }
   ],
   "compensation_file": "config/physical_compensation.yaml",
   "physical_gate": {
     "evidence": "REQUIRES_PHYSICAL_VALIDATION",
-    "requirement": "Populate compensation values from the seven fit coupons before full printing."
+    "requirement": "Populate compensation values from the eight fit coupons before full printing."
   }
 }
