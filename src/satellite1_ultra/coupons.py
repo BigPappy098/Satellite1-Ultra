@@ -8,7 +8,6 @@ from typing import cast
 import cadquery as cq
 
 from satellite1_ultra.geometry import DEFAULT_PARAMETERS, DesignParameters, rounded_prism
-from satellite1_ultra.official import SPEAKER_CHAMBER_25W, load_part
 
 
 def official_interface_coupon(
@@ -29,21 +28,6 @@ def official_interface_coupon(
             )
             coupon = coupon.cut(hole)
     return coupon
-
-
-def threaded_interface_coupon(
-    parameters: DesignParameters = DEFAULT_PARAMETERS,
-) -> cq.Shape:
-    """Exact official chamber-top engagement band, derived without redrawing."""
-    _ = parameters
-    chamber = load_part(SPEAKER_CHAMBER_25W)
-    clip = cq.Workplane("XY", origin=(0.0, 0.0, -20.0)).box(
-        120.0,
-        120.0,
-        20.0,
-        centered=(True, True, False),
-    )
-    return chamber.intersect(cast(cq.Shape, clip.val()))
 
 
 def _component_seat_coupon(
@@ -204,9 +188,14 @@ def cable_passage_coupon(
     )
 
 
+#: The official threaded mid-plate/lock-ring interface is deliberately absent
+#: from this set. This design does not reproduce it: the official threaded
+#: mid-plate, lock ring and top plate are printed from the unmodified official
+#: files, so their thread fit is a property of the official geometry rather
+#: than of anything derived here. The interface this design *does* derive is
+#: the official four-point mount, covered by coupon_official_interface.
 COUPONS = {
     "coupon_official_interface": official_interface_coupon,
-    "coupon_threaded_interface": threaded_interface_coupon,
     "coupon_active_driver": active_driver_coupon,
     "coupon_passive_radiator": passive_radiator_coupon,
     "coupon_heat_set_insert": heat_set_insert_coupon,

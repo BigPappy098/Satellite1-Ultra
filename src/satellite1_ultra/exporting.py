@@ -33,7 +33,7 @@ from satellite1_ultra.geometry import (
     driver_gasket,
     electronics_shroud,
     main_cabinet,
-    outer_grille_cage,
+    outer_shell,
     passive_radiator_clamp_ring,
     passive_radiator_gasket,
     pressure_divider,
@@ -53,13 +53,14 @@ class PartDefinition:
     material: str
     print_orientation: str
     evidence_label: str = "VERIFIED_DIGITALLY"
+    #: Linear/angular tessellation tolerances for the derived mesh outputs.
+    mesh_tolerance: float = 0.02
+    mesh_angular_tolerance: float = 0.10
 
 
 PARTS: dict[str, PartDefinition] = {
     "anti_slip_ring": PartDefinition(anti_slip_ring, 1, "TPU 95A", "flat"),
-    "outer_grille_cage": PartDefinition(
-        outer_grille_cage, 1, "ASA", "upright, bottom retention ring on bed"
-    ),
+    "outer_shell": PartDefinition(outer_shell, 1, "ASA", "upright, base band on the bed"),
     "main_cabinet": PartDefinition(main_cabinet, 1, "ASA", "upright, acoustic floor on bed"),
     "pressure_divider": PartDefinition(pressure_divider, 1, "ASA", "flat, acoustic face on bed"),
     "electronics_shroud": PartDefinition(electronics_shroud, 1, "ASA", "wide divider end on bed"),
@@ -86,11 +87,7 @@ for coupon_name, coupon_builder in COUPONS.items():
         1,
         "ASA",
         "largest flat face on bed",
-        (
-            "DERIVED_FROM_OFFICIAL_CAD"
-            if coupon_name == "coupon_threaded_interface"
-            else "VERIFIED_DIGITALLY"
-        ),
+        "VERIFIED_DIGITALLY",
     )
 
 
@@ -265,8 +262,8 @@ def export_parts(
             oriented,
             str(stl_path),
             exportType="STL",
-            tolerance=0.02,
-            angularTolerance=0.10,
+            tolerance=definition.mesh_tolerance,
+            angularTolerance=definition.mesh_angular_tolerance,
         )
         stl_mesh = trimesh.load_mesh(stl_path, process=False)
         stl_mesh.merge_vertices()

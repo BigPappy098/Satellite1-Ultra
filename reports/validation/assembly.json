@@ -12,18 +12,20 @@
     "route the speaker pair through the divider and fit the TPU gland",
     "fit the divider gasket and bolt the pressure divider to the cabinet",
     "bolt the base skirt up into the acoustic floor",
-    "connect the boards and bolt the electronics shroud to the divider",
+    "lower the outer shell over the cabinet",
     "seat the ballast cartridge and close the bottom service plate",
+    "connect the boards and bolt the electronics shroud to the divider",
+    "invert and bolt the outer shell to the bottom service plate",
     "seat the official mid-plate and upper stack on the divider bosses",
-    "slide on the grille cage and bolt it to the service plate",
     "stretch the TPU anti-slip ring onto the base"
   ],
   "disassembly_order": [
     "stretch the TPU anti-slip ring onto the base",
-    "slide on the grille cage and bolt it to the service plate",
     "seat the official mid-plate and upper stack on the divider bosses",
-    "seat the ballast cartridge and close the bottom service plate",
+    "invert and bolt the outer shell to the bottom service plate",
     "connect the boards and bolt the electronics shroud to the divider",
+    "seat the ballast cartridge and close the bottom service plate",
+    "lower the outer shell over the cabinet",
     "bolt the base skirt up into the acoustic floor",
     "fit the divider gasket and bolt the pressure divider to the cabinet",
     "route the speaker pair through the divider and fit the TPU gland",
@@ -114,7 +116,15 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "step": "slide on the grille cage and bolt it to the service plate",
+      "step": "lower the outer shell over the cabinet",
+      "insertion_direction": "-Z",
+      "removal_direction": "reverse of -Z",
+      "tool": "hand",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "invert and bolt the outer shell to the bottom service plate",
       "insertion_direction": "+Z",
       "removal_direction": "reverse of +Z",
       "tool": "2.0 mm hex key",
@@ -135,7 +145,8 @@
       "task": "replace the active driver",
       "remove": [
         "anti_slip_ring",
-        "outer_grille_cage",
+        "bottom_service_plate",
+        "outer_shell",
         "active_driver_clamp_ring"
       ],
       "tool": "2.0 mm hex key",
@@ -148,7 +159,8 @@
       "task": "replace a passive radiator or retune its added mass",
       "remove": [
         "anti_slip_ring",
-        "outer_grille_cage",
+        "bottom_service_plate",
+        "outer_shell",
         "passive_radiator_clamp_ring"
       ],
       "tool": "2.0 mm hex key",
@@ -173,7 +185,6 @@
       "task": "change the ballast mass",
       "remove": [
         "anti_slip_ring",
-        "outer_grille_cage",
         "bottom_service_plate"
       ],
       "tool": "2.0 mm hex key",
@@ -186,7 +197,8 @@
       "task": "replace any gasket",
       "remove": [
         "anti_slip_ring",
-        "outer_grille_cage",
+        "bottom_service_plate",
+        "outer_shell",
         "clamp ring or pressure divider"
       ],
       "tool": "2.0 mm hex key",

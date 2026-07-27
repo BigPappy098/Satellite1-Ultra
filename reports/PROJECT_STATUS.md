@@ -3,82 +3,95 @@
 ## Status
 
 - Project: Satellite1 Ultra
-- Branch: `codex/bootstrap`
+- Branch: `claude/codex-takeover`
 - Release state: `IN_DEVELOPMENT`
 - Physical validation state: `NOT_PERFORMED`
 - Last updated: 2026-07-27
 
 ## Active phase
 
-Phase 5 — quantitative validation. The complete serviceable functional part set
-and removable industrial-design cage are modeled; exact B-rep volume, tolerance,
-fastener, wall, stability, and release-export gates are now being generated.
+Phase 7 complete, Phase 8 in progress. The functional design is validated, the
+industrial-design shell is in place, and the full manufacturing package
+generates from one command. What remains before `DIGITAL_PROTOTYPE_READY` can
+be claimed is listed under *Open work*.
 
-## Completed evidence
+## Phase completion
 
-- `VERIFIED_DIGITALLY`: Python 3.12, CadQuery 2.6.1, and cadquery-ocp
-  7.8.1.1.post1 environment builds from the hashed lock file.
-- `VERIFIED_DIGITALLY`: STEP export/reopen bootstrap round trip preserved exact
-  10 x 20 x 30 mm bounds and 6000 mm³ volume.
-- `DERIVED_FROM_OFFICIAL_CAD`: all 25 FutureProofHomes organization repositories
-  inventoried; 11 relevant repositories pinned and cloned.
-- `DERIVED_FROM_OFFICIAL_CAD`: 126 official CAD/manufacturing assets preserved
-  byte-for-byte with repository, commit, path, license, retrieval date, size,
-  and SHA-256 provenance.
-- `VERIFIED_DIGITALLY`: all 57 preserved official STEP files imported through
-  CadQuery/OCCT with finite bounds, positive volume, and no import failures.
-- `VERIFIED_DIGITALLY`: the selected official mid-plate independently imports
-  through Gmsh's separate OpenCascade reader.
-- `DERIVED_FROM_OFFICIAL_CAD`: public Batch 1 selected for the original Squircle
-  development-kit baseline; Batch 2 is explicit alternate-adapter work.
-- `DERIVED_FROM_OFFICIAL_CAD`: official top plate, buttons/diffuser, PCB spacer,
-  lock ring, mid-plate, threaded mid-plate, and board geometry are reused.
-- `DERIVED_FROM_MANUFACTURER_DRAWING`: Dayton ND91-4 selected as active driver,
-  Tectonic TEBM65C20F-4 as fallback, two opposed SB12PACR-00 radiators selected,
-  and two DMA105-PR radiators defined as fallback.
-- `ENGINEERING_ESTIMATE`: preliminary 3.2 L / 50 Hz model calls for 30.80 g
-  moving mass per SB radiator, 11.60 g above published Mms. Simulation outputs
-  and volume/leak/mass sensitivity plots are generated.
-- `VERIFIED_DIGITALLY`: all 17 functional manufactured parts and seven fit
-  coupons are valid single B-rep solids and fit the 256 mm build envelope.
-- `VERIFIED_DIGITALLY`: the sealed functional assembly has no unclassified
-  volumetric collisions; the sole interference is the intentional TPU wire
-  gland compression in the pressure divider.
-- `VERIFIED_DIGITALLY`: the vented electronics shroud clears every selected
-  official upper-stack solid, including the public Batch 1 HAT assembly.
-- `VERIFIED_DIGITALLY`: the active-driver and opposed-radiator envelopes clear
-  one another, the acoustic floor, the pressure divider, and the protective
-  grille cage at full modeled mechanical excursion.
-- `ENGINEERING_ESTIMATE`: a removable 120 × 120 × 9 mm steel-plate ballast
-  stack provides approximately 1.02 kg low in the base without exposing
-  electronics to wet casting material.
+| Phase | State | Note |
+|---|---|---|
+| 0 — Bootstrap | complete | Inherited and verified; `make release` now actually runs the pipeline it claimed to |
+| 1 — Official reference research | complete | Inherited; datum and mount pattern re-derived from the official B-rep by test rather than asserted |
+| 2 — Component and acoustic research | complete | Driver selection verified and upheld; the alignment was wrong and is now derived by an optimiser |
+| 3 — Mechanical skeleton | complete | Rebuilt: clamp-ring mounts, internal pads, bracing |
+| 4 — Functional mechanical design | complete | 15 manufactured parts plus 7 fit coupons |
+| 5 — Validation | complete | Eleven gates, all PASS; 13 mutations, all detected |
+| 6 — Industrial design | complete | Slotted outer shell, cosmetic shoulder, two controlled concentric seams |
+| 7 — Manufacturing package | complete | STEP/STL/3MF, assemblies, drawings, BOM, schedules, guides, PDF manual |
+| 8 — Digital prototype readiness | in progress | See *Open work* |
 
-## Open work
+## Verified evidence
 
-- Replace preliminary acoustic volume with exact final B-rep-derived net volume
-  and regenerate the passive-radiator tuning analysis.
-- Complete tolerance, wall-thickness, screw/tool-access, stability, export, mesh,
-  drawing, render, documentation, and packaging gates.
-- Add the Batch 2 external-antenna/USB-C service adapter.
+- `VERIFIED_DIGITALLY`: Python 3.12, CadQuery 2.6.1 and cadquery-ocp 7.8.1.1
+  build from the hashed lock file; STEP export/reopen round trip is exact.
+- `DERIVED_FROM_OFFICIAL_CAD`: 126 official assets preserved byte-for-byte with
+  repository, commit, path, license, retrieval date, size and SHA-256; every
+  checksum re-verified.
+- `DERIVED_FROM_OFFICIAL_CAD`: the master datum, the official interface plane
+  (Z = -6.8 mm) and the four-point mount pattern (±45.0534, ±31.5467) are each
+  *measured* from the preserved official B-rep by a test, not asserted.
+- `VERIFIED_DIGITALLY`: all 22 exported parts are single valid B-rep solids,
+  fit the 256 mm build envelope, round-trip through STEP with exact volume and
+  bounds, and produce watertight single-component STL and 3MF meshes.
+- `VERIFIED_DIGITALLY`: the acoustic pressure boundary is continuous. Every
+  gasket land measures a solid fraction of 1.000000, every insert bore in the
+  boundary is blind and backed, and no fastener crosses the boundary.
+- `VERIFIED_DIGITALLY`: the functional assembly has exactly one classified
+  interference — the intended TPU wire-gland compression. Every printed part
+  clears every official upper-stack solid and the conservative envelope of the
+  official HAT.
+- `VERIFIED_DIGITALLY`: net acoustic volume is 3.447 L, computed as the exact
+  OCCT volume of the connected air domain after 0.229 L of printed intrusion.
+- `VERIFIED_DIGITALLY`: the assembly graph is acyclic with no trapped parts and
+  no unresolved dependencies; every part has a defined insertion and removal
+  direction and tool.
+- `VERIFIED_DIGITALLY`: 13 injected defects are each detected by the gate
+  responsible for them; three gaps this exposed have been closed.
+- `ENGINEERING_ESTIMATE`: modelled f3 of 56.9 Hz against 132.1 Hz for the same
+  driver sealed, at 60 Hz tuning with 1.07 g of added mass per radiator;
+  minimum modelled impedance 4.39 Ω, 1.19 Ω above the TAS2780 limit.
+- `ENGINEERING_ESTIMATE`: 3.49 kg assembled with a removable 1.05 kg dry steel
+  ballast stack; minimum static tipping angle 49.6°.
+
+## Open work before `DIGITAL_PROTOTYPE_READY`
+
+1. Verify the clean build from a genuinely fresh checkout in a container, not
+   just from the developed tree. Docker is installed but this account has no
+   access to the daemon.
+2. Add a second independent STEP reader over the *generated* exports. Gmsh
+   currently provides independent-reader coverage of the official geometry
+   only; FreeCAD is not installed here.
+3. Re-run the whole pipeline once more and commit the artifacts so every
+   exported file's `source_commit` matches the commit that contains it.
 
 ## Environment limitations
 
-- Docker CLI is installed, but this account lacks access to the Docker daemon.
-  This does not block the clean local locked build; Docker runtime validation is
-  pending a daemon-enabled environment.
-- FreeCAD CLI is not installed. Independent STEP-reader coverage is provided by
-  Gmsh/OpenCascade for now; a FreeCAD reader remains desirable but is not the
-  only independent-reader route.
+- Docker CLI is installed but this account has no access to the Docker daemon,
+  so container-based clean-build validation is deferred.
+- FreeCAD CLI is not installed. Independent reader coverage is Gmsh/OpenCascade
+  for now.
+- Git LFS is not installed. The repository has been made consistent with that:
+  the inert LFS filter declaration was removed, since no object in the history
+  is an LFS pointer.
 
 ## Next autonomous action
 
-Generate exact-volume, collision, clearance, wall, tolerance, fastener, and
-stability reports; feed the resulting net volume back into the acoustic model,
-then generate release exports and drawing/render sheets.
+Regenerate the full artifact set against the final source commit, confirm every
+`source_commit` field matches, then evaluate the `DIGITAL_PROTOTYPE_READY`
+gate.
 
 ## Release gate
 
-The correct final digital state is `DIGITAL_PROTOTYPE_READY`. It is not yet
-claimed. No item is `PHYSICALLY_VALIDATED`; all fit, acoustic, wake-word,
-thermal, leakage, and print claims that require a specimen remain
-`REQUIRES_PHYSICAL_VALIDATION`.
+The correct final digital state is `DIGITAL_PROTOTYPE_READY`. It is **not yet
+claimed**. Nothing is `PHYSICALLY_VALIDATED`; all fit, acoustic, wake-word,
+thermal, leakage, wireless and print claims that require a specimen remain
+`REQUIRES_PHYSICAL_VALIDATION`. See `docs/release-checklist.md`.

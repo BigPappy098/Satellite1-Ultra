@@ -30,6 +30,7 @@ keeps every fastener feature clear of the component through-bore.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from math import cos, pi, sin
 from typing import cast
@@ -37,6 +38,7 @@ from typing import cast
 import cadquery as cq
 
 Vector3 = tuple[float, float, float]
+SegmentFn = Callable[[float, float, float, float], tuple[float, float, float, float]]
 
 
 @dataclass(frozen=True)
@@ -110,7 +112,13 @@ class DesignParameters:
     cable_passage_y: float = 64.0
     cable_passage_diameter: float = 8.0
     grille_width_margin: float = 32.0
-    grille_depth_margin: float = 24.0
+    grille_depth_margin: float = 32.0
+    shell_wall_thickness: float = 3.0
+    shell_slot_width: float = 4.2
+    shell_slot_pitch: float = 9.5
+    shell_base_band: float = 24.0
+    shell_top_band: float = 22.0
+    shell_tie_band: float = 9.0
     brace_rib_width: float = 5.0
     brace_rib_depth: float = 8.0
     board_revision: str = "public_batch_1"
@@ -142,6 +150,20 @@ class DesignParameters:
     @property
     def divider_bottom_z(self) -> float:
         return self.acoustic_top_z + self.compressed_gasket_thickness
+
+    @property
+    def shell_top_z(self) -> float:
+        """Top rim of the outer shell; the shroud skirt starts just above it."""
+        return self.acoustic_top_z + 2.0
+
+    @property
+    def shell_bottom_z(self) -> float:
+        return self.base_bottom_z - 4.0
+
+    @property
+    def shell_retention_z(self) -> float:
+        """Plane the shell's retention bosses start from, just above the plate."""
+        return self.base_bottom_z + self.bottom_plate_thickness
 
     @property
     def insert_bore_depth(self) -> float:
@@ -510,13 +532,25 @@ def _compression_stop(
     radius: float,
     parameters: DesignParameters,
 ) -> cq.Shape:
-    """Local raised land that hard-stops a bolted joint at target compression."""
-    return cq.Solid.makeCylinder(
+    """Local raised land that hard-stops a bolted joint at target compression.
+
+    It is an annulus, not a disc: a solid stop would cap the blind insert bore
+    underneath it and the screw could never reach the insert.
+    """
+    p = parameters
+    outer = cq.Solid.makeCylinder(
         radius,
-        parameters.compressed_gasket_thickness,
+        p.compressed_gasket_thickness,
         cq.Vector(x, y, z),
         cq.Vector(0.0, 0.0, direction),
     )
+    bore = cq.Solid.makeCylinder(
+        p.insert_bore_diameter / 2.0,
+        p.compressed_gasket_thickness,
+        cq.Vector(x, y, z),
+        cq.Vector(0.0, 0.0, direction),
+    )
+    return outer.cut(bore)
 
 
 # ---------------------------------------------------------------------- #
@@ -575,15 +609,28 @@ def main_cabinet(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     for mount in acoustic_mounts(p).values():
         cabinet = _apply_mount(cabinet, envelope, mount, p)
 
-    # Divider interface: gasket land, compression stops, blind inserts.
+    # Divider interface: gasket land, compression stops, blind inserts. The
+    # fastener bosses sit inboard of the gasket land so they cannot interrupt
+    # it, so each one is tied back to its wall by a web under the rim.
+    boss_height = 10.0
     for x, y in top_fastener_positions(p):
         boss = cq.Solid.makeCylinder(
             p.boss_outer_diameter / 2.0,
-            10.0,
-            cq.Vector(x, y, p.acoustic_top_z - 10.0),
+            boss_height,
+            cq.Vector(x, y, p.acoustic_top_z - boss_height),
             cq.Vector(0.0, 0.0, 1.0),
         )
-        cabinet = cabinet.fuse(boss)
+        if abs(y) > abs(x):
+            wall_y = (half_depth + p.wall_thickness) * (1.0 if y > 0 else -1.0)
+            web = cq.Workplane(
+                "XY", origin=((x, (y + wall_y) / 2.0, p.acoustic_top_z - boss_height))
+            ).box(8.0, abs(wall_y - y), boss_height, centered=(True, True, False))
+        else:
+            wall_x = (half_width + p.wall_thickness) * (1.0 if x > 0 else -1.0)
+            web = cq.Workplane(
+                "XY", origin=(((x + wall_x) / 2.0, y, p.acoustic_top_z - boss_height))
+            ).box(abs(wall_x - x), 8.0, boss_height, centered=(True, True, False))
+        cabinet = cabinet.fuse(boss).fuse(cast(cq.Shape, web.val()))
         cabinet = cabinet.fuse(_compression_stop(x, y, p.acoustic_top_z, 1.0, 3.0, p))
         cabinet = cabinet.cut(_blind_insert(x, y, p.acoustic_top_z, -1.0, p))
 
@@ -786,24 +833,32 @@ def rounded_loft(
 
 
 def electronics_shroud(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Vented, removable transition around the untouched official upper stack."""
+    """Cosmetic and structural transition from the outer shell to the official top.
+
+    The shroud carries the visible shoulder of the product: it starts flush
+    inside the outer shell's top rim, sweeps in to the official top-plate
+    diameter, and leaves one controlled concentric reveal at each end. It is
+    removed upward, so its widest section is its lowest.
+    """
     p = parameters
-    bottom_z = p.divider_bottom_z + p.divider_thickness
+    skirt_z = p.shell_top_z + 0.5
+    shell_inner_width = p.outer_width + p.grille_width_margin - 2.0 * p.shell_wall_thickness
+    shell_inner_depth = p.outer_depth + p.grille_depth_margin - 2.0 * p.shell_wall_thickness
     outer = rounded_loft(
-        p.outer_width,
-        p.outer_depth,
-        p.corner_radius,
-        bottom_z,
+        shell_inner_width - 1.0,
+        shell_inner_depth - 1.0,
+        p.corner_radius + 13.0,
+        skirt_z,
         120.0,
         120.0,
         15.0,
         0.0,
     )
     inner = rounded_loft(
-        p.outer_width - 8.0,
-        p.outer_depth - 8.0,
-        p.corner_radius - 4.0,
-        bottom_z - 0.2,
+        shell_inner_width - 9.0,
+        shell_inner_depth - 9.0,
+        p.corner_radius + 9.0,
+        skirt_z - 0.2,
         112.0,
         112.0,
         11.5,
@@ -813,10 +868,16 @@ def electronics_shroud(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.
     for x in (-30.0, 0.0, 30.0):
         vent = cq.Workplane(
             "XY",
-            origin=(x, p.outer_depth / 2.0 - 10.0, -16.0),
+            origin=(x, p.outer_depth / 2.0 - 4.0, -16.0),
         ).box(7.0, 24.0, 10.0, centered=(True, True, False))
         shroud = shroud.cut(cast(cq.Shape, vent.val()))
-    tab_z = bottom_z + 8.0
+    service = cq.Workplane(
+        "XY",
+        origin=(0.0, p.outer_depth / 2.0 + 2.0, -24.0),
+    ).box(40.0, 24.0, 12.0, centered=(True, True, False))
+    shroud = shroud.cut(cast(cq.Shape, service.val()))
+
+    tab_z = p.divider_bottom_z + p.divider_thickness + 8.0
     for x, y in shroud_fastener_positions(p):
         tab = cq.Solid.makeCylinder(5.0, 3.0, cq.Vector(x, y, tab_z), cq.Vector(0.0, 0.0, 1.0))
         hole = cq.Solid.makeCylinder(
@@ -825,17 +886,17 @@ def electronics_shroud(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.
             cq.Vector(x, y, tab_z),
             cq.Vector(0.0, 0.0, 1.0),
         )
+        reach = 120.0
         if x:
-            outer_x = (p.outer_width / 2.0 - 5.0) * (1.0 if x > 0 else -1.0)
-            bridge = cq.Workplane("XY", origin=((x + outer_x) / 2.0, 0.0, tab_z)).box(
-                abs(x - outer_x), 10.0, 3.0, centered=(True, True, False)
-            )
+            bridge = cq.Workplane(
+                "XY", origin=(x + reach / 2.0 * (1 if x > 0 else -1), y, tab_z)
+            ).box(reach, 10.0, 3.0, centered=(True, True, False))
         else:
-            outer_y = (p.outer_depth / 2.0 - 5.0) * (1.0 if y > 0 else -1.0)
-            bridge = cq.Workplane("XY", origin=(0.0, (y + outer_y) / 2.0, tab_z)).box(
-                10.0, abs(y - outer_y), 3.0, centered=(True, True, False)
-            )
-        shroud = shroud.fuse(tab).fuse(cast(cq.Shape, bridge.val())).cut(hole)
+            bridge = cq.Workplane(
+                "XY", origin=(x, y + reach / 2.0 * (1 if y > 0 else -1), tab_z)
+            ).box(10.0, reach, 3.0, centered=(True, True, False))
+        clipped = cast(cq.Shape, bridge.val()).intersect(outer)
+        shroud = shroud.fuse(tab).fuse(clipped).cut(hole)
     return shroud
 
 
@@ -967,16 +1028,16 @@ def base_skirt(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     # Pass-throughs for the grille-cage retention bridges. The base bay is
     # outside the acoustic pressure boundary, so these also vent it.
     for x, y in cage_fastener_positions(p):
-        bridge_z = p.base_bottom_z + p.bottom_plate_thickness
+        bridge_z = p.shell_retention_z
         length = p.outer_width
         if x:
-            origin = (x / abs(x) * p.outer_width / 2.0, y, bridge_z - 1.0)
-            size = (length, 12.0)
+            origin = (x / abs(x) * p.outer_width / 2.0, y, bridge_z - 1.5)
+            size = (length, 13.0)
         else:
-            origin = (x, y / abs(y) * p.outer_depth / 2.0, bridge_z - 1.0)
-            size = (12.0, length)
+            origin = (x, y / abs(y) * p.outer_depth / 2.0, bridge_z - 1.5)
+            size = (13.0, length)
         slot = cq.Workplane("XY", origin=origin).box(
-            size[0], size[1], 6.0, centered=(True, True, False)
+            size[0], size[1], 11.0, centered=(True, True, False)
         )
         skirt = skirt.cut(cast(cq.Shape, slot.val()))
 
@@ -1014,6 +1075,14 @@ def bottom_service_plate(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
             cq.Solid.makeCylinder(
                 p.fastener_clearance_diameter / 2.0,
                 p.bottom_plate_thickness,
+                cq.Vector(x, y, 0.0),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+        plate = plate.cut(
+            cq.Solid.makeCylinder(
+                p.fastener_head_diameter / 2.0,
+                2.0,
                 cq.Vector(x, y, 0.0),
                 cq.Vector(0.0, 0.0, 1.0),
             )
@@ -1070,99 +1139,164 @@ def _place_pr_disc(shape: cq.Shape, side: int, inner_face_x: float, axis_z: floa
     )
 
 
-def outer_grille_cage(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Removable fabric cage with hard guards over every moving diaphragm."""
+def rounded_rect_stations(
+    width: float,
+    depth: float,
+    radius: float,
+    pitch: float,
+) -> list[tuple[float, float, float]]:
+    """Walk a rounded rectangle at constant arc length.
+
+    Returns ``(x, y, normal_angle_deg)`` stations, so grille features can be
+    placed truly normal to the surface instead of radially from the centre.
+    """
+    from math import atan2, degrees
+
+    a = width / 2.0 - radius
+    b = depth / 2.0 - radius
+    arc = pi * radius / 2.0
+    perimeter = 4.0 * (a + b) + 4.0 * arc
+    count = max(8, round(perimeter / pitch))
+    step = perimeter / count
+    stations: list[tuple[float, float, float]] = []
+    for index in range(count):
+        s = index * step
+        remaining = s
+        for segment, length in _perimeter_segments(a, b, radius, arc):
+            if remaining <= length:
+                x, y, nx, ny = segment(remaining, a, b, radius)
+                stations.append((x, y, degrees(atan2(ny, nx))))
+                break
+            remaining -= length
+    return stations
+
+
+def _seg_right(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
+    return (a + r, -b + s, 1.0, 0.0)
+
+
+def _arc_top_right(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
+    angle = s / r
+    return (a + r * cos(angle), b + r * sin(angle), cos(angle), sin(angle))
+
+
+def _seg_top(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
+    return (a - s, b + r, 0.0, 1.0)
+
+
+def _arc_top_left(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
+    angle = pi / 2.0 + s / r
+    return (-a + r * cos(angle), b + r * sin(angle), cos(angle), sin(angle))
+
+
+def _seg_left(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
+    return (-a - r, b - s, -1.0, 0.0)
+
+
+def _arc_bottom_left(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
+    angle = pi + s / r
+    return (-a + r * cos(angle), -b + r * sin(angle), cos(angle), sin(angle))
+
+
+def _seg_bottom(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
+    return (-a + s, -b - r, 0.0, -1.0)
+
+
+def _arc_bottom_right(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
+    angle = 3.0 * pi / 2.0 + s / r
+    return (a + r * cos(angle), -b + r * sin(angle), cos(angle), sin(angle))
+
+
+def _perimeter_segments(
+    a: float, b: float, r: float, arc: float
+) -> tuple[tuple[SegmentFn, float], ...]:
+    return (
+        (_seg_right, 2.0 * b),
+        (_arc_top_right, arc),
+        (_seg_top, 2.0 * a),
+        (_arc_top_left, arc),
+        (_seg_left, 2.0 * b),
+        (_arc_bottom_left, arc),
+        (_seg_bottom, 2.0 * a),
+        (_arc_bottom_right, arc),
+    )
+
+
+def outer_shell(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """Removable slotted industrial-design shell.
+
+    A single continuous rounded-rectangle volume with one seam at the base:
+    solid bands top and bottom, a fine vertical slot field over the whole
+    acoustic section, and a mid-height tie band so no slot runs the full
+    height. The slots are placed normal to the surface, so they keep constant
+    width around the corners.
+    """
     p = parameters
     width = p.outer_width + p.grille_width_margin
     depth = p.outer_depth + p.grille_depth_margin
-    center_y, radius = 0.0, p.corner_radius + 8.0
-    bottom_z, top_z, ring_height = p.base_bottom_z, p.acoustic_top_z, 8.0
-    bottom_ring = rounded_ring(
-        width, depth, radius, width - 4.0, depth - 4.0, radius - 2.0, ring_height
-    ).translate(cq.Vector(0.0, center_y, bottom_z))
-    top_ring = rounded_ring(
-        width, depth, radius, width - 4.0, depth - 4.0, radius - 2.0, ring_height
-    ).translate(cq.Vector(0.0, center_y, top_z - ring_height))
-    cage = bottom_ring.fuse(top_ring)
+    radius = p.corner_radius + 14.0
+    wall = p.shell_wall_thickness
+    bottom_z = p.shell_bottom_z
+    top_z = p.shell_top_z
 
-    arc_center_x = width / 2.0 - radius
-    arc_center_y = depth / 2.0 - radius
-    rail_radius = radius - 1.0
-    for x_sign in (-1.0, 1.0):
-        for y_sign in (-1.0, 1.0):
-            x = x_sign * (arc_center_x + rail_radius / 2**0.5)
-            y = center_y + y_sign * (arc_center_y + rail_radius / 2**0.5)
-            cage = cage.fuse(
-                cq.Solid.makeCylinder(
-                    3.0,
-                    top_z - bottom_z - 10.0,
-                    cq.Vector(x, y, bottom_z + 5.0),
-                    cq.Vector(0.0, 0.0, 1.0),
-                )
-            )
-
-    guard_offset_y = p.outer_depth / 2.0 + 13.0
-    guard_offset_x = p.outer_width / 2.0 + 13.0
-    active_guard = _place_active_disc(
-        cast(cq.Shape, cq.Workplane("XY").circle(59.0).circle(53.0).extrude(3.0).val()),
-        -guard_offset_y,
-        p.driver_axis_z,
+    shell = rounded_prism(width, depth, top_z - bottom_z, bottom_z, radius).cut(
+        rounded_prism(
+            width - 2.0 * wall,
+            depth - 2.0 * wall,
+            top_z - bottom_z + 2.0,
+            bottom_z - 1.0,
+            radius - wall,
+        )
     )
-    cage = cage.fuse(active_guard)
-    for side in (-1, 1):
-        cage = cage.fuse(
-            _place_pr_disc(
-                cast(cq.Shape, cq.Workplane("XY").circle(65.0).circle(62.0).extrude(3.0).val()),
-                side,
-                guard_offset_x,
-                p.pr_axis_z,
+
+    band_bottom = bottom_z + p.shell_base_band
+    band_top = top_z - p.shell_top_band
+    tie_centre = (band_bottom + band_top) / 2.0
+    lower = (band_bottom, tie_centre - p.shell_tie_band / 2.0)
+    upper = (tie_centre + p.shell_tie_band / 2.0, band_top)
+
+    cutters: list[cq.Shape] = []
+    for x, y, angle in rounded_rect_stations(width, depth, radius, p.shell_slot_pitch):
+        for low, high in (lower, upper):
+            box = (
+                cq.Workplane("XY")
+                .box(3.0 * wall, p.shell_slot_width, high - low, centered=(True, True, False))
+                .translate((0.0, 0.0, low))
+                .rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), angle)
+                .translate((x, y, 0.0))
             )
-        )
-        side_rail = cq.Workplane(
-            "XY", origin=(side * (guard_offset_x + 1.5), 0.0, bottom_z + 5.0)
-        ).box(
-            3.0,
-            8.0,
-            p.cavity_bottom_z - (bottom_z + 5.0),
-            centered=(True, True, False),
-        )
-        cage = cage.fuse(cast(cq.Shape, side_rail.val()))
+            cutters.append(cast(cq.Shape, box.val()))
+    shell = shell.cut(cq.Compound.makeCompound(cutters))
 
     for x, y in cage_fastener_positions(p):
-        retention_z = bottom_z + p.bottom_plate_thickness
+        retention_z = p.shell_retention_z
         boss = cq.Solid.makeCylinder(
             p.boss_outer_diameter / 2.0,
-            ring_height,
+            10.0,
             cq.Vector(x, y, retention_z),
             cq.Vector(0.0, 0.0, 1.0),
         )
         if x:
-            target_x = (width / 2.0 - 4.0) * (1.0 if x > 0 else -1.0)
+            target_x = (width / 2.0 - wall) * (1.0 if x > 0 else -1.0)
             bridge = cq.Workplane("XY", origin=((x + target_x) / 2.0, y, retention_z)).box(
-                abs(x - target_x),
-                8.0,
-                ring_height - p.bottom_plate_thickness,
-                centered=(True, True, False),
+                abs(x - target_x), 9.0, 6.0, centered=(True, True, False)
             )
         else:
-            target_y = center_y + (depth / 2.0 - 4.0) * (1.0 if y > 0 else -1.0)
+            target_y = (depth / 2.0 - wall) * (1.0 if y > 0 else -1.0)
             bridge = cq.Workplane("XY", origin=(x, (y + target_y) / 2.0, retention_z)).box(
-                8.0,
-                abs(y - target_y),
-                ring_height - p.bottom_plate_thickness,
-                centered=(True, True, False),
+                9.0, abs(y - target_y), 6.0, centered=(True, True, False)
             )
-        cage = cage.fuse(boss).fuse(cast(cq.Shape, bridge.val()))
-        cage = cage.cut(_blind_insert(x, y, retention_z, 1.0, p))
-    return cage
+        shell = shell.fuse(boss).fuse(cast(cq.Shape, bridge.val()))
+        shell = shell.cut(_blind_insert(x, y, retention_z, 1.0, p))
+    return shell
 
 
 def support_polygon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> tuple[float, float]:
     """Half-width and half-depth of the ground contact patch."""
     p = parameters
     return (
-        (p.outer_width + p.grille_width_margin) / 2.0 - 1.0,
-        (p.outer_depth + p.grille_depth_margin) / 2.0 - 1.0,
+        (p.outer_width + p.grille_width_margin) / 2.0 - 2.0,
+        (p.outer_depth + p.grille_depth_margin) / 2.0 - 2.0,
     )
 
 
@@ -1173,10 +1307,10 @@ def anti_slip_ring(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shap
     return rounded_ring(
         2.0 * half_x,
         2.0 * half_y,
-        p.corner_radius + 7.0,
-        2.0 * half_x - 6.0,
-        2.0 * half_y - 6.0,
-        p.corner_radius + 4.0,
+        p.corner_radius + 12.0,
+        2.0 * half_x - 7.0,
+        2.0 * half_y - 7.0,
+        p.corner_radius + 9.0,
         2.0,
     )
 
@@ -1250,8 +1384,8 @@ def placed_functional_parts(
     driver_seat_y = -p.outer_depth / 2.0 + p.driver_seat_depth
     pr_seat_x = p.outer_width / 2.0 - p.pr_seat_depth
     parts: dict[str, cq.Shape] = {
-        "anti_slip_ring": anti_slip_ring(p).translate(cq.Vector(0.0, 0.0, p.base_bottom_z - 2.0)),
-        "outer_grille_cage": outer_grille_cage(p),
+        "anti_slip_ring": anti_slip_ring(p).translate(cq.Vector(0.0, 0.0, p.shell_bottom_z - 2.0)),
+        "outer_shell": outer_shell(p),
         "main_cabinet": main_cabinet(p),
         "divider_gasket": divider_gasket(compressed).translate(
             cq.Vector(0.0, 0.0, p.acoustic_top_z)

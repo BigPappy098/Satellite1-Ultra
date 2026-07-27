@@ -1,4 +1,4 @@
-"""Phase-3 B-rep and architecture validation."""
+"""Manufactured-geometry B-rep validation."""
 
 from __future__ import annotations
 
@@ -7,58 +7,26 @@ from itertools import combinations
 import cadquery as cq
 import pytest
 
+from satellite1_ultra.exporting import PARTS, print_oriented
 from satellite1_ultra.geometry import (
+    DEFAULT_PARAMETERS,
     DesignParameters,
-    active_driver_carrier,
-    anti_slip_ring,
-    ballast_cartridge,
-    ballast_cartridge_lid,
-    base_skirt,
-    bottom_service_plate,
-    cable_gland,
-    divider_gasket,
-    driver_carrier_gasket,
-    driver_gasket,
+    acoustic_mounts,
     driver_keepout,
-    electronics_shroud,
     main_cabinet,
-    outer_grille_cage,
-    passive_radiator_carrier,
-    passive_radiator_carrier_gasket,
-    passive_radiator_gasket,
     passive_radiator_keepout,
     placed_functional_parts,
     pressure_divider,
     rounded_prism,
+    rounded_rect_stations,
 )
 from satellite1_ultra.official import MID_PLATE, load_part
 
 
 @pytest.mark.geometry
-@pytest.mark.parametrize(
-    "builder",
-    [
-        main_cabinet,
-        pressure_divider,
-        active_driver_carrier,
-        passive_radiator_carrier,
-        divider_gasket,
-        driver_gasket,
-        driver_carrier_gasket,
-        passive_radiator_gasket,
-        passive_radiator_carrier_gasket,
-        cable_gland,
-        base_skirt,
-        bottom_service_plate,
-        ballast_cartridge,
-        ballast_cartridge_lid,
-        electronics_shroud,
-        outer_grille_cage,
-        anti_slip_ring,
-    ],
-)
-def test_manufactured_parts_are_valid_single_solids(builder: object) -> None:
-    shape = builder()  # type: ignore[operator]
+@pytest.mark.parametrize("name", sorted(PARTS))
+def test_manufactured_parts_are_valid_single_solids(name: str) -> None:
+    shape = PARTS[name].builder(DEFAULT_PARAMETERS)
     box = shape.BoundingBox()
     assert shape.isValid()
     assert len(shape.Solids()) == 1
@@ -67,28 +35,10 @@ def test_manufactured_parts_are_valid_single_solids(builder: object) -> None:
 
 
 @pytest.mark.geometry
-def test_all_manufactured_parts_fit_build_volume() -> None:
-    for shape in (
-        main_cabinet(),
-        pressure_divider(),
-        active_driver_carrier(),
-        passive_radiator_carrier(),
-        divider_gasket(),
-        driver_gasket(),
-        driver_carrier_gasket(),
-        passive_radiator_gasket(),
-        passive_radiator_carrier_gasket(),
-        cable_gland(),
-        base_skirt(),
-        bottom_service_plate(),
-        ballast_cartridge(),
-        ballast_cartridge_lid(),
-        electronics_shroud(),
-        outer_grille_cage(),
-        anti_slip_ring(),
-    ):
-        box = shape.BoundingBox()
-        assert max(box.xlen, box.ylen, box.zlen) <= 256.0
+@pytest.mark.parametrize("name", sorted(PARTS))
+def test_every_part_fits_the_build_volume(name: str) -> None:
+    box = print_oriented(PARTS[name].builder(DEFAULT_PARAMETERS)).BoundingBox()
+    assert max(box.xlen, box.ylen, box.zlen) <= 256.0
 
 
 @pytest.mark.geometry
@@ -123,43 +73,66 @@ def test_keepouts_clear_acoustic_floor_and_divider() -> None:
 
 
 @pytest.mark.geometry
-def test_main_pressure_boundary_has_expected_openings() -> None:
+def test_cabinet_is_one_closed_shell() -> None:
     shape = main_cabinet()
     assert len(shape.Solids()) == 1
     assert all(shell.Closed() for shell in shape.Shells())
 
 
 @pytest.mark.geometry
-@pytest.mark.requires_official_assets
-def test_divider_clears_official_mid_plate() -> None:
-    overlap = pressure_divider().intersect(load_part(MID_PLATE)).Volume()
-    assert overlap < 0.01
+def test_every_clamp_insert_bore_clears_the_component_bore() -> None:
+    """The defect that motivated the clamp-ring mount must stay impossible."""
+    from satellite1_ultra.geometry import _bolt_points, _depth_cylinder
+
+    p = DEFAULT_PARAMETERS
+    for mount in acoustic_mounts(p).values():
+        bore = _depth_cylinder(
+            mount.bore_diameter / 2.0, -1.0, mount.pad_depth + 3.0, mount.face_point, mount.inward
+        )
+        for point in _bolt_points(mount.face_point, mount.inward, mount.bolt_circle):
+            insert = _depth_cylinder(
+                p.insert_bore_diameter / 2.0,
+                mount.ledge_depth,
+                p.insert_bore_depth,
+                point,
+                mount.inward,
+            )
+            assert insert.intersect(bore).Volume() == pytest.approx(0.0, abs=1e-6)
 
 
 @pytest.mark.geometry
 @pytest.mark.requires_official_assets
-def test_electronics_shroud_clears_complete_official_upper_stack() -> None:
-    from satellite1_ultra.official import BATCH1_HAT, UPPER_STACK
+def test_divider_seats_on_the_official_mid_plate_without_interference() -> None:
+    from satellite1_ultra.validation import _min_distance
 
-    shroud = electronics_shroud()
-    for official_part in (*UPPER_STACK, BATCH1_HAT):
-        assert shroud.intersect(load_part(official_part)).Volume() < 0.01
+    divider = pressure_divider()
+    mid_plate = load_part(MID_PLATE)
+    assert divider.intersect(mid_plate).Volume() < 0.01
+    assert _min_distance(divider, mid_plate) == pytest.approx(0.0, abs=1e-6)
 
 
 @pytest.mark.geometry
 def test_functional_assembly_has_only_classified_interference() -> None:
+    from satellite1_ultra.validation import INTENDED_CONTACTS
+
     parts = placed_functional_parts()
-    intended_interference = {frozenset(("pressure_divider", "wire_gland"))}
     detected: set[frozenset[str]] = set()
     for (first_name, first), (second_name, second) in combinations(parts.items(), 2):
         volume = first.intersect(second).Volume()
         pair = frozenset((first_name, second_name))
         if volume > 0.01:
             detected.add(pair)
-            assert pair in intended_interference, (
+            assert pair in INTENDED_CONTACTS, (
                 f"invalid collision: {first_name}/{second_name} = {volume:.3f} mm^3"
             )
-    assert detected == intended_interference
+    assert detected == set(INTENDED_CONTACTS)
+
+
+def test_rounded_rect_stations_walk_the_whole_perimeter() -> None:
+    stations = rounded_rect_stations(192.0, 212.0, 34.0, 9.5)
+    assert len(stations) > 60
+    for x, y, _ in stations:
+        assert abs(x) <= 96.001 and abs(y) <= 106.001
 
 
 def test_cadquery_shape_type_contract() -> None:

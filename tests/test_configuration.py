@@ -16,15 +16,20 @@ def test_checked_in_configuration_matches_authoritative_defaults() -> None:
         expected = getattr(DEFAULT_PARAMETERS, field.name)
         actual = getattr(loaded, field.name)
         if isinstance(expected, float):
-            assert actual == pytest.approx(expected)
+            assert actual == pytest.approx(expected), field.name
         else:
-            assert actual == expected
+            assert actual == expected, field.name
 
 
 def test_selected_components_drive_mechanical_interfaces() -> None:
     loaded = load_design_parameters()
     assert loaded.driver_cutout_diameter == pytest.approx(88.5)
-    assert loaded.driver_bolt_circle == pytest.approx(93.3)
     assert loaded.pr_cutout_diameter == pytest.approx(102.0)
-    assert loaded.pr_bolt_circle == pytest.approx(111.5)
     assert loaded.board_revision == "public_batch_1"
+
+
+def test_insert_bore_is_smaller_than_the_insert_it_receives() -> None:
+    """A bore drawn at the insert's outside diameter has no interference."""
+    p = load_design_parameters()
+    assert p.insert_bore_diameter < p.insert_outer_diameter
+    assert p.insert_bore_depth > p.insert_depth

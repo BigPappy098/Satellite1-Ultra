@@ -169,42 +169,42 @@
     },
     {
       "feature": "electronics_shroud to official_mid_plate",
-      "nominal_mm": 1.1433691756272424,
+      "nominal_mm": 1.21035598705501,
       "minimum_mm": 0.3,
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "electronics_shroud to official_mid_plate_threads",
-      "nominal_mm": 4.219894326347278,
+      "nominal_mm": 4.285685188826863,
       "minimum_mm": 0.3,
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "electronics_shroud to official_top_plate",
-      "nominal_mm": 8.528255629899471,
+      "nominal_mm": 8.586792485237975,
       "minimum_mm": 0.3,
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "electronics_shroud to official_pcb_spacer",
-      "nominal_mm": 14.987245516570331,
+      "nominal_mm": 15.043361233194938,
       "minimum_mm": 0.3,
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "electronics_shroud to official_lock_ring",
-      "nominal_mm": 1.9398549473841689,
+      "nominal_mm": 1.9872217759948079,
       "minimum_mm": 0.3,
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "electronics_shroud to official_hat_batch1_rev4_1",
-      "nominal_mm": 13.412267094297887,
+      "nominal_mm": 13.470400011289266,
       "minimum_mm": 0.3,
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"

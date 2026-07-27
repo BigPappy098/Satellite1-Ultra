@@ -25,13 +25,23 @@ derived outputs.
 - No structural glue. Acoustic seals must be replaceable and mechanically
   compressed.
 - Every part must fit within 256 × 256 × 256 mm.
+- No fastener feature may break into an acoustic component's through-bore, and
+  no fastener may cross the acoustic pressure boundary. Every insert bore is
+  blind and is drilled deeper than the insert it receives.
+- A gasket land must be a continuous annulus of material. Prove it with a
+  solid-fraction probe, not with an absence-of-collision test: a leak is missing
+  material and a collision test cannot see missing material.
+- Interfaces to official geometry must be *measured* from the preserved official
+  B-rep in a test, never typed in from a drawing or a guess.
 
 ## Workflow
 
-- Develop only on `codex/*` branches.
+- Develop on a topic branch; never commit directly to `main`.
 - Update `reports/PROJECT_STATUS.md` at every milestone or stopping point.
 - Keep generated release artifacts reproducible and provenance-stamped.
 - Run `make check` before milestone commits and `make release` before release.
+- Run `make mutation` whenever a validation gate is added or changed: a gate that
+  has never been shown to fail has not been shown to work.
 - Keep the working tree clean at handoff.
 - Record autonomous blockers and the next action in the status report.
 
@@ -52,7 +62,8 @@ Use exactly one of:
 - `reference-assets/official/`: unmodified official source geometry
 - `references/`: human-readable and machine-readable research provenance
 - `tests/`: unit, geometry, export, and validation tests
-- `scripts/`: reproducible build, inspection, rendering, and reporting entrypoints
+- `scripts/`: reproducible inventory and provenance entrypoints
+- `src/satellite1_ultra/cli.py`: the build pipeline; `sat1-ultra all` runs it end to end
 - `exports/`: release STEP, STL, and 3MF artifacts
 - `docs/`: manufacturing, assembly, service, and test documentation
 - `reports/`: research, geometry, acoustics, validation, and review evidence

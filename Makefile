@@ -1,7 +1,8 @@
 PYTHON ?= .venv/bin/python
 PIP ?= .venv/bin/pip
 
-.PHONY: bootstrap inventory lint typecheck test test-fast test-deep build exports reports manual check release clean
+.PHONY: bootstrap inventory lint format typecheck test test-fast test-deep mutation \
+        build validate acoustics exports renders drawings docs manual check release clean
 
 bootstrap:
 	python3 -m venv .venv
@@ -17,33 +18,54 @@ lint:
 	$(PYTHON) -m ruff check src tests scripts
 	$(PYTHON) -m ruff format --check src tests scripts
 
+format:
+	$(PYTHON) -m ruff check --fix src tests scripts
+	$(PYTHON) -m ruff format src tests scripts
+
 typecheck:
 	$(PYTHON) -m mypy
 
 test-fast:
-	$(PYTHON) -m pytest -m "not deep"
+	$(PYTHON) -m pytest -m "not deep and not mutation"
 
 test: test-fast
 
 test-deep:
 	$(PYTHON) -m pytest -m deep
 
+mutation:
+	$(PYTHON) -m pytest -m mutation
+
 build:
 	$(PYTHON) -m satellite1_ultra build
+
+validate:
+	$(PYTHON) -m satellite1_ultra validate
+
+acoustics:
+	$(PYTHON) -m satellite1_ultra acoustics
 
 exports:
 	$(PYTHON) -m satellite1_ultra export
 
-reports:
-	$(PYTHON) -m satellite1_ultra report
+renders:
+	$(PYTHON) -m satellite1_ultra renders
+
+drawings:
+	$(PYTHON) -m satellite1_ultra drawings
+
+docs:
+	$(PYTHON) -m satellite1_ultra docs
 
 manual:
 	$(PYTHON) -m satellite1_ultra manual
 
 check: lint typecheck test
 
-release: check build exports reports manual test-deep
+release: check
+	$(PYTHON) -m satellite1_ultra all
+	$(MAKE) test-deep
+	$(MAKE) mutation
 
 clean:
-	$(PYTHON) scripts/clean_generated.py
-
+	$(PYTHON) -m satellite1_ultra clean

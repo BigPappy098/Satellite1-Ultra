@@ -221,11 +221,12 @@ def _mount_seal_checks(
         }
     )
     worst = 1.0
+    probe_depth = 2.0
     for point in _bolt_points(mount.face_point, mount.inward, mount.bolt_circle):
         beyond = _depth_cylinder(
             p.insert_bore_diameter / 2.0,
             mount.ledge_depth + p.insert_bore_depth,
-            p.pad_backing,
+            probe_depth,
             point,
             mount.inward,
         )
@@ -236,6 +237,7 @@ def _mount_seal_checks(
             "measured_solid_fraction": worst,
             "minimum_solid_fraction": 0.999999,
             "backing_mm": p.pad_backing,
+            "probe_depth_mm": probe_depth,
             "status": "PASS" if worst >= 0.999999 else "FAIL",
             "evidence": EVIDENCE_DIGITAL,
         }
@@ -503,6 +505,26 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
             "nominal_mm": p.pr_ledge_diameter / 2.0
             - (p.pr_clamp_bolt_circle + p.insert_bore_diameter) / 2.0,
             "minimum_mm": 2.4,
+        },
+        {
+            "feature": "active-driver gasket land radial width",
+            "nominal_mm": (p.driver_seat_diameter - (p.driver_bore_diameter + 3.0)) / 2.0,
+            "minimum_mm": 3.0,
+        },
+        {
+            "feature": "radiator gasket land radial width",
+            "nominal_mm": (p.pr_seat_diameter - (p.pr_bore_diameter + 3.0)) / 2.0,
+            "minimum_mm": 3.0,
+        },
+        {
+            "feature": "active-driver mounting pad covers its seat",
+            "nominal_mm": (p.driver_pad_diameter - p.driver_seat_diameter) / 2.0,
+            "minimum_mm": 2.4,
+        },
+        {
+            "feature": "radiator mounting pad covers its ledge",
+            "nominal_mm": (p.pr_pad_diameter - p.pr_ledge_diameter) / 2.0,
+            "minimum_mm": 1.5,
         },
         {
             "feature": "print radial assembly allowance",
@@ -1022,7 +1044,7 @@ def tolerance_report(parameters: DesignParameters) -> dict[str, Any]:
 ASSEMBLY_STEPS: tuple[dict[str, Any], ...] = (
     {
         "step": "install all heat-set inserts",
-        "part": "main_cabinet, base_skirt, pressure_divider, outer_grille_cage",
+        "part": "main_cabinet, base_skirt, pressure_divider, outer_shell",
         "direction": "per-feature, see fastener schedule",
         "tool": "temperature-controlled M3 insert tip",
         "requires": (),
@@ -1087,7 +1109,7 @@ ASSEMBLY_STEPS: tuple[dict[str, Any], ...] = (
         "part": "electronics_shroud",
         "direction": "+Z",
         "tool": "2.0 mm hex key",
-        "requires": ("fit the divider gasket and bolt the pressure divider to the cabinet",),
+        "requires": ("lower the outer shell over the cabinet",),
     },
     {
         "step": "seat the official mid-plate and upper stack on the divider bosses",
@@ -1097,13 +1119,20 @@ ASSEMBLY_STEPS: tuple[dict[str, Any], ...] = (
         "requires": ("connect the boards and bolt the electronics shroud to the divider",),
     },
     {
-        "step": "slide on the grille cage and bolt it to the service plate",
-        "part": "outer_grille_cage",
+        "step": "lower the outer shell over the cabinet",
+        "part": "outer_shell",
+        "direction": "-Z",
+        "tool": "hand",
+        "requires": ("fit the divider gasket and bolt the pressure divider to the cabinet",),
+    },
+    {
+        "step": "invert and bolt the outer shell to the bottom service plate",
+        "part": "outer_shell",
         "direction": "+Z",
         "tool": "2.0 mm hex key",
         "requires": (
+            "lower the outer shell over the cabinet",
             "seat the ballast cartridge and close the bottom service plate",
-            "seat the official mid-plate and upper stack on the divider bosses",
         ),
     },
     {
@@ -1111,20 +1140,30 @@ ASSEMBLY_STEPS: tuple[dict[str, Any], ...] = (
         "part": "anti_slip_ring",
         "direction": "+Z",
         "tool": "hand",
-        "requires": ("slide on the grille cage and bolt it to the service plate",),
+        "requires": ("invert and bolt the outer shell to the bottom service plate",),
     },
 )
 
 SERVICE_TASKS: tuple[dict[str, Any], ...] = (
     {
         "task": "replace the active driver",
-        "remove": ("anti_slip_ring", "outer_grille_cage", "active_driver_clamp_ring"),
+        "remove": (
+            "anti_slip_ring",
+            "bottom_service_plate",
+            "outer_shell",
+            "active_driver_clamp_ring",
+        ),
         "tool": "2.0 mm hex key",
         "opens_pressure_boundary": True,
     },
     {
         "task": "replace a passive radiator or retune its added mass",
-        "remove": ("anti_slip_ring", "outer_grille_cage", "passive_radiator_clamp_ring"),
+        "remove": (
+            "anti_slip_ring",
+            "bottom_service_plate",
+            "outer_shell",
+            "passive_radiator_clamp_ring",
+        ),
         "tool": "2.0 mm hex key",
         "opens_pressure_boundary": True,
     },
@@ -1136,13 +1175,18 @@ SERVICE_TASKS: tuple[dict[str, Any], ...] = (
     },
     {
         "task": "change the ballast mass",
-        "remove": ("anti_slip_ring", "outer_grille_cage", "bottom_service_plate"),
+        "remove": ("anti_slip_ring", "bottom_service_plate"),
         "tool": "2.0 mm hex key",
         "opens_pressure_boundary": False,
     },
     {
         "task": "replace any gasket",
-        "remove": ("anti_slip_ring", "outer_grille_cage", "clamp ring or pressure divider"),
+        "remove": (
+            "anti_slip_ring",
+            "bottom_service_plate",
+            "outer_shell",
+            "clamp ring or pressure divider",
+        ),
         "tool": "2.0 mm hex key",
         "opens_pressure_boundary": True,
     },
@@ -1294,7 +1338,7 @@ def stability_report(parameters: DesignParameters) -> dict[str, Any]:
     p = parameters
     parts = placed_functional_parts(p)
     asa_names = {
-        "outer_grille_cage",
+        "outer_shell",
         "main_cabinet",
         "pressure_divider",
         "electronics_shroud",

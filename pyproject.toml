@@ -49,6 +49,7 @@ addopts = "-ra --strict-markers"
 markers = [
   "geometry: OCCT geometry validation",
   "deep: slow full-assembly/export validation",
+  "mutation: injects a defect and proves a gate detects it",
   "requires_official_assets: requires preserved official geometry"
 ]
 

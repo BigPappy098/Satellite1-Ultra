@@ -26,12 +26,19 @@ coupon is printed and measured.
 | Coupon | Critical checks | Expected | Pass criteria | Compensation input |
 |---|---|---:|---:|---|
 | Official interface | Four hole centers; 110.6 mm recess; official mid-plate drop fit | X ±45.0534, Y ±31.5467 mm; 110.6 mm | Hole-center error ≤0.20 mm; mid-plate seats without force and radial shake ≤0.40 mm | `xy_scale_correction_fraction`, `hole_diameter_offset` |
-| Threaded/locking interface | Engage official threaded mid-plate/lock system through full travel | Exact official B-rep | Hand engagement without cross-binding; no visible layer damage; rotational play ≤1° | `threaded_interface_radial_offset` |
-| Active driver | Cutout, bolt circle, frame seat | Ø88.5; BCD 93.3; frame Ø103.2 mm | Cutout +0.20/+0.50; every M3 screw enters freely; frame rock <0.20 mm | `hole_diameter_offset`, `xy_scale_correction_fraction` |
-| Passive radiator | Cutout, bolt circle, frame seat | Ø102.0; BCD 111.5; frame Ø122.0 mm | Cutout +0.20/+0.50; every screw enters freely; frame rock <0.20 mm | `hole_diameter_offset`, `xy_scale_correction_fraction` |
-| Heat-set insert | Four blind bores | Ø4.4/4.5/4.6/4.7 x 6.5 mm | Select smallest bore accepting insert without cracking or pullout at 250 N | `insert_hole_diameter_offset` |
+| Active driver | Seat Ø, bore Ø, seat depth, clamp bolt circle, insert bores | seat Ø103.8; bore Ø88.7; seat depth 5.50; BCD 112.0 | Driver flange drops into the seat without force; the clamp ring bottoms on the coupon face while loading the flange; all four M3 screws enter freely | `hole_diameter_offset`, `xy_scale_correction_fraction`, `insert_hole_diameter_offset` |
+| Active-driver flange thickness | Measure the driver's actual flange thickness | 3.00 mm assumed | Enter the measured value in `config/components.yaml`; it sets the seat depth | `components.yaml: flange_thickness_mm` |
+| Passive radiator | Ledge Ø, seat Ø, bore Ø, seat depth, clamp bolt circle | ledge Ø140.6 x 5.00; seat Ø122.6; bore Ø102.2; seat depth 11.50; BCD 130.0 | Radiator flange drops into the seat without force; the clamp ring bottoms on the ledge while loading the flange | `hole_diameter_offset`, `xy_scale_correction_fraction` |
+| Radiator flange thickness | Measure the radiator's actual flange thickness | 4.00 mm assumed | Enter the measured value in `config/components.yaml` | `components.yaml: flange_thickness_mm` |
+| Heat-set insert | Four blind bores | Ø4.0/4.1/4.2/4.3 x 7.2 mm for a Ø4.6 M3 insert | Select the smallest bore that accepts the insert flush without cracking, then pull-test to 250 N | `insert_hole_diameter_offset` |
 | Gasket compression | 2.0 mm EPDM sample between stops | 1.50 mm assembled | 1.45–1.55 mm immediately; ≥1.40 mm after 24 h; no extrusion into opening | `gasket_groove_depth_offset` |
 | Cable passage | TPU gland in divider-thickness plate | Ø8.0 hole; Ø8.3 gland body | Gland installs without tearing; wires resist 20 N pull; leak test passes | `cable_passage_offset` |
+
+The official threaded mid-plate and lock ring are **not** coupon-tested here.
+This design does not reproduce that interface: those parts are printed from
+the unmodified official files, so their thread fit belongs to the official
+geometry. The interface this project derives is the official four-point mount,
+which the official-interface coupon covers.
 
 ## Feedback procedure
 

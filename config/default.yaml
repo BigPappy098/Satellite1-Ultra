@@ -14,7 +14,7 @@ enclosure:
   cable_passage_x: 34.0
   cable_passage_y: 64.0
   grille_width_margin: 32.0
-  grille_depth_margin: 24.0
+  grille_depth_margin: 32.0
   acoustic_top_z: -33.0
   acoustic_bottom_z: -194.0
   base_bottom_z: -216.0

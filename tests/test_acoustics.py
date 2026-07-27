@@ -13,6 +13,7 @@ from satellite1_ultra.acoustics import (
     sealed_response,
     simulate,
 )
+from satellite1_ultra.analysis import _f3, build_model, optimal_tuning_hz
 
 
 @pytest.fixture
@@ -34,7 +35,7 @@ def driver() -> Driver:
 def radiator() -> PassiveRadiator:
     return PassiveRadiator(
         count=2,
-        mms_kg=0.03934,
+        mms_kg=0.0202,
         cms_m_per_n=0.00121,
         rms_kg_per_s=0.32,
         sd_m2=0.005,
@@ -45,29 +46,30 @@ def radiator() -> PassiveRadiator:
 @pytest.fixture
 def system() -> System:
     return System(
-        volume_m3=0.0021,
+        volume_m3=0.00345,
         leak_q=7.0,
-        target_tuning_hz=52.0,
+        target_tuning_hz=60.0,
         amplifier_voltage_rms=10.0,
         amplifier_peak_current_a=6.0,
     )
 
 
-def test_required_pr_mass(radiator: PassiveRadiator) -> None:
-    mass = required_pr_moving_mass(radiator, 0.0021, 52.0)
-    assert mass == pytest.approx(0.03934, rel=0.002)
-    assert mass - 0.0192 == pytest.approx(0.02014, rel=0.003)
+def test_required_pr_mass_matches_the_closed_form(radiator: PassiveRadiator) -> None:
+    mass = required_pr_moving_mass(radiator, 0.00345, 60.0)
+    stiffness = 1.0 / radiator.cms_m_per_n + (
+        radiator.count * 1.204 * 343.0**2 * radiator.sd_m2**2 / 0.00345
+    )
+    assert mass == pytest.approx(stiffness / (2.0 * np.pi * 60.0) ** 2, rel=1e-9)
 
 
-def test_coupled_response_is_finite(
+def test_coupled_response_is_finite_and_amplifier_safe(
     driver: Driver, radiator: PassiveRadiator, system: System
 ) -> None:
     frequency = np.geomspace(20.0, 20000.0, 500)
     response = simulate(driver, radiator, system, frequency)
     assert np.all(np.isfinite(response.spl_db))
     assert np.all(np.isfinite(response.maximum_spl_db))
-    assert np.all(np.abs(response.impedance_ohm) > 0)
-    assert np.min(np.abs(response.impedance_ohm)) > 3.0
+    assert np.min(np.abs(response.impedance_ohm)) > 3.2
     assert set(response.limiting_factor) <= {
         "amplifier_voltage",
         "amplifier_current",
@@ -77,10 +79,18 @@ def test_coupled_response_is_finite(
     }
 
 
-def test_passive_radiator_extends_low_frequency_response(
+def test_passive_radiator_materially_extends_bass(
     driver: Driver, radiator: PassiveRadiator, system: System
 ) -> None:
-    frequency = np.array([45.0, 52.0, 60.0, 100.0])
+    frequency = np.geomspace(20.0, 20000.0, 800)
     passive = simulate(driver, radiator, system, frequency).spl_db
     sealed = sealed_response(driver, system, frequency)
-    assert passive[1] > sealed[1] + 3.0
+    assert _f3(frequency, passive) < _f3(frequency, sealed) - 40.0
+
+
+@pytest.mark.requires_official_assets
+def test_configured_tuning_matches_the_optimiser() -> None:
+    model = build_model()
+    alignment = optimal_tuning_hz(model)
+    assert abs(alignment["optimal_tuning_hz"] - model.tuning_hz) <= 3.0
+    assert alignment["optimal_added_mass_each_g"] > 0.0

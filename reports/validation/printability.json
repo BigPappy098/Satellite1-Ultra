@@ -18,25 +18,25 @@
       "material": "TPU 95A",
       "print_orientation": "flat",
       "bounds_mm": [
-        190.0,
-        202.0,
+        188.0,
+        208.0,
         2.0
       ],
-      "largest_dimension_mm": 202.0,
+      "largest_dimension_mm": 208.0,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "part": "outer_grille_cage",
+      "part": "outer_shell",
       "material": "ASA",
-      "print_orientation": "upright, bottom retention ring on bed",
+      "print_orientation": "upright, base band on the bed",
       "bounds_mm": [
-        192.00000000000003,
-        208.0,
-        183.0
+        192.0,
+        212.0,
+        189.0
       ],
-      "largest_dimension_mm": 208.0,
+      "largest_dimension_mm": 212.0,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -74,11 +74,11 @@
       "material": "ASA",
       "print_orientation": "wide divider end on bed",
       "bounds_mm": [
-        160.0000002,
-        180.0000002,
-        27.50000020000001
+        185.0000002,
+        205.0000002,
+        30.50000020000001
       ],
-      "largest_dimension_mm": 180.0000002,
+      "largest_dimension_mm": 205.0000002,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -233,20 +233,6 @@
         3.0
       ],
       "largest_dimension_mm": 120.0,
-      "build_envelope_mm": 256.0,
-      "status": "PASS",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "part": "coupon_threaded_interface",
-      "material": "ASA",
-      "print_orientation": "largest flat face on bed",
-      "bounds_mm": [
-        110.00000020000004,
-        103.2735730167274,
-        20.00000020000003
-      ],
-      "largest_dimension_mm": 110.00000020000004,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

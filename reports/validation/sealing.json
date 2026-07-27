@@ -82,7 +82,7 @@
     },
     {
       "feature": "divider gasket land is a continuous closed rim",
-      "measured_solid_fraction": 0.9999999999999948,
+      "measured_solid_fraction": 0.99999999999999,
       "minimum_solid_fraction": 0.999999,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
