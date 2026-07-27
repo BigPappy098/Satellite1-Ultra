@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import cadquery as cq
-import networkx as nx
+import networkx as nx  # type: ignore[import-untyped]
 
 from satellite1_ultra.configuration import ROOT, load_configuration, load_design_parameters
 from satellite1_ultra.geometry import (
@@ -571,7 +571,7 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
 
 def _min_distance(first: cq.Shape, second: cq.Shape) -> float:
     """Minimum distance between two solids, 0.0 when they touch or overlap."""
-    from OCP.BRepExtrema import BRepExtrema_DistShapeShape
+    from OCP.BRepExtrema import BRepExtrema_DistShapeShape  # type: ignore[import-untyped]
 
     algorithm = BRepExtrema_DistShapeShape(first.wrapped, second.wrapped)
     algorithm.Perform()

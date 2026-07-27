@@ -1,14 +1,465 @@
 {
-  "preliminary_net_volume_l": 3.2,
-  "target_tuning_hz": 50.0,
-  "required_mass_each_g": 30.7987835171613,
-  "added_mass_each_g": 11.598783517161301,
-  "minimum_modeled_impedance_ohm": 4.3921091389713895,
-  "minimum_impedance_frequency_hz": 396.5767898254143,
-  "maximum_spl_at_50_hz_db": 92.45065252014757,
-  "maximum_spl_at_100_hz_db": 92.93101430521011,
-  "recommended_high_pass_hz": 38.0,
+  "evidence": "ENGINEERING_ESTIMATE",
+  "disclaimer": "Lumped-parameter simulation of a half-space radiating system. These are calculated values, not measurements.",
+  "net_acoustic_volume_l": 3.453525866854981,
+  "target_tuning_hz": 60.0,
+  "passive_radiator_count": 2,
+  "published_pr_mms_g": 19.2,
+  "required_pr_moving_mass_each_g": 20.244818146653706,
+  "added_pr_mass_each_g": 1.0448181466537094,
+  "added_pr_mass_total_g": 2.089636293307419,
+  "pr_mass_adjustment_interface": "M6 threaded post on each SB12PACR-00",
+  "minimum_modeled_impedance_ohm": 4.392080888991331,
+  "minimum_impedance_frequency_hz": 393.84405109583474,
+  "amplifier_minimum_load_ohm": 3.2,
+  "impedance_margin_ohm": 1.192080888991331,
+  "sealed_f3_hz": 132.07749795688326,
+  "passive_radiator_f3_hz": 56.91805792388283,
+  "bass_extension_gain_hz": 75.15944003300044,
+  "spl_1v_at_50_hz_db": 66.37441565569874,
+  "sealed_spl_1v_at_50_hz_db": 63.566777358936065,
+  "maximum_spl_at_50_hz_db": 84.71383171547602,
+  "maximum_spl_at_80_hz_db": 93.8711826961503,
+  "maximum_spl_at_100_hz_db": 93.88312146696892,
+  "maximum_spl_at_1_khz_db": 93.06822553895313,
+  "limiting_factor_fraction": {
+    "amplifier_voltage": 0.856,
+    "driver_xmax": 0.144
+  },
+  "driver_excursion_1v_at_tuning_mm": 0.26887007683818986,
+  "pr_excursion_1v_at_tuning_mm": 0.4045684544230274,
+  "thermal_assumption": "Continuous power is capped at the published 30 W RMS rating with no power compression modelled; real compression will reduce maximum SPL.",
+  "conservative_eq_guidance": [
+    "Do not apply low-shelf boost below the recommended high-pass corner.",
+    "Limit any bass shelf to +3 dB between the high-pass corner and 120 Hz and re-check excursion before raising it.",
+    "Apply a gentle 1-2 dB broad cut around the modelled impedance minimum if the amplifier reports current limiting.",
+    "Cone breakup of the ND91-4 aluminium cone sits above 10 kHz; a low-pass or notch there is a listening choice, not a protection need."
+  ],
+  "physical_gate": {
+    "evidence": "REQUIRES_PHYSICAL_VALIDATION",
+    "requirement": "Measure impedance on the assembled cabinet to obtain the real tuning frequency and leakage Q, then re-run this model with the measured values before finalising DSP."
+  },
+  "recommended_high_pass_hz": 51.0,
   "recommended_high_pass_order": 4,
-  "evidence_label": "ENGINEERING_ESTIMATE",
-  "physical_validation": "REQUIRES_PHYSICAL_VALIDATION"
+  "rationale": "Below tuning the passive radiators unload and both excursions rise fastest; a fourth-order high-pass at this corner keeps the modelled excursion inside the linear limits at full amplifier voltage.",
+  "alignment_optimiser": {
+    "optimal_tuning_hz": 59.0,
+    "optimal_f3_hz": 56.216238737688045,
+    "optimal_added_mass_each_g": 1.7368989738446825,
+    "objective": "lowest -3 dB corner subject to passband ripple <= 3.5 dB and added mass >= 0.5 g",
+    "evidence": "ENGINEERING_ESTIMATE"
+  },
+  "alignment_sweep": [
+    {
+      "tuning_hz": 40.0,
+      "required_mass_g": 45.55084082997083,
+      "added_mass_g": 26.35084082997083,
+      "f3_hz": 120.87824569096846,
+      "passband_ripple_db": 2.231440069030242,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 41.0,
+      "required_mass_g": 43.35594606065042,
+      "added_mass_g": 24.155946060650415,
+      "f3_hz": 120.19473355995234,
+      "passband_ripple_db": 2.2098435705238018,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 42.0,
+      "required_mass_g": 41.31595540133409,
+      "added_mass_g": 22.115955401334087,
+      "f3_hz": 119.47266599679656,
+      "passband_ripple_db": 2.2258304227908354,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 43.0,
+      "required_mass_g": 39.416628084344694,
+      "added_mass_g": 20.216628084344695,
+      "f3_hz": 118.70896774204508,
+      "passband_ripple_db": 2.240464452438218,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 44.0,
+      "required_mass_g": 37.6453229999759,
+      "added_mass_g": 18.445322999975904,
+      "f3_hz": 117.89998508308668,
+      "passband_ripple_db": 2.2537303559148825,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 45.0,
+      "required_mass_g": 35.990787816273254,
+      "added_mass_g": 16.790787816273255,
+      "f3_hz": 117.04135210080736,
+      "passband_ripple_db": 2.265468312422442,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 46.0,
+      "required_mass_g": 34.442979833626346,
+      "added_mass_g": 15.242979833626348,
+      "f3_hz": 116.12781712503104,
+      "passband_ripple_db": 2.275575549893688,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 47.0,
+      "required_mass_g": 32.99291323130526,
+      "added_mass_g": 13.79291323130526,
+      "f3_hz": 115.15301490994308,
+      "passband_ripple_db": 2.283947546562601,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 48.0,
+      "required_mass_g": 31.632528354146412,
+      "added_mass_g": 12.432528354146415,
+      "f3_hz": 114.1091636945164,
+      "passband_ripple_db": 2.2905053527350248,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 49.0,
+      "required_mass_g": 30.35457947853117,
+      "added_mass_g": 11.154579478531174,
+      "f3_hz": 112.98665666603652,
+      "passband_ripple_db": 2.2951555098281062,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 50.0,
+      "required_mass_g": 29.15253813118133,
+      "added_mass_g": 9.952538131181333,
+      "f3_hz": 111.77348226978225,
+      "passband_ripple_db": 2.333351864158402,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 51.0,
+      "required_mass_g": 28.02050954554146,
+      "added_mass_g": 8.820509545541464,
+      "f3_hz": 110.453826831578,
+      "passband_ripple_db": 2.3331102052041786,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 52.0,
+      "required_mass_g": 26.953160254420606,
+      "added_mass_g": 7.753160254420608,
+      "f3_hz": 109.00675580630808,
+      "passband_ripple_db": 2.364992005484666,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 53.0,
+      "required_mass_g": 25.94565515413077,
+      "added_mass_g": 6.7456551541307705,
+      "f3_hz": 107.40294453878323,
+      "passband_ripple_db": 2.392970838014179,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 54.0,
+      "required_mass_g": 24.99360265018976,
+      "added_mass_g": 5.7936026501897615,
+      "f3_hz": 105.59909956832553,
+      "passband_ripple_db": 2.416522830217417,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 55.0,
+      "required_mass_g": 24.093006719984572,
+      "added_mass_g": 4.893006719984574,
+      "f3_hz": 103.52858329340717,
+      "passband_ripple_db": 2.4672842547220597,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 56.0,
+      "required_mass_g": 23.240224913250422,
+      "added_mass_g": 4.040224913250425,
+      "f3_hz": 101.0699073223622,
+      "passband_ripple_db": 2.510327266906259,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 57.0,
+      "required_mass_g": 22.43193146443624,
+      "added_mass_g": 3.23193146443624,
+      "f3_hz": 97.9737599754493,
+      "passband_ripple_db": 2.5736566995120995,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 58.0,
+      "required_mass_g": 21.665084818059846,
+      "added_mass_g": 2.4650848180598484,
+      "f3_hz": 93.46236141674913,
+      "passband_ripple_db": 2.6763791793468243,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 59.0,
+      "required_mass_g": 20.93689897384468,
+      "added_mass_g": 1.7368989738446825,
+      "f3_hz": 56.216238737688045,
+      "passband_ripple_db": 3.146489501931697,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 60.0,
+      "required_mass_g": 20.244818146653706,
+      "added_mass_g": 1.0448181466537094,
+      "f3_hz": 56.92038401002995,
+      "passband_ripple_db": 2.982473331033134,
+      "feasible": true
+    },
+    {
+      "tuning_hz": 61.0,
+      "required_mass_g": 19.586494310119143,
+      "added_mass_g": 0.38649431011914326,
+      "f3_hz": 57.64424124866069,
+      "passband_ripple_db": 2.8244341661506667,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 62.0,
+      "required_mass_g": 18.959767254930632,
+      "added_mass_g": -0.24023274506936726,
+      "f3_hz": 58.379855353513705,
+      "passband_ripple_db": 2.6722519302924894,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 63.0,
+      "required_mass_g": 18.36264684503737,
+      "added_mass_g": -0.8373531549626285,
+      "f3_hz": 59.121040680628006,
+      "passband_ripple_db": 2.5256894220498793,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 64.0,
+      "required_mass_g": 17.793297199207355,
+      "added_mass_g": -1.4067028007926432,
+      "f3_hz": 59.87494818603168,
+      "passband_ripple_db": 2.384512507948287,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 65.0,
+      "required_mass_g": 17.250022562829194,
+      "added_mass_g": -1.949977437170805,
+      "f3_hz": 60.63315359923077,
+      "passband_ripple_db": 2.248666740059093,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 66.0,
+      "required_mass_g": 16.73125466665595,
+      "added_mass_g": -2.468745333344048,
+      "f3_hz": 61.39381487191855,
+      "passband_ripple_db": 2.117841684144963,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 67.0,
+      "required_mass_g": 16.235541396291676,
+      "added_mass_g": -2.9644586037083225,
+      "f3_hz": 62.16360609231757,
+      "passband_ripple_db": 1.9919397495831106,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 68.0,
+      "required_mass_g": 15.761536619367067,
+      "added_mass_g": -3.4384633806329306,
+      "f3_hz": 62.93359123242743,
+      "passband_ripple_db": 1.870784434970247,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 69.0,
+      "required_mass_g": 15.30799103716726,
+      "added_mass_g": -3.8920089628327377,
+      "f3_hz": 63.707616576856076,
+      "passband_ripple_db": 1.7541946817544556,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 70.0,
+      "required_mass_g": 14.873743944480273,
+      "added_mass_g": -4.326256055519725,
+      "f3_hz": 64.48472045795906,
+      "passband_ripple_db": 1.6714633859260601,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 71.0,
+      "required_mass_g": 14.45771579606295,
+      "added_mass_g": -4.742284203937049,
+      "f3_hz": 65.26195698870924,
+      "passband_ripple_db": 1.7786695453183086,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 72.0,
+      "required_mass_g": 14.058901490731738,
+      "added_mass_g": -5.14109850926826,
+      "f3_hz": 66.04401798547113,
+      "passband_ripple_db": 1.8197446354360522,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 73.0,
+      "required_mass_g": 13.676364294980923,
+      "added_mass_g": -5.523635705019075,
+      "f3_hz": 66.82423735289429,
+      "passband_ripple_db": 1.9236396052340865,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 74.0,
+      "required_mass_g": 13.309230337464086,
+      "added_mass_g": -5.890769662535912,
+      "f3_hz": 67.60967486699333,
+      "passband_ripple_db": 1.9626471148463622,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 75.0,
+      "required_mass_g": 12.956683613858372,
+      "added_mass_g": -6.243316386141626,
+      "f3_hz": 68.39282314762787,
+      "passband_ripple_db": 2.0629513628702227,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 76.0,
+      "required_mass_g": 12.617961448745385,
+      "added_mass_g": -6.582038551254613,
+      "f3_hz": 69.18023965869419,
+      "passband_ripple_db": 2.10022120039595,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 77.0,
+      "required_mass_g": 12.292350367339068,
+      "added_mass_g": -6.907649632660931,
+      "f3_hz": 69.96559206109356,
+      "passband_ripple_db": 2.197195388681081,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 78.0,
+      "required_mass_g": 11.97918233529805,
+      "added_mass_g": -7.220817664701947,
+      "f3_hz": 70.75453432981756,
+      "passband_ripple_db": 2.2328004562640444,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 79.0,
+      "required_mass_g": 11.67783132958714,
+      "added_mass_g": -7.52216867041286,
+      "f3_hz": 71.54204112222132,
+      "passband_ripple_db": 2.3264899523987594,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 80.0,
+      "required_mass_g": 11.387710207492708,
+      "added_mass_g": -7.812289792507291,
+      "f3_hz": 72.33160149615236,
+      "passband_ripple_db": 2.3606284173703074,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 81.0,
+      "required_mass_g": 11.108267844528783,
+      "added_mass_g": -8.091732155471217,
+      "f3_hz": 73.12103117518531,
+      "passband_ripple_db": 2.4515680085933838,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 82.0,
+      "required_mass_g": 10.838986515162604,
+      "added_mass_g": -8.361013484837395,
+      "f3_hz": 73.91066191925869,
+      "passband_ripple_db": 2.538598727064212,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 83.0,
+      "required_mass_g": 10.579379493098173,
+      "added_mass_g": -8.620620506901824,
+      "f3_hz": 74.70183257387203,
+      "passband_ripple_db": 2.5726774208384313,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 84.0,
+      "required_mass_g": 10.328988850333522,
+      "added_mass_g": -8.871011149666478,
+      "f3_hz": 75.49219135993528,
+      "passband_ripple_db": 2.6574947844321173,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 85.0,
+      "required_mass_g": 10.087383436394925,
+      "added_mass_g": -9.112616563605075,
+      "f3_hz": 76.28386012613727,
+      "passband_ripple_db": 2.7385514951050425,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 86.0,
+      "required_mass_g": 9.854157021086174,
+      "added_mass_g": -9.345842978913826,
+      "f3_hz": 77.07581098041378,
+      "passband_ripple_db": 2.7735674093587477,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 87.0,
+      "required_mass_g": 9.628926585804379,
+      "added_mass_g": -9.57107341419562,
+      "f3_hz": 77.86733725961078,
+      "passband_ripple_db": 2.8532837667490583,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 88.0,
+      "required_mass_g": 9.411330749993976,
+      "added_mass_g": -9.788669250006024,
+      "f3_hz": 78.66008780912628,
+      "passband_ripple_db": 2.9294628754253296,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 89.0,
+      "required_mass_g": 9.201028320660688,
+      "added_mass_g": -9.99897167933931,
+      "f3_hz": 79.45304424161036,
+      "passband_ripple_db": 2.9908945728270453,
+      "feasible": false
+    },
+    {
+      "tuning_hz": 90.0,
+      "required_mass_g": 8.997696954068314,
+      "added_mass_g": -10.202303045931686,
+      "f3_hz": 80.24578155924135,
+      "passband_ripple_db": 3.1163531942739837,
+      "feasible": false
+    }
+  ],
+  "tuning_matches_optimum": true,
+  "tuning_deviation_hz": 1.0,
+  "status": "PASS"
 }

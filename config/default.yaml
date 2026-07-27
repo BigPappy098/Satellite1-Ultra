@@ -66,13 +66,11 @@ acoustics:
   passive_radiator: sb_acoustics_sb12pacr_00
   fallback_passive_radiator: dayton_dma105_pr
   passive_radiator_count: 2
-  target_tuning_hz: 50.0
+  target_tuning_hz: 60.0
   leakage_q: 7.0
   damping_volume_fraction: 0.02
   amplifier_voltage_rms: 10.0
   amplifier_peak_current_a: 6.0
-  recommended_high_pass_hz: 38.0
-  recommended_high_pass_order: 4
 
 ballast:
   target_mass_g: 1100

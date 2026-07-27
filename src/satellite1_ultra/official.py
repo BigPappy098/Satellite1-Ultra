@@ -29,6 +29,7 @@ import cadquery as cq
 import numpy as np
 import trimesh
 from cadquery import importers
+from numpy.typing import NDArray
 
 ROOT = Path(__file__).resolve().parents[2]
 OFFICIAL = ROOT / "reference-assets" / "official" / "Satellite1-Enclosures"
@@ -170,12 +171,13 @@ def load_official_mesh(part: OfficialPart) -> trimesh.Trimesh:
         raise FileNotFoundError(part.mesh or part.relative_path)
     mesh = trimesh.load_mesh(str(part.mesh), process=False)
     mesh.apply_translation(np.asarray(part.translation, dtype=np.float64))
-    return cast(trimesh.Trimesh, mesh)
+    assert isinstance(mesh, trimesh.Trimesh)
+    return mesh
 
 
-def _band_hull_prism(points: np.ndarray, z0: float, z1: float) -> cq.Shape | None:
+def _band_hull_prism(points: NDArray[np.float64], z0: float, z1: float) -> cq.Shape | None:
     """Convex hull of ``points`` in XY, extruded from ``z0`` to ``z1``."""
-    from scipy.spatial import ConvexHull, QhullError
+    from scipy.spatial import ConvexHull, QhullError  # type: ignore[import-untyped]
 
     if len(points) < 3:
         return None
@@ -183,7 +185,9 @@ def _band_hull_prism(points: np.ndarray, z0: float, z1: float) -> cq.Shape | Non
         hull = ConvexHull(points[:, :2])
     except (QhullError, ValueError):
         return None
-    loop = [tuple(points[index, :2]) for index in hull.vertices]
+    loop: list[tuple[float, float]] = [
+        (float(points[index, 0]), float(points[index, 1])) for index in hull.vertices
+    ]
     if len(loop) < 3:
         return None
     return cast(
