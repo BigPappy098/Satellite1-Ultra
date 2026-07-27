@@ -1,0 +1,14 @@
+{
+  "preliminary_net_volume_l": 3.2,
+  "target_tuning_hz": 50.0,
+  "required_mass_each_g": 30.7987835171613,
+  "added_mass_each_g": 11.598783517161301,
+  "minimum_modeled_impedance_ohm": 4.3921091389713895,
+  "minimum_impedance_frequency_hz": 396.5767898254143,
+  "maximum_spl_at_50_hz_db": 92.45065252014757,
+  "maximum_spl_at_100_hz_db": 92.93101430521011,
+  "recommended_high_pass_hz": 38.0,
+  "recommended_high_pass_order": 4,
+  "evidence_label": "ENGINEERING_ESTIMATE",
+  "physical_validation": "REQUIRES_PHYSICAL_VALIDATION"
+}

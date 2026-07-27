@@ -1,0 +1,9 @@
+file,source_url,retrieval_date,sha256,evidence_label
+Dayton_DMA105-PR_spec.pdf,https://www.daytonaudio.com/images/resources/295-590--dayton-audio-dma105-pr-spec-sheet.pdf,2026-07-27,3b18854fdb81278b0b918290d016cd672995f7eac823b4e323ad1575ec30be9b,DERIVED_FROM_MANUFACTURER_DRAWING
+Dayton_ND91-4_Klippel.pdf,https://www.daytonaudio.com/images/resources/290-226--nd91-4-klippel-data.pdf,2026-07-27,1cb60e26f04f5ae39d34b1a5058cf32a7bc1f881f05a9f7edf5f929f67b8f3ca,DERIVED_FROM_MANUFACTURER_DRAWING
+Dayton_ND91-4_spec_2026-02-26.pdf,https://www.daytonaudio.com/images/resources/290-226--dayton-audio-nd91-4-specifications.pdf,2026-07-27,261aa33d48543b9b2386342f1f59647bfe833c379cd67a1e5e1580327956f8e9,DERIVED_FROM_MANUFACTURER_DRAWING
+SB_Acoustics_SB12PACR-00.pdf,https://sbacoustics.com/wp-content/uploads/2020/02/SB12PACR-00.pdf,2026-07-27,4d1e099f7f267307920ceb65e4263aaf3481bd7354243470c7cfdbfd0fa37295,DERIVED_FROM_MANUFACTURER_DRAWING
+SB_Acoustics_SB12PFCR-00.pdf,https://sbacoustics.com/wp-content/uploads/2020/02/SB12PFCR-00.pdf,2026-07-27,838affa3bac7a257dafc27bffca21b17e24f33c342400ea1c375064146b9a316,DERIVED_FROM_MANUFACTURER_DRAWING
+ScanSpeak_10F-4424G00_advanced.pdf,https://www.scan-speak.dk/datasheet/pdf/10f-4424g00.pdf,2026-07-27,69a545f594f96e85bf94939ea6bd9cecb5b7fc81b81cd7eb0083a6a1d6c8b968,DERIVED_FROM_MANUFACTURER_DRAWING
+TI_TAS2780_revB.pdf,https://www.ti.com/lit/ds/symlink/tas2780.pdf,2026-07-27,f7df09c64b3de67db154fc83d55e7c95c883a8c39b946a6f6518eded0afd0270,DERIVED_FROM_MANUFACTURER_DRAWING
+Tectonic_TEBM65C20F-4_rev1.2.pdf,https://www.tectonicaudiolabs.com/wp-content/uploads/2022/10/TEBM65C20F-4-Rev-1.2.pdf,2026-07-27,9627ff7ba6a29a706242bb57e4d9f810120a9350dc2d336af42445f6e8370d1c,DERIVED_FROM_MANUFACTURER_DRAWING

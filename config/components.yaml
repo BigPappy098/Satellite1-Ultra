@@ -1,0 +1,301 @@
+evidence_labels:
+  manufacturer_data: DERIVED_FROM_MANUFACTURER_DRAWING
+  scores: ENGINEERING_ESTIMATE
+  prices_and_availability: ENGINEERING_ESTIMATE
+
+selection:
+  active_driver_primary: dayton_nd91_4
+  active_driver_fallback: tectonic_tebm65c20f_4
+  passive_radiator_primary: sb_acoustics_sb12pacr_00
+  passive_radiator_fallback: dayton_dma105_pr
+  architecture: one_active_two_opposed_passive_radiators
+
+active_drivers:
+  dayton_nd91_4:
+    manufacturer: Dayton Audio
+    model: ND91-4
+    nominal_impedance_ohm: 4.0
+    minimum_impedance_ohm: 4.3
+    re_ohm: 4.3
+    le_mh: 0.83
+    fs_hz: 74.0
+    qms: 4.24
+    qes: 0.45
+    qts: 0.41
+    vas_l: 1.4
+    mms_g: 4.8
+    cms_mm_per_n: 0.96
+    rms_kg_per_s: 0.53
+    bl_tm: 4.59
+    sd_cm2: 30.4
+    xmax_mm: 4.6
+    rated_power_w: 30.0
+    sensitivity_2v83_db: 85.6
+    frequency_min_hz: 65.0
+    frequency_max_hz: 17000.0
+    outer_diameter_mm: 103.2
+    cutout_diameter_mm: 88.5
+    bolt_circle_mm: 93.3
+    mounting_hole_diameter_mm: 4.0
+    mounting_holes: 4
+    depth_mm: 63.4
+    displacement_l: 0.10
+    price_usd: 36.99
+    source: references/manufacturer/Dayton_ND91-4_spec_2026-02-26.pdf
+    distortion_source: references/manufacturer/Dayton_ND91-4_Klippel.pdf
+  scanspeak_10f_4424g00:
+    manufacturer: Scan-Speak
+    model: 10F/4424G00
+    nominal_impedance_ohm: 4.0
+    minimum_impedance_ohm: 3.4
+    re_ohm: 3.22
+    le_mh: 0.22
+    fs_hz: 90.0
+    qms: 2.0
+    qes: 0.34
+    qts: 0.29
+    vas_l: 2.0
+    mms_g: 3.1
+    cms_mm_per_n: 0.72
+    rms_kg_per_s: 0.80
+    bl_tm: 4.10
+    sd_cm2: 35.0
+    xmax_mm: 3.0
+    rated_power_w: 25.0
+    sensitivity_2v83_db: 90.0
+    frequency_min_hz: 80.0
+    frequency_max_hz: 20000.0
+    outer_diameter_mm: 100.0
+    cutout_diameter_mm: 79.0
+    bolt_circle_mm: 89.0
+    mounting_hole_diameter_mm: 4.2
+    mounting_holes: 4
+    depth_mm: 48.0
+    displacement_l: 0.08
+    price_usd: 124.0
+    source: https://www.scan-speak.dk/datasheet/pdf/10f-4424g00.pdf
+  tectonic_tebm65c20f_4:
+    manufacturer: Tectonic Audio Labs
+    model: TEBM65C20F-4
+    nominal_impedance_ohm: 4.0
+    minimum_impedance_ohm: 3.4
+    re_ohm: 3.4
+    le_mh: 0.15
+    fs_hz: 97.0
+    qms: 3.0
+    qes: 0.65
+    qts: 0.53
+    vas_l: 1.3
+    mms_g: 3.8
+    cms_mm_per_n: 0.71
+    rms_kg_per_s: 0.77
+    bl_tm: 3.0
+    sd_cm2: 34.0
+    xmax_mm: 3.0
+    rated_power_w: 30.0
+    sensitivity_2v83_db: 84.0
+    frequency_min_hz: 60.0
+    frequency_max_hz: 20000.0
+    outer_diameter_mm: 108.0
+    cutout_diameter_mm: 93.0
+    bolt_circle_mm: 99.0
+    mounting_hole_diameter_mm: 4.0
+    mounting_holes: 4
+    depth_mm: 40.0
+    displacement_l: 0.09
+    price_usd: 45.0
+    source: references/manufacturer/Tectonic_TEBM65C20F-4_rev1.2.pdf
+    caveat: T/S values not fully published in the cited revision; non-published values are engineering estimates and require impedance measurement before final DSP.
+  faitalpro_3fe25_4:
+    manufacturer: FaitalPRO
+    model: 3FE25-4
+    nominal_impedance_ohm: 4.0
+    minimum_impedance_ohm: 3.3
+    re_ohm: 3.3
+    le_mh: 0.04
+    fs_hz: 110.0
+    qms: 4.1
+    qes: 0.79
+    qts: 0.66
+    vas_l: 1.3
+    mms_g: 2.4
+    cms_mm_per_n: 0.87
+    rms_kg_per_s: 0.40
+    bl_tm: 3.0
+    sd_cm2: 33.0
+    xmax_mm: 1.7
+    rated_power_w: 20.0
+    sensitivity_2v83_db: 91.0
+    frequency_min_hz: 100.0
+    frequency_max_hz: 20000.0
+    outer_diameter_mm: 105.6
+    cutout_diameter_mm: 73.6
+    bolt_circle_mm: 92.0
+    mounting_hole_diameter_mm: 4.5
+    mounting_holes: 4
+    depth_mm: 54.5
+    displacement_l: 0.125
+    price_usd: 29.0
+    source: https://faitalpro.com/en/products/LF_Loudspeakers/product_details/index.php?id=401000150
+  sb_acoustics_sb10pgc21_4:
+    manufacturer: SB Acoustics
+    model: SB10PGC21-4
+    nominal_impedance_ohm: 4.0
+    minimum_impedance_ohm: 3.4
+    re_ohm: 3.4
+    le_mh: 0.15
+    fs_hz: 89.0
+    qms: 11.2
+    qes: 1.01
+    qts: 0.92
+    vas_l: 1.2
+    mms_g: 2.8
+    cms_mm_per_n: 1.14
+    rms_kg_per_s: 0.14
+    bl_tm: 2.3
+    sd_cm2: 27.0
+    xmax_mm: 2.25
+    rated_power_w: 20.0
+    sensitivity_2v83_db: 84.0
+    frequency_min_hz: 90.0
+    frequency_max_hz: 20000.0
+    outer_diameter_mm: 95.5
+    cutout_diameter_mm: 73.6
+    bolt_circle_mm: 85.0
+    mounting_hole_diameter_mm: 3.3
+    mounting_holes: 4
+    depth_mm: 44.2
+    displacement_l: 0.07
+    price_usd: 55.0
+    source: https://sbacoustics.com/wp-content/uploads/2020/02/3in-SB10PGC21-4.pdf
+  markaudio_chn50p:
+    manufacturer: Markaudio
+    model: CHN-50P MICA
+    nominal_impedance_ohm: 4.0
+    minimum_impedance_ohm: 3.3
+    re_ohm: 3.3
+    le_mh: 0.06
+    fs_hz: 126.24
+    qms: 2.723
+    qes: 0.708
+    qts: 0.562
+    vas_l: 1.2475
+    mms_g: 1.422
+    cms_mm_per_n: 1.1175
+    rms_kg_per_s: 0.414
+    bl_tm: 2.2925
+    sd_cm2: 28.0
+    xmax_mm: 3.5
+    rated_power_w: 7.0
+    sensitivity_2v83_db: 87.52
+    frequency_min_hz: 120.0
+    frequency_max_hz: 28000.0
+    outer_diameter_mm: 102.9
+    cutout_diameter_mm: 70.0
+    bolt_circle_mm: 89.2
+    mounting_hole_diameter_mm: 4.2
+    mounting_holes: 5
+    depth_mm: 45.6
+    displacement_l: 0.07
+    price_usd: 35.0
+    source: https://www.markaudio.com/online_shop/ch/chn-50p-mica/
+  peerless_tc9fd18_08:
+    manufacturer: Peerless by Tymphany
+    model: TC9FD18-08
+    nominal_impedance_ohm: 8.0
+    minimum_impedance_ohm: 7.0
+    re_ohm: 6.2
+    le_mh: 0.108
+    fs_hz: 130.0
+    qms: 2.97
+    qes: 1.44
+    qts: 0.97
+    vas_l: 0.978
+    mms_g: 2.67
+    cms_mm_per_n: 0.52
+    rms_kg_per_s: 0.73
+    bl_tm: 3.13
+    sd_cm2: 36.3
+    xmax_mm: 3.88
+    rated_power_w: 30.0
+    sensitivity_2v83_db: 84.0
+    frequency_min_hz: 70.0
+    frequency_max_hz: 20000.0
+    outer_diameter_mm: 83.75
+    cutout_diameter_mm: 75.0
+    bolt_circle_mm: 78.0
+    mounting_hole_diameter_mm: 4.0
+    mounting_holes: 4
+    depth_mm: 42.0
+    displacement_l: 0.07
+    price_usd: 18.0
+    source: https://doc.soundimports.nl/pdf/brands/Peerless%20by%20Tymphany/TC9FD18-08/TC9FD18-08.pdf
+
+passive_radiators:
+  sb_acoustics_sb12pacr_00:
+    manufacturer: SB Acoustics
+    model: SB12PACR-00
+    count: 2
+    sd_cm2: 50.0
+    fs_hz: 33.0
+    qms: 12.4
+    mms_g: 19.2
+    cms_mm_per_n: 1.21
+    rms_kg_per_s: 0.32
+    xmech_mm: 9.0
+    design_excursion_mm: 7.2
+    outer_diameter_mm: 122.0
+    basket_diameter_mm: 111.5
+    cutout_diameter_mm: 102.0
+    bolt_circle_mm: 111.5
+    mounting_hole_diameter_mm: 4.3
+    mounting_holes: 4
+    depth_mm: 38.3
+    displacement_l_estimate: 0.06
+    adjustable_mass_thread: M6
+    price_usd_each: 45.0
+    source: references/manufacturer/SB_Acoustics_SB12PACR-00.pdf
+  dayton_dma105_pr:
+    manufacturer: Dayton Audio
+    model: DMA105-PR
+    count: 2
+    sd_cm2: 54.1
+    fs_hz: 37.9
+    qms: 7.8
+    mms_g: 29.3
+    cms_mm_per_n: 0.60
+    rms_kg_per_s: 0.90
+    xmech_mm: 9.0
+    design_excursion_mm: 7.2
+    outer_diameter_mm: 104.1
+    basket_diameter_mm: 100.0
+    cutout_diameter_mm: 98.4
+    bolt_circle_mm: 96.0
+    mounting_hole_diameter_mm: 4.0
+    mounting_holes: 4
+    depth_mm: 55.1
+    displacement_l_estimate: 0.07
+    adjustable_mass_thread: threaded_post
+    price_usd_each: 25.0
+    source: references/manufacturer/Dayton_DMA105-PR_spec.pdf
+
+scoring:
+  scale: 1_to_10
+  weights:
+    bandwidth_and_response: 0.20
+    displacement_and_bass: 0.15
+    amplifier_match: 0.15
+    distortion_and_motor: 0.15
+    breakup_and_directivity: 0.10
+    sensitivity: 0.10
+    mechanical_fit: 0.05
+    thermal_power: 0.05
+    availability_cost: 0.05
+  candidates:
+    dayton_nd91_4: [8.0, 10.0, 9.0, 9.0, 7.0, 7.0, 9.0, 9.0, 9.0]
+    scanspeak_10f_4424g00: [9.5, 7.0, 9.0, 9.5, 9.0, 9.0, 9.0, 8.0, 5.0]
+    tectonic_tebm65c20f_4: [9.0, 6.5, 9.0, 8.0, 10.0, 5.0, 8.0, 9.0, 7.0]
+    faitalpro_3fe25_4: [8.0, 3.0, 9.0, 8.0, 8.0, 10.0, 8.0, 7.0, 9.0]
+    sb_acoustics_sb10pgc21_4: [8.5, 4.0, 9.0, 8.0, 9.0, 6.0, 9.0, 7.0, 6.0]
+    markaudio_chn50p: [9.0, 4.0, 6.0, 8.0, 9.0, 8.0, 8.0, 3.0, 8.0]
+    peerless_tc9fd18_08: [8.0, 5.0, 7.0, 8.0, 8.0, 6.0, 10.0, 8.0, 9.0]
