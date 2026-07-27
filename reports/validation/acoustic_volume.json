@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "evidence": "VERIFIED_DIGITALLY",
+  "gross_inner_prism_l": 3.5012899010558054,
+  "connected_air_before_damping_l": 2.7041714344908345,
+  "modeled_intrusions_and_components_l": 0.797118466564971,
+  "damping_allowance_fraction": 0.02,
+  "damping_displacement_l": 0.05408342868981669,
+  "net_acoustic_volume_l": 2.6500880058010177,
+  "pressure_boundary": [
+    "integral cabinet walls and acoustic floor",
+    "compressed divider gasket",
+    "compressed active-carrier and driver gaskets",
+    "two compressed radiator-carrier and component gaskets",
+    "TPU interference gland around speaker wire"
+  ],
+  "physical_gate": {
+    "evidence": "REQUIRES_PHYSICAL_VALIDATION",
+    "requirement": "Measure water-equivalent or gas-displacement volume on the sealed print."
+  }
+}

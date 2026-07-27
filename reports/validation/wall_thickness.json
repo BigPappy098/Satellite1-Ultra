@@ -1,0 +1,123 @@
+{
+  "status": "PASS",
+  "method": "parameter and construction-feature audit",
+  "evidence": "VERIFIED_DIGITALLY",
+  "checks": [
+    {
+      "feature": "general cabinet wall",
+      "actual_mm": 4.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.7999999999999998,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "active and radiator carrier",
+      "actual_mm": 6.0,
+      "minimum_mm": 5.0,
+      "margin_mm": 1.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "acoustic floor",
+      "actual_mm": 8.0,
+      "minimum_mm": 5.0,
+      "margin_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pressure divider",
+      "actual_mm": 4.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.7999999999999998,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "gasket land",
+      "actual_mm": 5.0,
+      "minimum_mm": 4.0,
+      "margin_mm": 1.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "heat-set insert radial wall",
+      "actual_mm": 2.3999999999999995,
+      "minimum_mm": 2.0,
+      "margin_mm": 0.39999999999999947,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "carrier compression stop radius",
+      "actual_mm": 2.4,
+      "minimum_mm": 2.0,
+      "margin_mm": 0.3999999999999999,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "radiator compression stop radius",
+      "actual_mm": 3.0,
+      "minimum_mm": 2.4,
+      "margin_mm": 0.6000000000000001,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "rear structural spine",
+      "actual_mm": 10.0,
+      "minimum_mm": 6.0,
+      "margin_mm": 4.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "bottom service plate",
+      "actual_mm": 4.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.7999999999999998,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "ballast tray floor",
+      "actual_mm": 4.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.7999999999999998,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "ballast retaining wall",
+      "actual_mm": 4.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.7999999999999998,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "grille cage guard",
+      "actual_mm": 3.0,
+      "minimum_mm": 2.4,
+      "margin_mm": 0.6000000000000001,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "grille cage rail",
+      "actual_mm": 4.0,
+      "minimum_mm": 3.2,
+      "margin_mm": 0.7999999999999998,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    }
+  ],
+  "physical_gate": {
+    "evidence": "REQUIRES_PHYSICAL_VALIDATION",
+    "requirement": "Section one sacrificial print and compare walls to slicer and caliper values."
+  }
+}

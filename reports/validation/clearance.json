@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "evidence": "VERIFIED_DIGITALLY",
+  "clearances": [
+    {
+      "feature": "passive radiator outward excursion to grille guard",
+      "nominal_mm": 3.0,
+      "minimum_mm": 2.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "active driver flange to removable grille guard",
+      "nominal_mm": 7.0,
+      "minimum_mm": 2.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "active driver rear motor to cabinet rear inner wall",
+      "nominal_mm": 94.1,
+      "minimum_mm": 10.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "passive radiator rear excursion to center plane",
+      "nominal_mm": 33.7,
+      "minimum_mm": 10.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "driver lower envelope to acoustic floor",
+      "nominal_mm": 46.400000000000006,
+      "minimum_mm": 8.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "radiator lower envelope to acoustic floor",
+      "nominal_mm": -4.0,
+      "minimum_mm": -5.0,
+      "note": "Flange overhang is outside the pressure cavity; basket/floor collision is separately tested.",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "print radial assembly allowance",
+      "nominal_mm": 0.3,
+      "minimum_mm": 0.2,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "gasket compression",
+      "nominal_mm": 0.5,
+      "minimum_mm": 0.4,
+      "maximum_mm": 0.6,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    }
+  ],
+  "tolerance_note": "Physical coupon corrections are applied through config/physical_compensation.yaml."
+}

@@ -1,9 +1,17 @@
-*.step filter=lfs diff=lfs merge=lfs -text
-*.stp filter=lfs diff=lfs merge=lfs -text
-*.stl filter=lfs diff=lfs merge=lfs -text
-*.3mf filter=lfs diff=lfs merge=lfs -text
-*.pdf filter=lfs diff=lfs merge=lfs -text
-*.png filter=lfs diff=lfs merge=lfs -text
-*.jpg filter=lfs diff=lfs merge=lfs -text
-*.jpeg filter=lfs diff=lfs merge=lfs -text
-
+# Binary engineering assets. This repository stores them as ordinary Git blobs.
+#
+# Git LFS is intentionally NOT used: the preserved official reference assets were
+# committed as plain blobs in the Codex history (commit c229948), that history is
+# preserved rather than rewritten, and a mixed plain/LFS object store would make
+# `reference-assets/MANIFEST.csv` checksum verification depend on whether the
+# cloning machine happened to have git-lfs installed. See
+# reports/CLAUDE_TAKEOVER_AUDIT.md, finding F-009.
+*.step  -text
+*.stp   -text
+*.stl   -text
+*.3mf   -text
+*.pdf   -text
+*.png   -text
+*.jpg   -text
+*.jpeg  -text
+*.dxf   -text

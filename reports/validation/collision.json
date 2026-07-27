@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "evidence": "VERIFIED_DIGITALLY",
+  "part_count": 23,
+  "pair_count": 253,
+  "positive_volume_contacts": [
+    {
+      "first": "pressure_divider",
+      "second": "wire_gland",
+      "intersection_mm3": 12.429634493192276,
+      "classification": "intended_interference_fit",
+      "evidence": "VERIFIED_DIGITALLY"
+    }
+  ],
+  "invalid_collision_count": 0
+}
