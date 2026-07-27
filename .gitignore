@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.py[cod]
+*.egg-info/
+.coverage
+coverage.xml
+htmlcov/
+.DS_Store
+
+# Read-only upstream clones are reproducible from provenance metadata.
+references/upstream-repos/
+
+# Vendored bootstrap binaries are host-specific.
+tools/vendor/
+
+# Generated scratch data.
+build/
+dist/
+reports/generated/
+

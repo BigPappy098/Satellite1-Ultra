@@ -1,0 +1,48 @@
+project:
+  name: Satellite1 Ultra
+  units: mm
+  evidence_default: ENGINEERING_ESTIMATE
+
+hardware:
+  board_revision: satellite1_1
+  official_interface: squircle_midplate_threaded
+
+enclosure:
+  outer_diameter: 152.0
+  total_height: 212.0
+  wall_thickness: 4.0
+  baffle_thickness: 6.0
+  divider_thickness: 4.0
+  bottom_plate_thickness: 5.0
+  print_clearance: 0.30
+  radial_print_clearance: 0.20
+
+sealing:
+  gasket_thickness: 2.0
+  target_compression_fraction: 0.25
+  gasket_land_width: 5.0
+
+fasteners:
+  primary_size: M3
+  primary_pitch: 0.5
+  insert_outer_diameter: 4.6
+  insert_length: 5.7
+  minimum_boss_wall: 2.4
+
+acoustics:
+  active_driver: pending_selection
+  passive_radiator: pending_selection
+  target_tuning_hz: 48.0
+  leakage_q: 7.0
+  damping_volume_fraction: 0.02
+
+ballast:
+  target_mass_g: 1200
+  maximum_mass_g: 1800
+  cartridge_material: steel_plate_stack
+
+printing:
+  primary_material: ASA
+  alternative_material: PETG
+  maximum_build_dimension: 256.0
+

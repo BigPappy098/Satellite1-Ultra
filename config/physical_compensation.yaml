@@ -1,0 +1,12 @@
+# Enter measured coupon results only after physical printing. Nominal zeros keep
+# the digital design unchanged. All values are millimetres unless stated.
+xy_scale_correction_fraction: 0.0
+z_scale_correction_fraction: 0.0
+hole_diameter_offset: 0.0
+boss_outer_diameter_offset: 0.0
+threaded_interface_radial_offset: 0.0
+gasket_groove_width_offset: 0.0
+gasket_groove_depth_offset: 0.0
+insert_hole_diameter_offset: 0.0
+cable_passage_offset: 0.0
+

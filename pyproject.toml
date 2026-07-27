@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "satellite1-ultra"
+version = "0.1.0"
+description = "Parametric production CAD for a premium Satellite1 smart speaker"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "CERN-OHL-S-2.0"
+authors = [{name = "Satellite1 Ultra contributors"}]
+dependencies = [
+  "cadquery==2.6.1",
+  "click==8.2.1",
+  "matplotlib==3.10.3",
+  "networkx==3.5",
+  "numpy==2.2.6",
+  "numpy-stl==3.2.0",
+  "Pillow==11.2.1",
+  "pydantic==2.11.7",
+  "pypdf==5.7.0",
+  "PyYAML==6.0.2",
+  "reportlab==4.4.2",
+  "rich==14.0.0",
+  "scipy==1.15.3",
+  "shapely==2.1.1",
+  "trimesh==4.6.10"
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy==1.16.1",
+  "pytest==8.4.1",
+  "pytest-cov==6.1.1",
+  "ruff==0.12.2"
+]
+
+[project.scripts]
+sat1-ultra = "satellite1_ultra.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+  "geometry: OCCT geometry validation",
+  "deep: slow full-assembly/export validation",
+  "requires_official_assets: requires preserved official geometry"
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["satellite1_ultra"]
+

@@ -1,0 +1,27 @@
+name: Tagged release
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --require-hashes -r requirements.lock
+      - run: python -m pip install --no-deps -e .
+      - run: make release PYTHON=python PIP=pip
+      - run: tar -czf "Satellite1-Ultra-${GITHUB_REF_NAME}.tar.gz" exports docs reports/generated reference-assets/MANIFEST.csv
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: "Satellite1-Ultra-${{ github.ref_name }}.tar.gz"
+
