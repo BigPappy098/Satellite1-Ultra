@@ -237,6 +237,17 @@ def export_parts(
     report_dir = ROOT / "reports" / "validation"
     for directory in (step_dir, stl_dir, three_mf_dir, report_dir):
         directory.mkdir(parents=True, exist_ok=True)
+    # Remove orphans first: a renamed or deleted part must not survive in the
+    # release package as a stale file that still looks current.
+    expected = {
+        (directory, f"{name}{suffix}")
+        for name in PARTS
+        for directory, suffix in ((step_dir, ".step"), (stl_dir, ".stl"), (three_mf_dir, ".3mf"))
+    }
+    for directory, suffix in ((step_dir, "*.step"), (stl_dir, "*.stl"), (three_mf_dir, "*.3mf")):
+        for existing in directory.glob(suffix):
+            if (directory, existing.name) not in expected:
+                existing.unlink()
     commit = source_commit()
     records: list[dict[str, object]] = []
 

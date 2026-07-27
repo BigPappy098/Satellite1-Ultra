@@ -84,3 +84,47 @@ def test_exports_are_current_and_reopen() -> None:
         assert record["stl_validation"]["connected_components"] == 1
         assert record["three_mf_validation"]["watertight"] is True
         assert Path(record["source_commit"]).name != ""
+
+
+@pytest.mark.deep
+def test_generated_step_reopens_in_a_second_independent_reader() -> None:
+    """Gmsh's OpenCascade reader must agree with CadQuery on the exports.
+
+    Export success is not validation, and neither is reopening a file with the
+    same library that wrote it.
+    """
+    import gmsh
+
+    step_dir = ROOT / "exports" / "step"
+    files = sorted(step_dir.glob("*.step"))
+    if not files:
+        pytest.skip("exports not generated; run `make exports` first")
+
+    with (REPORTS / "export_validation.json").open(encoding="utf-8") as source:
+        expected = {record["part"]: record for record in json.load(source)}
+
+    gmsh.initialize()
+    try:
+        for path in files:
+            record = expected[path.stem]
+            gmsh.clear()
+            gmsh.model.occ.importShapes(str(path))
+            gmsh.model.occ.synchronize()
+            volumes = gmsh.model.getEntities(3)
+            assert len(volumes) == 1, f"{path.name} did not read back as one solid"
+            # Compare volume, not bounding box: OpenCascade's box for a
+            # trimmed spline face can report the untrimmed surface extent, so a
+            # bounding-box comparison across readers is not a geometry check.
+            volume = gmsh.model.occ.getMass(*volumes[0])
+            assert volume == pytest.approx(record["brep_volume_mm3"], rel=1e-6), path.name
+            box = gmsh.model.getBoundingBox(*volumes[0])
+            lengths = (box[3] - box[0], box[4] - box[1], box[5] - box[2])
+            for measured, declared in zip(
+                lengths,
+                (record["bounds_x_mm"], record["bounds_y_mm"], record["bounds_z_mm"]),
+                strict=True,
+            ):
+                assert measured >= declared - 1e-3, path.name
+                assert measured <= declared + 0.5, path.name
+    finally:
+        gmsh.finalize()
