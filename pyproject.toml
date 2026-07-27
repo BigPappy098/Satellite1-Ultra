@@ -13,6 +13,7 @@ authors = [{name = "Satellite1 Ultra contributors"}]
 dependencies = [
   "cadquery==2.6.1",
   "click==8.2.1",
+  "gmsh==4.13.1",
   "matplotlib==3.10.3",
   "networkx==3.5",
   "numpy==2.2.6",
@@ -62,4 +63,3 @@ select = ["E", "F", "I", "B", "UP", "RUF"]
 python_version = "3.12"
 strict = true
 packages = ["satellite1_ultra"]
-

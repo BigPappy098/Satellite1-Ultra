@@ -1,0 +1,56 @@
+source_commit:
+  Satellite1-Enclosures: 6fc46571a72873989bf0e0cd14a2f17f0429ba71
+  Satellite1-Hardware: 2eb08ffaed8d9852d19b8acc86728d1af93d1c24
+
+master_datum:
+  evidence_label: DERIVED_FROM_OFFICIAL_CAD
+  source_part: DIY Enclosures/Squircle Enclosures/Geometry Files/STEP/Speaker Chamber/25-Watt Speaker Chamber.step
+  source_interface_z_mm: 140.8
+  transform_to_master_mm: [0.0, 0.0, -140.8]
+  description: Center of the upper rim where the official 25 W chamber and mid-plate seat.
+
+selected_upper_stack:
+  family: DIY Squircle
+  reason: Original small square development-kit enclosure; preserves the proven top plate, diffuser, buttons, PCB spacer, lock ring, threaded interface, and mid-plate.
+  files:
+    mid_plate: DIY Enclosures/Squircle Enclosures/Geometry Files/STEP/Mid-Plate/Mid-Plate.step
+    threaded_mid_plate: DIY Enclosures/Squircle Enclosures/Geometry Files/STEP/Mid-Plate/Mid-Plate Threads.step
+    top_plate: DIY Enclosures/Squircle Enclosures/Geometry Files/STEP/Squircle Top/Top Plate Combined MM.step
+    pcb_spacer: DIY Enclosures/Squircle Enclosures/Geometry Files/STEP/Squircle Top/PCB Spacer.step
+    lock_ring: DIY Enclosures/Squircle Enclosures/Geometry Files/STEP/Squircle Top/Lock Ring.step
+
+board_revisions:
+  public_batch_1:
+    marketing_name: Satellite1
+    hat_revision: rev4.1
+    hat_date_revision: R2024.12.06
+    core_revision: rev4.1
+    core_date_revision: R2024.12.06
+    hat_model: assets/Hat R2024.12.06.step
+    core_model: assets/Core R2024.12.06.step
+    selected: true
+    selection_reason: Matches the original Squircle development-kit era and lacks the post-2026 mandatory external Wi-Fi antenna.
+  public_batch_2:
+    marketing_name: Satellite1.1
+    hat_revision: rev6.1
+    hat_date_revision: R2025.03.18
+    core_revision: rev5.1
+    core_date_revision: R2025.03.18
+    hat_model: assets/Hat R2025.03.18.step
+    core_model: assets/Core R2025.03.18.step
+    selected: false
+    compatibility: Requires the alternate external-antenna/USB-C service adapter and physical fit validation.
+
+placements:
+  squircle_pcb_spacer:
+    translation_mm: [0.0, 0.0, -140.8]
+    evidence_label: DERIVED_FROM_OFFICIAL_CAD
+  public_batch_1_hat:
+    translation_mm: [0.0, -0.999, 9.2]
+    evidence_label: DERIVED_FROM_OFFICIAL_CAD
+    derivation: Align HAT mounting-hole centers X=±29, Y=-23.501/25.499 to spacer holes X=±29, Y=±24.5 and HAT PCB underside to spacer Z=150 before the master transform.
+  public_batch_2_hat:
+    translation_mm: [0.0, -0.999, 9.2]
+    evidence_label: DERIVED_FROM_OFFICIAL_CAD
+    derivation: Same official six-hole board outline and four-hole spacer mounting datum as Batch 1.
+

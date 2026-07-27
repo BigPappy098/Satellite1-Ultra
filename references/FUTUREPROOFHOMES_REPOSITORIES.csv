@@ -1,0 +1,12 @@
+repository,url,branch,commit,license,retrieval_date,relevance
+Satellite1-Hardware,https://github.com/FutureProofHomes/Satellite1-Hardware,main,2eb08ffaed8d9852d19b8acc86728d1af93d1c24,CERN-OHL-S-2.0,2026-07-27,Authoritative board source and exported board STEP models
+Satellite1-ESPHome,https://github.com/FutureProofHomes/Satellite1-ESPHome,develop,52ddcf8b790ac84d05c64fe5b0b5d70a16d6886b,GPL-3.0,2026-07-27,"Amplifier configuration, DSP controls, power and firmware behavior"
+Documentation,https://github.com/FutureProofHomes/Documentation,main,a84f0685d2b92f2f5a7190a800a3fb18401daeee,GPL-3.0,2026-07-27,"Official assembly, enclosure, firmware, and hardware documentation"
+Satellite1-XMOS,https://github.com/FutureProofHomes/Satellite1-XMOS,develop,86cf1ee65be535a972e2ac350756328a1dcd7248,NOASSERTION,2026-07-27,"XMOS audio pipeline, microphones, AEC, and DSP firmware"
+Satellite1-Enclosures,https://github.com/FutureProofHomes/Satellite1-Enclosures,main,6fc46571a72873989bf0e0cd14a2f17f0429ba71,CERN-OHL-S-2.0,2026-07-27,"Authoritative enclosure, upper stack, and board reference CAD"
+home-assistant-voice-pe,https://github.com/FutureProofHomes/home-assistant-voice-pe,satellite1,439cc70f509b0ef5c28ec00363aad61006a4f81a,GPL-3.0,2026-07-27,Satellite1 firmware integration fork and audio pipeline context
+Satellite1-HA-Automations,https://github.com/FutureProofHomes/Satellite1-HA-Automations,main,373109826231e05f16a3164c7c275977aa091a12,Apache-2.0,2026-07-27,Official Satellite1 user/control integration context
+Satellite1-RPi,https://github.com/FutureProofHomes/Satellite1-RPi,develop,0d4733617ec78e96fe0133ee01e2f8b011ea7317,GPL-3.0,2026-07-27,Alternative core integration and mechanical expansion context
+Satellite1-RPi-SDK,https://github.com/FutureProofHomes/Satellite1-RPi-SDK,develop,b4c5295b21d787cbc2420d8b5799d09e79ed066d,GPL-3.0,2026-07-27,Alternative core software constraints
+Satellite1-RPi-Image,https://github.com/FutureProofHomes/Satellite1-RPi-Image,develop,0d4733617ec78e96fe0133ee01e2f8b011ea7317,GPL-3.0,2026-07-27,Alternative core deployment context
+Satellite1-RPi-Setup,https://github.com/FutureProofHomes/Satellite1-RPi-Setup,develop,c87c5002a99faeb4fcef3363ca348312968461b7,GPL-3.0,2026-07-27,Alternative core deployment and hardware setup context
