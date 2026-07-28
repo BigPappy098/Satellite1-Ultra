@@ -26,6 +26,8 @@ from satellite1_ultra.geometry import (
     _bolt_points,
     _depth_cylinder,
     acoustic_mounts,
+    ballast_lid_fastener_positions,
+    ballast_plate_extent,
     base_fastener_positions,
     main_cabinet,
     official_mount_positions,
@@ -338,8 +340,9 @@ def sealing_report(parameters: DesignParameters) -> dict[str, Any]:
         "physical_gate": {
             "evidence": EVIDENCE_PHYSICAL,
             "requirement": (
-                "Pressure-decay test the sealed cabinet: pressurise to 1 kPa and "
-                "record decay over 60 s; target leakage Q >= 7."
+                "Use the temporary adapter for a 100-250 Pa gross leak screen with "
+                "dilute soap solution, then confirm final sealing and tuning with an "
+                "impedance sweep after installing the production cable gland."
             ),
         },
     }
@@ -348,6 +351,20 @@ def sealing_report(parameters: DesignParameters) -> dict[str, Any]:
 # ---------------------------------------------------------------------- #
 # Collision
 # ---------------------------------------------------------------------- #
+def _bounding_boxes_overlap(first: cq.Shape, second: cq.Shape, tolerance: float = 0.01) -> bool:
+    """Cheap broad-phase rejection before an exact OCCT intersection."""
+    left = first.BoundingBox()
+    right = second.BoundingBox()
+    return not (
+        left.xmax < right.xmin - tolerance
+        or right.xmax < left.xmin - tolerance
+        or left.ymax < right.ymin - tolerance
+        or right.ymax < left.ymin - tolerance
+        or left.zmax < right.zmin - tolerance
+        or right.zmax < left.zmin - tolerance
+    )
+
+
 def collision_report(parameters: DesignParameters) -> dict[str, Any]:
     """Classify every positive-volume intersection in the functional assembly."""
     p = parameters
@@ -362,6 +379,8 @@ def collision_report(parameters: DesignParameters) -> dict[str, Any]:
     collisions: list[dict[str, Any]] = []
     invalid = 0
     for (first_name, first), (second_name, second) in combinations(parts.items(), 2):
+        if not _bounding_boxes_overlap(first, second):
+            continue
         volume = first.intersect(second).Volume()
         if volume <= 0.01:
             continue
@@ -381,7 +400,11 @@ def collision_report(parameters: DesignParameters) -> dict[str, Any]:
     official_checks: list[dict[str, Any]] = []
     for printed_name, printed_shape in printed.items():
         for official_name, official_shape in official.items():
-            volume = printed_shape.intersect(official_shape).Volume()
+            volume = (
+                printed_shape.intersect(official_shape).Volume()
+                if _bounding_boxes_overlap(printed_shape, official_shape)
+                else 0.0
+            )
             status = "PASS" if volume <= 0.01 else "FAIL"
             if status == "FAIL":
                 invalid += 1
@@ -553,8 +576,11 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
     for printed_name in ("pressure_divider", "electronics_shroud"):
         shape = parts[printed_name]
         for official_name, official_shape in official.items():
-            distance = _min_distance(shape, official_shape)
+            box_gap = _bounding_box_gap(shape, official_shape)
+            used_lower_bound = box_gap >= 0.30
+            distance = box_gap if used_lower_bound else _min_distance(shape, official_shape)
             if (printed_name, official_name) in seating_pairs:
+                distance = _min_distance(shape, official_shape)
                 clearances.append(
                     {
                         "feature": f"{printed_name} seats on {official_name}",
@@ -572,6 +598,11 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
                         "nominal_mm": distance,
                         "minimum_mm": 0.30,
                         "evidence_override": EVIDENCE_OFFICIAL,
+                        "note": (
+                            "conservative bounding-box lower bound"
+                            if used_lower_bound
+                            else "exact OCCT minimum distance"
+                        ),
                     }
                 )
 
@@ -586,7 +617,7 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
         "evidence": EVIDENCE_DIGITAL,
         "clearances": clearances,
         "tolerance_note": (
-            "Physical coupon corrections are applied through config/physical_compensation.yaml."
+            "Physical coupon corrections are applied through config/physical_calibration.yaml."
         ),
     }
 
@@ -600,6 +631,16 @@ def _min_distance(first: cq.Shape, second: cq.Shape) -> float:
     return float(algorithm.Value()) if algorithm.IsDone() else float("nan")
 
 
+def _bounding_box_gap(first: cq.Shape, second: cq.Shape) -> float:
+    """Conservative Euclidean lower bound between two axis-aligned boxes."""
+    left = first.BoundingBox()
+    right = second.BoundingBox()
+    dx = max(left.xmin - right.xmax, right.xmin - left.xmax, 0.0)
+    dy = max(left.ymin - right.ymax, right.ymin - left.ymax, 0.0)
+    dz = max(left.zmin - right.zmax, right.zmin - left.zmax, 0.0)
+    return float((dx * dx + dy * dy + dz * dz) ** 0.5)
+
+
 # ---------------------------------------------------------------------- #
 # Core fit
 # ---------------------------------------------------------------------- #
@@ -611,24 +652,27 @@ def core_fit_report(parameters: DesignParameters) -> dict[str, Any]:
     obstructions = [
         placed_functional_parts(p)[name] for name in ("pressure_divider", "electronics_shroud")
     ]
-    best: tuple[float, float] | None = None
     step = 4.0
     reach = 30.0
-    x = -reach
-    while x <= reach and best is None:
-        y = -reach
-        while y <= reach:
-            box = cq.Solid.makeBox(
-                extent[0],
-                extent[1],
-                extent[2],
-                cq.Vector(x - extent[0] / 2.0, y - extent[1] / 2.0, bay_bottom + 1.0),
-            )
-            if all(part.intersect(box).Volume() <= 0.01 for part in obstructions):
-                best = (x, y)
-                break
-            y += step
-        x += step
+    coordinates = [(-reach + index * step) for index in range(int(2.0 * reach / step) + 1)]
+    candidates = sorted(
+        ((x, y) for x in coordinates for y in coordinates),
+        key=lambda point: (point[0] ** 2 + point[1] ** 2, abs(point[1]), abs(point[0])),
+    )
+    best: tuple[float, float] | None = None
+    for x, y in candidates:
+        box = cq.Solid.makeBox(
+            extent[0],
+            extent[1],
+            extent[2],
+            cq.Vector(x - extent[0] / 2.0, y - extent[1] / 2.0, bay_bottom + 1.0),
+        )
+        if all(
+            not _bounding_boxes_overlap(part, box) or part.intersect(box).Volume() <= 0.01
+            for part in obstructions
+        ):
+            best = (x, y)
+            break
     return {
         "status": "PASS" if best is not None else "FAIL",
         "evidence": EVIDENCE_DIGITAL,
@@ -672,8 +716,8 @@ def wall_thickness_report(parameters: DesignParameters) -> dict[str, Any]:
         ("bottom service plate", p.bottom_plate_thickness, 3.2),
         ("ballast tray floor", 2.0, 1.6),
         ("ballast retaining wall", 4.0, 3.2),
-        ("grille cage guard", 3.0, 2.4),
-        ("grille cage rail", 4.0, 3.2),
+        ("outer-shell moving-part guard", 3.0, 2.4),
+        ("outer-shell slot rail", 4.0, 3.2),
     ]
     records = [
         {
@@ -807,6 +851,7 @@ def wall_thickness_report(parameters: DesignParameters) -> dict[str, Any]:
 class Joint:
     """One bolted joint in the assembly."""
 
+    identifier: str
     name: str
     quantity: int
     clamped_stack_mm: float
@@ -821,6 +866,7 @@ def _joints(p: DesignParameters) -> list[Joint]:
     pr_stack = p.clamp_ring_thickness
     return [
         Joint(
+            "F01",
             "official mid-plate to pressure divider",
             4,
             1.0,
@@ -829,8 +875,17 @@ def _joints(p: DesignParameters) -> list[Joint]:
             "none",
             "Screw passes the official Ø3.2 hole; head seats in the official counterbore.",
         ),
-        Joint("electronics shroud to pressure divider", 4, 3.0, "button head", "top", "none"),
         Joint(
+            "F02",
+            "electronics shroud to pressure divider",
+            4,
+            3.0,
+            "button head",
+            "top",
+            "none",
+        ),
+        Joint(
+            "F03",
             "pressure divider to cabinet",
             8,
             p.divider_thickness + p.compressed_gasket_thickness,
@@ -839,6 +894,7 @@ def _joints(p: DesignParameters) -> list[Joint]:
             "none",
         ),
         Joint(
+            "F04",
             "active-driver clamp ring to cabinet",
             4,
             driver_stack,
@@ -847,6 +903,7 @@ def _joints(p: DesignParameters) -> list[Joint]:
             "none",
         ),
         Joint(
+            "F05",
             "passive-radiator clamp ring to cabinet (each)",
             4,
             pr_stack,
@@ -855,6 +912,17 @@ def _joints(p: DesignParameters) -> list[Joint]:
             "none",
         ),
         Joint(
+            "F06",
+            "ballast cartridge lid to cartridge",
+            4,
+            3.5,
+            "button head",
+            "top before the cartridge enters the base bay",
+            "none",
+            "Four blind inserts retain the dry steel stack under handling and tip loads.",
+        ),
+        Joint(
+            "F07",
             "base skirt to cabinet",
             4,
             8.0 - 3.0,
@@ -863,6 +931,7 @@ def _joints(p: DesignParameters) -> list[Joint]:
             "none",
         ),
         Joint(
+            "F08",
             "bottom service plate to base skirt",
             4,
             p.bottom_plate_thickness,
@@ -871,7 +940,8 @@ def _joints(p: DesignParameters) -> list[Joint]:
             "none",
         ),
         Joint(
-            "grille cage to bottom service plate",
+            "F09",
+            "outer shell to bottom service plate",
             4,
             p.bottom_plate_thickness,
             "button head",
@@ -900,7 +970,9 @@ def fastener_report(parameters: DesignParameters) -> dict[str, Any]:
         schedule.append(
             {
                 "joint": joint.name,
+                "id": joint.identifier,
                 "thread": "M3 x 0.5",
+                "standard": ("ISO 4762" if joint.head == "socket cap" else "ISO 7380-1"),
                 "material": "A2 stainless",
                 "quantity": joint.quantity,
                 "length_mm": length,
@@ -917,7 +989,7 @@ def fastener_report(parameters: DesignParameters) -> dict[str, Any]:
                 "bore_depth_mm": p.insert_bore_depth,
                 "bottoming_margin_mm": p.insert_bore_depth - engagement,
                 "access_direction": joint.access,
-                "torque_guidance_nm": "0.45-0.55",
+                "torque_guidance_nm": "0.35 target; 0.45 maximum",
                 "note": joint.note,
                 "status": status,
                 "evidence": EVIDENCE_DIGITAL,
@@ -950,35 +1022,40 @@ def tolerance_report(parameters: DesignParameters) -> dict[str, Any]:
     """Evaluate nominal worst-case stacks before measured coupon compensation."""
     p = parameters
     part_tolerance = 0.15
-    gasket_tolerance = 0.20
+    calibrated_stop_tolerance = 0.10
+    measured_hardware_tolerance = 0.05
+    compression_range = [
+        (
+            p.gasket_thickness
+            - p.compressed_gasket_thickness
+            - calibrated_stop_tolerance
+            - measured_hardware_tolerance
+        )
+        / p.gasket_thickness,
+        (
+            p.gasket_thickness
+            - p.compressed_gasket_thickness
+            + calibrated_stop_tolerance
+            + measured_hardware_tolerance
+        )
+        / p.gasket_thickness,
+    ]
     stacks: list[dict[str, Any]] = [
         {
             "interface": "divider gasket closure",
             "nominal_compression_mm": p.gasket_thickness - p.compressed_gasket_thickness,
-            "worst_compression_fraction": (
-                p.gasket_thickness
-                - p.compressed_gasket_thickness
-                + part_tolerance
-                + gasket_tolerance
-            )
-            / p.gasket_thickness,
+            "worst_compression_fraction_range": compression_range,
             "limit": "15-45% compression",
-            "pass": lambda value: value <= 0.45,
-            "value_key": "worst_compression_fraction",
+            "pass": lambda value: value[0] >= 0.15 and value[1] <= 0.45,
+            "value_key": "worst_compression_fraction_range",
         },
         {
             "interface": "component gasket closure at the clamp-ring hard stop",
             "nominal_compression_mm": p.gasket_thickness - p.compressed_gasket_thickness,
-            "worst_compression_fraction": (
-                p.gasket_thickness
-                - p.compressed_gasket_thickness
-                + part_tolerance
-                + gasket_tolerance
-            )
-            / p.gasket_thickness,
+            "worst_compression_fraction_range": compression_range,
             "limit": "15-45% compression",
-            "pass": lambda value: value <= 0.45,
-            "value_key": "worst_compression_fraction",
+            "pass": lambda value: value[0] >= 0.15 and value[1] <= 0.45,
+            "value_key": "worst_compression_fraction_range",
         },
         {
             "interface": "clamp ring radial fit in the cabinet seat",
@@ -1027,12 +1104,19 @@ def tolerance_report(parameters: DesignParameters) -> dict[str, Any]:
         "status": "PASS" if all(row["status"] == "PASS" for row in stacks) else "FAIL",
         "evidence": EVIDENCE_ESTIMATE,
         "assumed_printed_dimensional_tolerance_mm": part_tolerance,
+        "residual_calibrated_z_tolerance_mm": calibrated_stop_tolerance,
+        "measured_hardware_tolerance_mm": measured_hardware_tolerance,
+        "material_shrinkage": (
+            "removed from nominal by XY/Z coupon scale correction; residual is included "
+            "in the calibrated tolerance"
+        ),
         "stacks": stacks,
-        "compensation_file": "config/physical_compensation.yaml",
+        "compensation_file": "config/physical_calibration.yaml",
         "physical_gate": {
             "evidence": EVIDENCE_PHYSICAL,
             "requirement": (
-                "Populate compensation values from the eight fit coupons before full printing."
+                "Pass the seven calibration parts and six documented checks before "
+                "printing the full enclosure."
             ),
         },
     }
@@ -1304,9 +1388,9 @@ def printability_report(parameters: DesignParameters) -> dict[str, Any]:
             "Component pockets are horizontal bores in a vertical wall; their "
             "upper 90 degrees bridge over a 0.3 mm-clearance arc and are not "
             "sealing surfaces.",
-            "Clamp rings print lip-up so the loaded lip face is a top surface.",
+            "Clamp rings print lip-face down so the loaded face is formed against the bed.",
             "Heat-set insert bores are blind and vertical or horizontal; none requires support.",
-            "The grille cage prints upright on its bottom retention ring.",
+            "The outer shell prints upright on its base band.",
         ],
         "physical_gate": {
             "evidence": EVIDENCE_PHYSICAL,
@@ -1353,7 +1437,8 @@ def stability_report(parameters: DesignParameters) -> dict[str, Any]:
     epdm_names = {name for name in parts if "gasket" in name}
     masses = [_shape_mass(name, parts[name], ASA_DENSITY_G_CM3) for name in sorted(asa_names)]
     masses.extend(_shape_mass(name, parts[name], EPDM_DENSITY_G_CM3) for name in sorted(epdm_names))
-    ballast_mass = 120.0 * 120.0 * 9.0 / 1000.0 * 7.85
+    plate_width, plate_depth, plate_total_thickness = ballast_plate_extent(p)
+    ballast_mass = plate_width * plate_depth * plate_total_thickness / 1000.0 * 7.85
     masses.extend(
         [
             _shape_mass("anti_slip_ring", parts["anti_slip_ring"], TPU_DENSITY_G_CM3),
@@ -1396,11 +1481,15 @@ def stability_report(parameters: DesignParameters) -> dict[str, Any]:
         "static_tipping_angles_deg": angles,
         "minimum_tipping_angle_deg": min(angles.values()),
         "ballast": {
-            "material": "three removable 120 x 120 x 3 mm mild-steel plates",
+            "material": (
+                f"two removable {plate_width:.0f} x {plate_depth:.0f} x "
+                f"{plate_total_thickness / 2.0:.0f} mm mild-steel plates"
+            ),
             "mass_g": ballast_mass,
             "three_g_retention_load_n": retention_load,
             "design_factor_of_safety": 5.0,
             "retainer_design_load_n": retention_load * 5.0,
+            "retention_fasteners": len(ballast_lid_fastener_positions(p)),
             "moisture_containment": "dry plate stack in a closed printed cartridge; no wet casting",
         },
         "mass_elements": [asdict(item) for item in masses],

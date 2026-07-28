@@ -100,7 +100,7 @@ def test_board_keepout_contains_every_point_of_the_official_mesh() -> None:
 @pytest.mark.requires_official_assets
 def test_core_placement_is_not_asserted() -> None:
     """The Core position is undetermined; the project must not pretend otherwise."""
-    assert BATCH1_CORE.placement_evidence == "UNDETERMINED"
+    assert BATCH1_CORE.placement_evidence == "REQUIRES_PHYSICAL_VALIDATION"
     extent = core_clearance_extent()
     assert all(value > 0.0 for value in extent)
 

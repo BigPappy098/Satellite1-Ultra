@@ -1,3 +1,4 @@
 # Next Action
 
-- Await physical validation from the user. All digital gates have passed, and the project is `DIGITAL_PROTOTYPE_READY`.
+- Finish the final release pipeline and independent clean-clone reproduction.
+- Do not request physical validation until all digital release evidence passes.

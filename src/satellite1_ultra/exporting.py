@@ -32,6 +32,7 @@ from satellite1_ultra.geometry import (
     divider_gasket,
     driver_gasket,
     electronics_shroud,
+    leak_test_adapter,
     main_cabinet,
     outer_shell,
     passive_radiator_clamp_ring,
@@ -65,21 +66,27 @@ PARTS: dict[str, PartDefinition] = {
     "pressure_divider": PartDefinition(pressure_divider, 1, "ASA", "flat, acoustic face on bed"),
     "electronics_shroud": PartDefinition(electronics_shroud, 1, "ASA", "wide divider end on bed"),
     "active_driver_clamp_ring": PartDefinition(
-        active_driver_clamp_ring, 1, "ASA", "lip face up, flat on bed"
+        active_driver_clamp_ring, 1, "ASA", "lip face on bed"
     ),
     "passive_radiator_clamp_ring": PartDefinition(
-        passive_radiator_clamp_ring, 2, "ASA", "lip face up, flat on bed"
+        passive_radiator_clamp_ring, 2, "ASA", "lip face on bed"
     ),
     "divider_gasket": PartDefinition(divider_gasket, 1, "2 mm closed-cell EPDM", "flat"),
     "driver_gasket": PartDefinition(driver_gasket, 1, "2 mm closed-cell EPDM", "flat"),
     "passive_radiator_gasket": PartDefinition(
         passive_radiator_gasket, 2, "2 mm closed-cell EPDM", "flat"
     ),
-    "cable_gland": PartDefinition(cable_gland, 1, "TPU 95A", "flange on bed"),
+    "cable_gland": PartDefinition(cable_gland, 1, "TPU 95A", "body end on bed"),
+    "leak_test_adapter": PartDefinition(
+        leak_test_adapter,
+        1,
+        "TPU 95A",
+        "flange on bed; temporary service tool, not installed in service",
+    ),
     "base_skirt": PartDefinition(base_skirt, 1, "ASA", "service opening on bed"),
     "bottom_service_plate": PartDefinition(bottom_service_plate, 1, "ASA", "exterior face on bed"),
     "ballast_cartridge": PartDefinition(ballast_cartridge, 1, "ASA", "tray floor on bed"),
-    "ballast_cartridge_lid": PartDefinition(ballast_cartridge_lid, 1, "ASA", "outer face on bed"),
+    "ballast_cartridge_lid": PartDefinition(ballast_cartridge_lid, 1, "ASA", "tongue face on bed"),
 }
 for coupon_name, coupon_builder in COUPONS.items():
     PARTS[coupon_name] = PartDefinition(
@@ -186,6 +193,8 @@ def read_3mf(path: Path) -> trimesh.Trimesh:
     """Read the subset emitted by :func:`write_3mf` for independent validation."""
     with zipfile.ZipFile(path) as archive:
         model = ET.fromstring(archive.read("3D/3dmodel.model"))
+    if model.attrib.get("unit") != "millimeter":
+        raise ValueError(f"3MF must declare millimeter units: {path}")
     namespace = {"m": THREE_MF_NS}
     vertex_nodes = model.findall(".//m:vertices/m:vertex", namespace)
     triangle_nodes = model.findall(".//m:triangles/m:triangle", namespace)
@@ -323,3 +332,31 @@ def export_parts(
         writer.writeheader()
         writer.writerows(records)
     return records
+
+
+def export_gasket_templates(
+    output: Path = ROOT / "exports" / "gasket_templates",
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> list[Path]:
+    """Export 1:1 DXF cutting profiles from the authoritative gasket B-reps."""
+    output.mkdir(parents=True, exist_ok=True)
+    gasket_builders = {
+        "divider_gasket": divider_gasket,
+        "driver_gasket": driver_gasket,
+        "passive_radiator_gasket": passive_radiator_gasket,
+    }
+    written: list[Path] = []
+    expected_names = {f"{name}.dxf" for name in gasket_builders}
+    for existing in output.glob("*.dxf"):
+        if existing.name not in expected_names:
+            existing.unlink()
+    for name, builder in gasket_builders.items():
+        solid = builder(parameters)
+        bottom = min(solid.Faces(), key=lambda face: face.Center().z)
+        profile = cq.Workplane("XY").add(list(bottom.Wires()))
+        path = output / f"{name}.dxf"
+        exporters.exportDXF(profile, str(path))  # type: ignore[attr-defined]
+        if not path.is_file() or path.stat().st_size < 200:
+            raise ValueError(f"DXF template export failed for {name}")
+        written.append(path)
+    return written

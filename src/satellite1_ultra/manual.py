@@ -8,6 +8,7 @@ says so in its title block.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +23,6 @@ from reportlab.lib.utils import ImageReader  # type: ignore[import-untyped]
 from reportlab.pdfgen import canvas as pdf_canvas  # type: ignore[import-untyped]
 from reportlab.platypus import (  # type: ignore[import-untyped]
     Image,
-    PageBreak,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -205,7 +205,9 @@ def _styles() -> dict[str, ParagraphStyle]:
 
 
 def _table(data: list[list[str]], widths: list[float]) -> Table:
-    table = Table(data, colWidths=widths, repeatRows=1)
+    styles = _styles()
+    wrapped = [[Paragraph(str(value), styles["small"]) for value in row] for row in data]
+    table = Table(wrapped, colWidths=widths, repeatRows=1, splitByRow=1)
     table.setStyle(
         TableStyle(
             [
@@ -222,197 +224,187 @@ def _table(data: list[list[str]], widths: list[float]) -> Table:
     return table
 
 
-def build_manual(
-    output: Path = ROOT / "docs" / "Satellite1-Ultra-Build-Manual.pdf",
-    root: Path = ROOT,
-) -> Path:
-    """Assemble the complete PDF build manual from the generated evidence."""
+def _inline(text: str) -> str:
+    """Convert the small Markdown subset used by generated guides to ReportLab markup."""
+    escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    escaped = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", escaped)
+    escaped = re.sub(r"`(.+?)`", r"<font name='Courier'>\1</font>", escaped)
+    escaped = re.sub(r"\[(.+?)\]\((.+?)\)", r"\1 (\2)", escaped)
+    return escaped
+
+
+def _page_number(canvas: Any, document: Any) -> None:
+    canvas.saveState()
+    canvas.setFont("Helvetica", 7.5)
+    canvas.setFillColor(colors.HexColor("#555b61"))
+    canvas.drawString(18 * mm, 9 * mm, "Satellite1 Ultra RC1 — DIGITAL_PROTOTYPE_READY")
+    canvas.drawRightString(192 * mm, 9 * mm, f"Page {document.page}")
+    canvas.restoreState()
+
+
+def _markdown_pdf(source: Path, output: Path, root: Path) -> Path:
+    """Render a generated task guide to a readable illustrated A4 PDF."""
     styles = _styles()
-    reports = _reports(root)
-    p = load_design_parameters(root)
     output.parent.mkdir(parents=True, exist_ok=True)
     document = SimpleDocTemplate(
         str(output),
         pagesize=A4,
-        leftMargin=18 * mm,
-        rightMargin=18 * mm,
-        topMargin=16 * mm,
+        leftMargin=16 * mm,
+        rightMargin=16 * mm,
+        topMargin=14 * mm,
         bottomMargin=16 * mm,
-        title="Satellite1 Ultra Build Manual",
+        title=source.stem.replace("_", " ").title(),
         author="Satellite1 Ultra contributors",
     )
+    lines = source.read_text(encoding="utf-8").splitlines()
     story: list[Any] = []
-
-    def text(content: str, style: str = "body") -> None:
-        story.append(Paragraph(content, styles[style]))
-
-    def image(path: Path, width: float) -> None:
-        if path.is_file():
-            story.append(Spacer(1, 5))
-            story.append(Image(str(path), width=width, height=width * 1.12))
-
-    commit = source_commit()
-    text("Satellite1 Ultra", "title")
-    text(
-        "Build manual for a serviceable passive-radiator enclosure for the "
-        "FutureProofHomes Satellite1 development kit."
-    )
-    text(f"Source commit <b>{commit[:12]}</b>. Units: millimetres.")
-    text(
-        "<b>Status: IN DEVELOPMENT. No physical validation has been performed.</b> "
-        "Every geometric statement in this manual is machine-checked against the "
-        "authoritative CAD. Every acoustic number is a lumped-parameter "
-        "simulation, not a measurement. Nothing here may be quoted as measured "
-        "fit, acoustic, thermal, wireless or wake-word performance."
-    )
-
-    text("1. Product envelope", "h1")
-    envelope = [
-        ["Property", "Value", "Evidence"],
-        ["Cabinet section", f"{p.outer_width:.0f} x {p.outer_depth:.0f} mm", "VERIFIED_DIGITALLY"],
-        [
-            "Overall shell section",
-            f"{p.outer_width + p.grille_width_margin:.0f} x "
-            f"{p.outer_depth + p.grille_depth_margin:.0f} mm",
-            "VERIFIED_DIGITALLY",
-        ],
-        ["Overall height with official top", "237.7 mm", "VERIFIED_DIGITALLY"],
-        [
-            "Net acoustic volume",
-            f"{reports.get('acoustic_volume', {}).get('net_acoustic_volume_l', 0):.3f} L",
-            "VERIFIED_DIGITALLY",
-        ],
-        [
-            "Assembled mass",
-            f"{reports.get('center_of_gravity', {}).get('total_mass_g', 0):.0f} g",
-            "ENGINEERING_ESTIMATE",
-        ],
-        [
-            "Minimum tipping angle",
-            f"{reports.get('center_of_gravity', {}).get('minimum_tipping_angle_deg', 0):.1f} deg",
-            "ENGINEERING_ESTIMATE",
-        ],
-    ]
-    story.append(_table(envelope, [55 * mm, 60 * mm, 55 * mm]))
-    image(root / "reports" / "renders" / "assembly_iso.png", 105 * mm)
-
-    text("2. Acoustic design", "h1")
-    acoustics = reports.get("acoustics", {})
-    if acoustics:
-        rows = [
-            ["Quantity", "Modelled value"],
-            ["Architecture", "1 active driver, 2 opposed passive radiators"],
-            ["Net volume", f"{acoustics['net_acoustic_volume_l']:.3f} L"],
-            ["System tuning", f"{acoustics['target_tuning_hz']:.1f} Hz"],
-            ["Added mass per radiator", f"{acoustics['added_pr_mass_each_g']:.2f} g"],
-            ["f3, passive-radiator alignment", f"{acoustics['passive_radiator_f3_hz']:.1f} Hz"],
-            ["f3, same driver sealed", f"{acoustics['sealed_f3_hz']:.1f} Hz"],
-            ["Minimum impedance", f"{acoustics['minimum_modeled_impedance_ohm']:.2f} ohm"],
-            ["Maximum SPL at 100 Hz", f"{acoustics['maximum_spl_at_100_hz_db']:.1f} dB at 1 m"],
-            [
-                "Protective high-pass",
-                f"{acoustics['recommended_high_pass_hz']:.1f} Hz, order "
-                f"{acoustics['recommended_high_pass_order']}",
-            ],
-        ]
-        story.append(_table(rows, [70 * mm, 100 * mm]))
-        text(
-            "<b>ENGINEERING_ESTIMATE.</b> These are calculated from published "
-            "manufacturer parameters and the exact CAD net volume. They are not "
-            "measurements. Measure impedance first and feed the result back into "
-            "the model before finalising any DSP.",
-            "small",
-        )
-        image(root / "reports" / "acoustics" / "system_response.png", 168 * mm)
-
-    story.append(PageBreak())
-    text("3. Bill of materials", "h1")
-    bom_path = root / "docs" / "bill_of_materials.csv"
-    if bom_path.is_file():
-        import csv as _csv
-
-        with bom_path.open(encoding="utf-8") as source:
-            rows = list(_csv.reader(source))
-        story.append(_table(rows, [56 * mm, 26 * mm, 14 * mm, 30 * mm, 44 * mm]))
-
-    story.append(PageBreak())
-    text("4. Fastener schedule", "h1")
-    schedule = reports.get("fasteners", {}).get("schedule", [])
-    rows = [["Joint", "Qty", "Screw", "Stack", "Engage", "Margin", "Access"]]
-    rows += [
-        [
-            row["joint"],
-            str(row["quantity"]),
-            f"M3x{row['length_mm']:.0f}",
-            f"{row['clamped_stack_mm']:.1f}",
-            f"{row['engagement_mm']:.1f}",
-            f"{row['bottoming_margin_mm']:.1f}",
-            row["access_direction"],
-        ]
-        for row in schedule
-    ]
-    story.append(_table(rows, [58 * mm, 10 * mm, 18 * mm, 14 * mm, 16 * mm, 16 * mm, 38 * mm]))
-    text(
-        "Every insert bore is blind and drilled deeper than the insert, so no "
-        "screw can bottom. No fastener crosses the acoustic pressure boundary.",
-        "small",
-    )
-
-    text("5. Sealing", "h1")
-    sealing = reports.get("sealing", {})
-    for item in sealing.get("pressure_boundary", []):
-        text(f"• {item}", "small")
-    text(
-        f"Sealing gate status: <b>{sealing.get('status', '?')}</b>. "
-        "The gate proves, on the B-rep, that every gasket land is a continuous "
-        "annulus and that no fastener bore breaks through it. It cannot prove "
-        "gas tightness of a printed wall; that is REQUIRES_PHYSICAL_VALIDATION.",
-        "small",
-    )
-
-    story.append(PageBreak())
-    text("6. Assembly", "h1")
-    assembly = reports.get("assembly", {})
-    for index, step in enumerate(assembly.get("assembly_order", []), start=1):
-        text(f"{index}. {step}", "small")
-    image(root / "reports" / "renders" / "assembly_iso_exploded.png", 120 * mm)
-
-    story.append(PageBreak())
-    text("7. Cross sections", "h1")
-    image(root / "reports" / "renders" / "cross_section_xz.png", 118 * mm)
-    image(root / "reports" / "renders" / "cross_section_yz.png", 118 * mm)
-
-    story.append(PageBreak())
-    text("8. Manufactured parts", "h1")
-    image(root / "reports" / "renders" / "part_sheet.png", 172 * mm)
-
-    story.append(PageBreak())
-    text("9. Validation gate summary", "h1")
-    rows = [["Gate", "Status", "Evidence"]]
-    for name in sorted(reports):
-        if name in {"acoustics", "export_validation", "summary"}:
+    index = 0
+    in_code = False
+    code_lines: list[str] = []
+    while index < len(lines):
+        line = lines[index].rstrip()
+        if line.startswith("```"):
+            if in_code:
+                story.append(
+                    Paragraph(
+                        "<font name='Courier'>"
+                        + "<br/>".join(_inline(v) for v in code_lines)
+                        + "</font>",
+                        styles["small"],
+                    )
+                )
+                code_lines = []
+            in_code = not in_code
+            index += 1
             continue
-        rows.append([name, reports[name].get("status", "?"), reports[name].get("evidence", "-")])
-    story.append(_table(rows, [55 * mm, 25 * mm, 60 * mm]))
-
-    text("10. Risk register", "h1")
-    from satellite1_ultra.documentation import RISKS
-
-    rows = [["ID", "Sev", "Risk", "Mitigation"]]
-    rows += [[r.identifier, r.severity, r.title, r.mitigation] for r in RISKS]
-    story.append(_table(rows, [12 * mm, 16 * mm, 58 * mm, 88 * mm]))
-
-    text("11. Before you build", "h1")
-    text(
-        "Print the eight fit coupons, measure them against docs/fit-coupons.md, "
-        "and enter the corrections in config/physical_compensation.yaml. Then "
-        "regenerate every part. Do not print the full set first.",
+        if in_code:
+            code_lines.append(line)
+            index += 1
+            continue
+        image_match = re.fullmatch(r"!\[(.+?)\]\((.+?)\)", line)
+        if image_match:
+            image_ref = image_match.group(2)
+            image_path = (
+                root / "reports" / "renders" / Path(image_ref).name
+                if image_ref.startswith("IMAGES/")
+                else source.parent / image_ref
+            )
+            if not image_path.is_file():
+                raise FileNotFoundError(f"{source.name} references missing image {image_ref}")
+            reader = ImageReader(str(image_path))
+            iw, ih = reader.getSize()
+            width = min(176 * mm, 176 * mm * iw / max(iw, ih))
+            height = width * ih / iw
+            if height > 165 * mm:
+                height = 165 * mm
+                width = height * iw / ih
+            story.extend(
+                [
+                    Spacer(1, 3 * mm),
+                    Image(str(image_path), width=width, height=height),
+                    Paragraph(_inline(image_match.group(1)), styles["small"]),
+                    Spacer(1, 3 * mm),
+                ]
+            )
+            index += 1
+            continue
+        if line.startswith("| ") and index + 1 < len(lines) and lines[index + 1].startswith("|"):
+            table_lines = [line]
+            index += 1
+            while index < len(lines) and lines[index].startswith("|"):
+                table_lines.append(lines[index])
+                index += 1
+            rows = [
+                [cell.strip() for cell in row.strip("|").split("|")]
+                for row in table_lines
+                if "---" not in row
+            ]
+            column_count = len(rows[0])
+            story.extend(
+                [Spacer(1, 2 * mm), _table(rows, [176 * mm / column_count] * column_count)]
+            )
+            continue
+        if line.startswith("# "):
+            story.append(Paragraph(_inline(line[2:]), styles["title"]))
+        elif line.startswith("## "):
+            story.append(Paragraph(_inline(line[3:]), styles["h1"]))
+        elif line.startswith("### "):
+            story.append(Paragraph(_inline(line[4:]), styles["h2"]))
+        elif line.startswith("> "):
+            story.append(
+                Table(
+                    [[Paragraph(_inline(line[2:]), styles["body"])]],
+                    colWidths=[176 * mm],
+                    style=TableStyle(
+                        [
+                            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fff0c9")),
+                            ("BOX", (0, 0), (-1, -1), 1.0, colors.HexColor("#b05a00")),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                            ("TOPPADDING", (0, 0), (-1, -1), 6),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                        ]
+                    ),
+                )
+            )
+        elif re.match(r"^[-*] ", line):
+            story.append(Paragraph("• " + _inline(line[2:]), styles["body"]))
+        elif re.match(r"^\d+\. ", line):
+            story.append(Paragraph(_inline(line), styles["body"]))
+        elif line:
+            paragraph = [line]
+            while index + 1 < len(lines):
+                following = lines[index + 1].rstrip()
+                if not following or following.startswith(("#", "|", "!", ">", "```")):
+                    break
+                if re.match(r"^[-*] |^\d+\. ", following):
+                    break
+                paragraph.append(following)
+                index += 1
+            story.append(Paragraph(_inline(" ".join(paragraph)), styles["body"]))
+        else:
+            story.append(Spacer(1, 1.5 * mm))
+        index += 1
+    story.append(Spacer(1, 4 * mm))
+    story.append(
+        Paragraph(
+            f"Source commit {_inline(source_commit()[:12])}. "
+            "No physical validation has been performed.",
+            styles["small"],
+        )
     )
-    text(
-        "This design is not PHYSICALLY_VALIDATED. Physical fit, sealing, "
-        "acoustic output, wake-word behaviour, thermal margin and wireless "
-        "performance all remain unmeasured.",
-    )
+    document.build(story, onFirstPage=_page_number, onLaterPages=_page_number)
+    if not output.is_file() or output.stat().st_size < 2_000:
+        raise ValueError(f"PDF generation failed or produced an incomplete file: {output}")
+    return output
 
-    document.build(story)
+
+def build_manuals(
+    output: Path = ROOT / "docs",
+    root: Path = ROOT,
+) -> list[Path]:
+    """Build the complete user-facing PDF set from current generated guides."""
+    mapping = {
+        "START_HERE.md": "START_HERE.pdf",
+        "CALIBRATION_GUIDE.md": "START_HERE_CALIBRATION_GUIDE.pdf",
+        "PRINTING_GUIDE.md": "PRINTING_GUIDE.pdf",
+        "ASSEMBLY_GUIDE.md": "ASSEMBLY_GUIDE.pdf",
+        "TESTING_AND_COMMISSIONING_GUIDE.md": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
+        "MAINTENANCE_GUIDE.md": "MAINTENANCE_GUIDE.pdf",
+    }
+    written: list[Path] = []
+    for source_name, output_name in mapping.items():
+        source = root / "docs" / source_name
+        if not source.is_file():
+            raise FileNotFoundError(f"generate documentation before PDFs: {source}")
+        written.append(_markdown_pdf(source, output / output_name, root))
+    return written
+
+
+def build_manual(
+    output: Path = ROOT / "docs" / "ASSEMBLY_GUIDE.pdf",
+    root: Path = ROOT,
+) -> Path:
+    """Compatibility wrapper returning the assembly PDF."""
+    build_manuals(output.parent, root)
     return output

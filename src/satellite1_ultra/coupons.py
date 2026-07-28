@@ -10,6 +10,43 @@ import cadquery as cq
 from satellite1_ultra.geometry import DEFAULT_PARAMETERS, DesignParameters, rounded_prism
 
 
+def _engrave(
+    shape: cq.Shape,
+    text: str,
+    *,
+    x: float,
+    y: float,
+    top_z: float,
+    size: float = 4.0,
+    depth: float = 0.35,
+) -> cq.Shape:
+    """Cut a shallow, support-free identifier into a known horizontal face."""
+    letters = cq.Workplane("XY", origin=(x, y, top_z - depth)).text(text, size, depth, combine=True)
+    return shape.cut(cast(cq.Shape, letters.val()))
+
+
+def _engrave_arrow(
+    shape: cq.Shape,
+    *,
+    x: float,
+    y: float,
+    top_z: float,
+    length: float = 10.0,
+    depth: float = 0.35,
+) -> cq.Shape:
+    """Cut a +Y orientation arrow into a known horizontal face."""
+    shaft = cq.Workplane("XY", origin=(x, y, top_z - depth)).box(
+        1.4, length, depth, centered=(True, False, False)
+    )
+    head = (
+        cq.Workplane("XY", origin=(x, y + length, top_z - depth))
+        .polyline([(-3.2, -3.0), (0.0, 2.0), (3.2, -3.0)])
+        .close()
+        .extrude(depth)
+    )
+    return shape.cut(cast(cq.Shape, shaft.union(head).val()))
+
+
 def official_interface_coupon(
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> cq.Shape:
@@ -27,7 +64,10 @@ def official_interface_coupon(
                 cq.Vector(0.0, 0.0, 1.0),
             )
             coupon = coupon.cut(hole)
-    return coupon
+    coupon = _engrave(coupon, "SAT1 INTERFACE R1", x=0.0, y=14.0, top_z=2.0, size=6.0)
+    coupon = _engrave(coupon, "MEASURE XY 110.60", x=0.0, y=2.0, top_z=2.0, size=5.0)
+    coupon = _engrave(coupon, "FRONT", x=0.0, y=-15.0, top_z=2.0, size=5.0)
+    return _engrave_arrow(coupon, x=0.0, y=-35.0, top_z=2.0, length=10.0)
 
 
 def _component_seat_coupon(
@@ -75,7 +115,7 @@ def _component_seat_coupon(
 def active_driver_coupon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """ND91-4 seat, bore, clamp-ring bolt circle and insert fit coupon."""
     p = parameters
-    return _component_seat_coupon(
+    coupon = _component_seat_coupon(
         p.driver_pad_diameter,
         p.driver_seat_diameter,
         p.driver_seat_depth,
@@ -85,6 +125,23 @@ def active_driver_coupon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
         0.0,
         p,
     )
+    coupon = _engrave(
+        coupon,
+        "DRIVER R1",
+        x=0.0,
+        y=p.driver_pad_diameter / 2.0 - 5.5,
+        top_z=p.driver_pad_depth,
+        size=3.2,
+    )
+    coupon = _engrave(
+        coupon,
+        "FRONT",
+        x=0.0,
+        y=-p.driver_pad_diameter / 2.0 + 5.5,
+        top_z=p.driver_pad_depth,
+        size=3.2,
+    )
+    return coupon
 
 
 def passive_radiator_coupon(
@@ -92,7 +149,7 @@ def passive_radiator_coupon(
 ) -> cq.Shape:
     """SB12PACR-00 ledge, seat, bore, clamp-ring bolt circle and insert coupon."""
     p = parameters
-    return _component_seat_coupon(
+    coupon = _component_seat_coupon(
         p.pr_pad_diameter,
         p.pr_seat_diameter,
         p.pr_seat_depth,
@@ -102,6 +159,24 @@ def passive_radiator_coupon(
         p.pr_ledge_depth,
         p,
     )
+    ledge_floor = p.pr_pad_depth - p.pr_ledge_depth
+    coupon = _engrave(
+        coupon,
+        "PR R1",
+        x=0.0,
+        y=p.pr_seat_diameter / 2.0 + 4.2,
+        top_z=ledge_floor,
+        size=2.8,
+    )
+    coupon = _engrave(
+        coupon,
+        "FRONT",
+        x=0.0,
+        y=-p.pr_seat_diameter / 2.0 - 4.2,
+        top_z=ledge_floor,
+        size=2.8,
+    )
+    return coupon
 
 
 def heat_set_insert_coupon(
@@ -111,9 +186,9 @@ def heat_set_insert_coupon(
     _ = parameters
     coupon = cast(
         cq.Shape,
-        cq.Workplane("XY").box(60.0, 20.0, 10.0, centered=(True, True, False)).val(),
+        cq.Workplane("XY").box(110.0, 32.0, 10.0, centered=(True, True, False)).val(),
     )
-    for x, diameter in zip((-22.5, -7.5, 7.5, 22.5), (4.0, 4.1, 4.2, 4.3), strict=True):
+    for x, diameter in zip((-45.0, -30.0, -15.0, 0.0), (4.0, 4.1, 4.2, 4.3), strict=True):
         coupon = coupon.cut(
             cq.Solid.makeCylinder(
                 diameter / 2.0,
@@ -122,7 +197,19 @@ def heat_set_insert_coupon(
                 cq.Vector(0.0, 0.0, -1.0),
             )
         )
-    return coupon
+        coupon = _engrave(coupon, f"{diameter:.1f}", x=x, y=-10.5, top_z=10.0, size=3.2)
+    for x, diameter in zip((20.0, 35.0, 50.0), (3.4, 3.5, 3.6), strict=True):
+        coupon = coupon.cut(
+            cq.Solid.makeCylinder(
+                diameter / 2.0,
+                10.0,
+                cq.Vector(x, 0.0, 0.0),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+        coupon = _engrave(coupon, f"{diameter:.1f}", x=x, y=-10.5, top_z=10.0, size=3.2)
+    coupon = _engrave(coupon, "INSERT BORES", x=-22.5, y=10.5, top_z=10.0, size=3.2)
+    return _engrave(coupon, "M3 CLEAR", x=35.0, y=10.5, top_z=10.0, size=3.2)
 
 
 def gasket_compression_coupon_base(
@@ -152,7 +239,7 @@ def gasket_compression_coupon_base(
                     cq.Vector(0.0, 0.0, -1.0),
                 )
             )
-    return coupon
+    return _engrave(coupon, "GASKET BASE R1", x=0.0, y=0.0, top_z=8.0, size=4.0)
 
 
 def gasket_compression_coupon_cap(
@@ -161,7 +248,7 @@ def gasket_compression_coupon_cap(
     """Flat cap for measuring compressed thickness and compression-set behavior."""
     p = parameters
     cap = cq.Workplane("XY").box(60.0, 30.0, 3.0, centered=(True, True, False))
-    return cast(
+    solid = cast(
         cq.Shape,
         cap.faces(">Z")
         .workplane()
@@ -169,6 +256,7 @@ def gasket_compression_coupon_cap(
         .hole(p.fastener_clearance_diameter)
         .val(),
     )
+    return _engrave(solid, "GASKET CAP R1", x=0.0, y=0.0, top_z=3.0, size=4.0)
 
 
 def cable_passage_coupon(
@@ -182,9 +270,18 @@ def cable_passage_coupon(
         p.divider_thickness,
         centered=(True, True, False),
     )
-    return cast(
+    solid = cast(
         cq.Shape,
         plate.faces(">Z").workplane().hole(p.cable_passage_diameter).val(),
+    )
+    solid = _engrave(solid, "CABLE R1", x=0.0, y=10.0, top_z=p.divider_thickness, size=3.5)
+    return _engrave(
+        solid,
+        f"BORE {p.cable_passage_diameter:.1f}",
+        x=0.0,
+        y=-10.0,
+        top_z=p.divider_thickness,
+        size=3.2,
     )
 
 

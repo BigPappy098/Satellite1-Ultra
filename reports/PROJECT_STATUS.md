@@ -3,16 +3,16 @@
 ## Status
 
 - Project: Satellite1 Ultra
-- Branch: `gemini/takeover`
-- Release state: `DIGITAL_PROTOTYPE_READY`
+- Branch: `codex/final-audit-and-release`
+- Release state: `FINAL_AUDIT_IN_PROGRESS`
 - Physical validation state: `NOT_PERFORMED`
-- Last updated: 2026-07-27
+- Last updated: 2026-07-28
 
 ## Active phase
 
-Phase 8 complete. The functional design is validated, the
-industrial-design shell is in place, and the full manufacturing package
-generates from one command. The project is `DIGITAL_PROTOTYPE_READY`.
+The final clean-room audit invalidated the inherited release claim because
+`make release` failed at lint and several user instructions did not match the
+mechanics. Corrections are in progress; see `reports/FINAL_CODEX_AUDIT.md`.
 
 ## Phase completion
 
@@ -50,7 +50,8 @@ generates from one command. The project is `DIGITAL_PROTOTYPE_READY`.
 
 ## Next autonomous action
 
-Await physical validation from the user.
+Complete the regenerated release, mutation run, PDF render review, clean-clone
+reproduction, final evidence report, and clean handoff.
 
 ## Release gate
 
