@@ -63,7 +63,7 @@ clean-clone reproduction are complete. The builder-facing RC1 archive is
   eleven quantitative engineering gates.
 - `VERIFIED_DIGITALLY`: six independent deep tests pass, including
   Gmsh/OpenCascade STEP reopen.
-- `VERIFIED_DIGITALLY`: all 17 deliberately injected defects are rejected by
+- `VERIFIED_DIGITALLY`: all 18 deliberately injected defects are rejected by
   their intended gates.
 - `DERIVED_FROM_OFFICIAL_CAD`: 126 official reference files remain
   byte-for-byte preserved and the interface datum/pattern are measured from the

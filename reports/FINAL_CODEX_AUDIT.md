@@ -50,14 +50,14 @@ The final correction is developed on `codex/include-complete-squircle-parts`.
 ## Final evidence
 
 The authoritative source is
-`f0cc27d`. The final fast suite passed
+`0ae7c9bbf745f27bdfa5d2d6e62dcb2841d9c2c4`. The final fast suite passed
 with 120 tests, and the release passed with six deep tests
-and 17 deliberate mutations. The same command then succeeded in a fresh clone
+and 18 deliberate mutations. The same command then succeeded in a fresh clone
 and fresh virtual environment. It regenerated 23 STEP/STL/3MF part sets, three
 assembly STEP files, three gasket DXFs, 62 CAD renders, 23 drawing sheets, seven
 illustrated PDFs, and a checksummed 163-file user release.
 
-All 48 PDF pages were rendered to images and visually reviewed. Corrections
+All 64 PDF pages were rendered to images and visually reviewed. Corrections
 made during that review included missing calibration illustrations, incorrect
 fastener lengths and layout, an obscured ballast stage, measurement arrows, and
 page-fit issues.

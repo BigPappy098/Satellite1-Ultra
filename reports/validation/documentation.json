@@ -1,5 +1,5 @@
 {
-  "status": "FAIL",
+  "status": "PASS",
   "evidence": "VERIFIED_DIGITALLY",
   "checked_files": [
     "docs/BEGINNER_BUILD_GUIDE.md",
@@ -16,7 +16,7 @@
     {
       "file": "BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf",
       "pages": 7,
-      "bytes": 874628
+      "bytes": 874629
     },
     {
       "file": "START_HERE.pdf",
@@ -49,7 +49,5 @@
       "bytes": 258158
     }
   ],
-  "errors": [
-    "missing image referenced by ASSEMBLY_GUIDE.md: IMAGES/intentionally_missing.png"
-  ]
+  "errors": []
 }
