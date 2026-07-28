@@ -385,6 +385,7 @@ def build_manuals(
 ) -> list[Path]:
     """Build the complete user-facing PDF set from current generated guides."""
     mapping = {
+        "BEGINNER_BUILD_GUIDE.md": "BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf",
         "START_HERE.md": "START_HERE.pdf",
         "CALIBRATION_GUIDE.md": "START_HERE_CALIBRATION_GUIDE.pdf",
         "PRINTING_GUIDE.md": "PRINTING_GUIDE.pdf",

@@ -9,7 +9,7 @@ with Python 3.12 and CadQuery 2.6.1. The baseline clean-room `make release`
 failed at lint before CAD generation, proving that the inherited release was
 not reproducible from its declared command.
 
-The release candidate is developed on `codex/final-audit-and-release`.
+The final correction is developed on `codex/include-complete-squircle-parts`.
 
 ## Baseline findings and corrections
 
@@ -22,7 +22,7 @@ The release candidate is developed on `codex/final-audit-and-release`.
 | High | The pressure test demanded 1 kPa/60 s and conflated decay with acoustic leakage Q. | Temporary TPU adapter and a 100-250 Pa gross bubble screen are used; final sealing/tuning requires an impedance sweep. |
 | High | Multiple compensation files and internal variables made printer calibration ambiguous. | One user-facing `config/physical_calibration.yaml` with safe limits, seven printed coupon parts, six checks, and one regeneration command. |
 | High | The acoustic model subtracted unretained damping and a stale script could overwrite current 60 Hz results with 50 Hz results. | RC1 contains no damping; the legacy script delegates to the authoritative CAD-coupled model. |
-| High | User docs conflicted on coupon count, wiring, ballast, seals, part names, and physical validation. | Obsolete task guides are replaced by one generated hierarchy and six illustrated PDFs. The deletion is intentional so stale copies cannot ship. |
+| High | User docs conflicted on coupon count, wiring, ballast, seals, part names, and physical validation. | Obsolete task guides are replaced by one generated hierarchy, a beginner-first guide, and seven illustrated PDFs. |
 | Medium | Cable specification could not fit the individual gland bores. | One 22 AWG red/black stranded lead, conductor OD no greater than 1.8 mm, with the official 2-pin JST-XH interface is specified. |
 | Medium | Part print-orientation prose contradicted encoded orientation for clamp rings, cable gland, and ballast lid. | Metadata and one render per released part use the actual Z=0 orientation. |
 | Medium | Gasket instructions lacked authoritative cutting templates. | Three 1:1 DXF profiles are generated from the gasket B-reps. |
@@ -50,14 +50,14 @@ The release candidate is developed on `codex/final-audit-and-release`.
 ## Final evidence
 
 The authoritative source is
-`45cfb9dd335752ec704865bac14170af43f014b0`. A literal `make check` passed
-with 118 fast tests, and the full `make all` release passed with five deep tests
-and 17 deliberate mutations. The same command then succeeded in a fresh clone
+`0ae7c9bbf745f27bdfa5d2d6e62dcb2841d9c2c4`. The final fast suite passed
+with 120 tests, and the release passed with six deep tests
+and 18 deliberate mutations. The same command then succeeded in a fresh clone
 and fresh virtual environment. It regenerated 23 STEP/STL/3MF part sets, three
-assembly STEP files, three gasket DXFs, 54 CAD renders, 23 drawing sheets, six
-illustrated PDFs, and a checksummed 119-file user release.
+assembly STEP files, three gasket DXFs, 62 CAD renders, 23 drawing sheets, seven
+illustrated PDFs, and a checksummed 163-file user release.
 
-All 48 PDF pages were rendered to images and visually reviewed. Corrections
+All 64 PDF pages were rendered to images and visually reviewed. Corrections
 made during that review included missing calibration illustrations, incorrect
 fastener lengths and layout, an obscured ballast stage, measurement arrows, and
 page-fit issues.

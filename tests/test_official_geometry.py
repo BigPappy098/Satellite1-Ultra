@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import csv
+import hashlib
 import math
 
 import gmsh
@@ -15,6 +17,8 @@ from satellite1_ultra.official import (
     OFFICIAL_INTERFACE_Z,
     OFFICIAL_MOUNT_X,
     OFFICIAL_MOUNT_Y,
+    OFFICIAL_PRINT_PARTS,
+    OFFICIAL_PRINT_PARTS_REQUIRED,
     PCB_SPACER,
     UPPER_STACK,
     board_keepout,
@@ -23,6 +27,30 @@ from satellite1_ultra.official import (
     load_part,
     upper_reference_assembly,
 )
+
+
+def _sha256(path: object) -> str:
+    digest = hashlib.sha256()
+    with open(path, "rb") as source:  # type: ignore[arg-type]
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+@pytest.mark.requires_official_assets
+def test_complete_official_print_set_is_preserved_and_manifested() -> None:
+    manifest_path = MID_PLATE.path.parents[7] / "MANIFEST.csv"
+    with manifest_path.open(encoding="utf-8", newline="") as source:
+        rows = list(csv.DictReader(source))
+    by_path = {row["preserved_path"]: row for row in rows}
+    assert len(OFFICIAL_PRINT_PARTS_REQUIRED) == 6
+    assert len({part.filename for part in OFFICIAL_PRINT_PARTS}) == len(OFFICIAL_PRINT_PARTS)
+    for part in OFFICIAL_PRINT_PARTS:
+        assert part.stl_path.is_file()
+        assert part.step_path.is_file()
+        relative = str(part.stl_path.relative_to(manifest_path.parent.parent))
+        assert relative in by_path
+        assert by_path[relative]["sha256"] == _sha256(part.stl_path)
 
 
 @pytest.mark.geometry

@@ -1,7 +1,7 @@
 # Mutation-test report
 
 - Status: `PASS`
-- Deliberate defects rejected: 17
+- Deliberate defects rejected: 18
 - Failures/errors/skips: 0/0/0
 - Evidence: `VERIFIED_DIGITALLY`
 

@@ -14,16 +14,31 @@ buttons, LEDs, and wake-word behavior are `REQUIRES_PHYSICAL_VALIDATION`.
 ## Builder entry point
 
 Download the generated `release/Satellite1-Ultra-RC1.zip`, open
-`START_HERE.pdf`, and complete `START_HERE_CALIBRATION_GUIDE.pdf` before any
-full-size print. The release package contains:
+`00_READ_ME_FIRST.txt`, then follow
+`BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf` from top to bottom. Print only from
+the three numbered folders under `PRINT_THESE_FILES/`. The release package
+also contains:
 
 - six task-oriented PDF guides;
 - one calibration input template and eight calibration 3MF files;
 - production STEP, STL, and correctly oriented 3MF files;
+- all six required official Squircle upper-stack STL files, preserved
+  byte-for-byte under `OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/`;
 - 1:1 DXF gasket templates;
 - BOM, fastener, and gasket schedules;
 - CAD-derived calibration, printing, assembly, and service illustrations;
 - SHA-256 checksums.
+
+Print every required custom Ultra 3MF **and** every file in
+`OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/`. Do not print the original official
+speaker chamber, speaker plate, or anti-slip ring; the Ultra enclosure replaces
+them.
+
+The limiting print is `outer_shell.3mf` at 192 x 212 x 189 mm. The absolute
+usable machine travel is therefore 212 x 192 x 189 mm (X/Y may be swapped);
+220 x 220 x 200 mm is the practical minimum only if the full bed is usable; it
+leaves room for a 3 mm shell brim. Purge lines, clips, or firmware exclusions
+can require a larger bed.
 
 ## One-command clean build
 

@@ -11,7 +11,8 @@ from typing import Any
 from pypdf import PdfReader
 
 from satellite1_ultra.configuration import ROOT
-from satellite1_ultra.exporting import PARTS, source_commit
+from satellite1_ultra.exporting import PARTS, export_sources_match
+from satellite1_ultra.official import OFFICIAL_PRINT_PARTS, OFFICIAL_PRINT_PARTS_REQUIRED
 
 EVIDENCE_LABELS = {
     "VERIFIED_DIGITALLY",
@@ -21,6 +22,7 @@ EVIDENCE_LABELS = {
     "REQUIRES_PHYSICAL_VALIDATION",
 }
 USER_GUIDES = (
+    "BEGINNER_BUILD_GUIDE.md",
     "START_HERE.md",
     "CALIBRATION_GUIDE.md",
     "PRINTING_GUIDE.md",
@@ -31,6 +33,7 @@ USER_GUIDES = (
     "ENGINEERING_APPENDIX.md",
 )
 PDF_GUIDES = (
+    "BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf",
     "START_HERE.pdf",
     "START_HERE_CALIBRATION_GUIDE.pdf",
     "PRINTING_GUIDE.pdf",
@@ -95,8 +98,17 @@ def validate_documentation(root: Path = ROOT) -> dict[str, Any]:
         errors.append(f"unknown fastener ID in guides: {identifier}")
     for identifier in sorted(set(re.findall(r"\bG\d{2}\b", combined)) - gasket_ids - {"G00"}):
         errors.append(f"unknown gasket ID in guides: {identifier}")
-    for identifier in sorted(set(re.findall(r"\b[ABDEHP]\d{2}\b", combined)) - bom_ids):
+    for identifier in sorted(set(re.findall(r"\b[ABDEHOP]\d{2}\b", combined)) - bom_ids):
         errors.append(f"unknown BOM ID in guides: {identifier}")
+
+    for part in OFFICIAL_PRINT_PARTS:
+        if not part.stl_path.is_file():
+            errors.append(f"missing preserved official printable: {part.stl_path}")
+        if not part.step_path.is_file():
+            errors.append(f"missing preserved official B-rep: {part.step_path}")
+    for part in OFFICIAL_PRINT_PARTS_REQUIRED:
+        if part.filename not in combined:
+            errors.append(f"required official printable is absent from guides: {part.filename}")
 
     export_report = root / "reports" / "validation" / "export_validation.json"
     if not export_report.is_file():
@@ -114,10 +126,9 @@ def validate_documentation(root: Path = ROOT) -> dict[str, Any]:
             )
         for record in records:
             name = str(record["part"])
-            if record.get("source_commit") != source_commit():
-                errors.append(
-                    f"stale export {name}: {record.get('source_commit')} != {source_commit()}"
-                )
+            recorded_commit = str(record.get("source_commit", ""))
+            if not export_sources_match(recorded_commit):
+                errors.append(f"stale export {name}: source inputs changed since {recorded_commit}")
             for directory, suffix in (("step", ".step"), ("stl", ".stl"), ("3mf", ".3mf")):
                 if not (root / "exports" / directory / f"{name}{suffix}").is_file():
                     errors.append(f"missing export: exports/{directory}/{name}{suffix}")
