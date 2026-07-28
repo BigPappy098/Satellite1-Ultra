@@ -2,11 +2,17 @@
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
   "assumed_printed_dimensional_tolerance_mm": 0.15,
+  "residual_calibrated_z_tolerance_mm": 0.1,
+  "measured_hardware_tolerance_mm": 0.05,
+  "material_shrinkage": "removed from nominal by XY/Z coupon scale correction; residual is included in the calibrated tolerance",
   "stacks": [
     {
       "interface": "divider gasket closure",
       "nominal_compression_mm": 0.5,
-      "worst_compression_fraction": 0.42500000000000004,
+      "worst_compression_fraction_range": [
+        0.17500000000000002,
+        0.325
+      ],
       "limit": "15-45% compression",
       "status": "PASS",
       "evidence": "ENGINEERING_ESTIMATE",
@@ -15,7 +21,10 @@
     {
       "interface": "component gasket closure at the clamp-ring hard stop",
       "nominal_compression_mm": 0.5,
-      "worst_compression_fraction": 0.42500000000000004,
+      "worst_compression_fraction_range": [
+        0.17500000000000002,
+        0.325
+      ],
       "limit": "15-45% compression",
       "status": "PASS",
       "evidence": "ENGINEERING_ESTIMATE",
@@ -61,9 +70,9 @@
       "part_tolerance_mm": 0.15
     }
   ],
-  "compensation_file": "config/physical_compensation.yaml",
+  "compensation_file": "config/physical_calibration.yaml",
   "physical_gate": {
     "evidence": "REQUIRES_PHYSICAL_VALIDATION",
-    "requirement": "Populate compensation values from the eight fit coupons before full printing."
+    "requirement": "Pass the seven calibration parts and six documented checks before printing the full enclosure."
   }
 }

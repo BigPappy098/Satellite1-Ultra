@@ -49,6 +49,20 @@ The release candidate is developed on `codex/final-audit-and-release`.
 
 ## Final evidence
 
-The exact source commit, digital results, clean-room reproduction, mutation
-count, export count, PDF page review, release checksum, and remaining physical
-risks are populated in `FINAL_RELEASE_STATUS.md` after the final release run.
+The authoritative source is
+`45cfb9dd335752ec704865bac14170af43f014b0`. A literal `make check` passed
+with 118 fast tests, and the full `make all` release passed with five deep tests
+and 17 deliberate mutations. The same command then succeeded in a fresh clone
+and fresh virtual environment. It regenerated 23 STEP/STL/3MF part sets, three
+assembly STEP files, three gasket DXFs, 54 CAD renders, 23 drawing sheets, six
+illustrated PDFs, and a checksummed 119-file user release.
+
+All 48 PDF pages were rendered to images and visually reviewed. Corrections
+made during that review included missing calibration illustrations, incorrect
+fastener lengths and layout, an obscured ballast stage, measurement arrows, and
+page-fit issues.
+
+The final status, release checksum, engineering values, test counts, and
+remaining specimen-dependent risks are recorded in
+`reports/FINAL_RELEASE_STATUS.md`. The defensible release state is
+`DIGITAL_PROTOTYPE_READY`, never `PHYSICALLY_VALIDATED`.

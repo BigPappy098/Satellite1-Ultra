@@ -13,8 +13,8 @@
   ],
   "bay_height_mm": 20.7,
   "first_free_placement_xy_mm": [
-    -6.0,
-    -10.0
+    -2.0,
+    -2.0
   ],
   "note": "The official assets do not fix the Core's position in the stack, so the enclosure is validated against a Core-sized free volume instead of an asserted placement.",
   "physical_gate": {

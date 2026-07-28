@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "evidence": "VERIFIED_DIGITALLY",
+  "checked_files": [
+    "docs/START_HERE.md",
+    "docs/CALIBRATION_GUIDE.md",
+    "docs/PRINTING_GUIDE.md",
+    "docs/HARDWARE_AND_MATERIALS_GUIDE.md",
+    "docs/ASSEMBLY_GUIDE.md",
+    "docs/TESTING_AND_COMMISSIONING_GUIDE.md",
+    "docs/MAINTENANCE_GUIDE.md",
+    "docs/ENGINEERING_APPENDIX.md"
+  ],
+  "pdfs": [
+    {
+      "file": "START_HERE.pdf",
+      "pages": 2,
+      "bytes": 241618
+    },
+    {
+      "file": "START_HERE_CALIBRATION_GUIDE.pdf",
+      "pages": 8,
+      "bytes": 559329
+    },
+    {
+      "file": "PRINTING_GUIDE.pdf",
+      "pages": 22,
+      "bytes": 2318488
+    },
+    {
+      "file": "ASSEMBLY_GUIDE.pdf",
+      "pages": 11,
+      "bytes": 2111159
+    },
+    {
+      "file": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
+      "pages": 3,
+      "bytes": 529621
+    },
+    {
+      "file": "MAINTENANCE_GUIDE.pdf",
+      "pages": 2,
+      "bytes": 258155
+    }
+  ],
+  "errors": []
+}
