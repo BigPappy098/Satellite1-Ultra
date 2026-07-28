@@ -86,7 +86,7 @@
     {
       "part": "active_driver_clamp_ring",
       "material": "ASA",
-      "print_orientation": "lip face up, flat on bed",
+      "print_orientation": "lip face on bed",
       "bounds_mm": [
         118.0,
         118.0,
@@ -100,7 +100,7 @@
     {
       "part": "passive_radiator_clamp_ring",
       "material": "ASA",
-      "print_orientation": "lip face up, flat on bed",
+      "print_orientation": "lip face on bed",
       "bounds_mm": [
         140.0,
         140.0,
@@ -156,13 +156,27 @@
     {
       "part": "cable_gland",
       "material": "TPU 95A",
-      "print_orientation": "flange on bed",
+      "print_orientation": "body end on bed",
       "bounds_mm": [
         14.0,
         13.611353870426239,
         5.5
       ],
       "largest_dimension_mm": 14.0,
+      "build_envelope_mm": 256.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "part": "leak_test_adapter",
+      "material": "TPU 95A",
+      "print_orientation": "flange on bed; temporary service tool, not installed in service",
+      "bounds_mm": [
+        14.0,
+        14.0,
+        17.5
+      ],
+      "largest_dimension_mm": 17.5,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -200,11 +214,11 @@
       "material": "ASA",
       "print_orientation": "tray floor on bed",
       "bounds_mm": [
-        120.0,
-        132.0,
+        129.8,
+        141.8,
         14.0
       ],
-      "largest_dimension_mm": 132.0,
+      "largest_dimension_mm": 141.8,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -212,13 +226,13 @@
     {
       "part": "ballast_cartridge_lid",
       "material": "ASA",
-      "print_orientation": "outer face on bed",
+      "print_orientation": "tongue face on bed",
       "bounds_mm": [
-        120.0,
-        132.0,
+        129.8,
+        141.8,
         3.5
       ],
-      "largest_dimension_mm": 132.0,
+      "largest_dimension_mm": 141.8,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -242,11 +256,11 @@
       "material": "ASA",
       "print_orientation": "largest flat face on bed",
       "bounds_mm": [
-        126.0,
-        126.0,
-        10.2
+        126.0000002,
+        126.0000002,
+        10.200000099999999
       ],
-      "largest_dimension_mm": 126.0,
+      "largest_dimension_mm": 126.0000002,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -270,11 +284,11 @@
       "material": "ASA",
       "print_orientation": "largest flat face on bed",
       "bounds_mm": [
-        60.0,
-        20.0,
-        10.0
+        110.0000002,
+        32.0000002,
+        10.0000001
       ],
-      "largest_dimension_mm": 60.0,
+      "largest_dimension_mm": 110.0000002,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -284,11 +298,11 @@
       "material": "ASA",
       "print_orientation": "largest flat face on bed",
       "bounds_mm": [
-        60.0,
-        30.0,
+        60.0000002,
+        30.0000002,
         9.5
       ],
-      "largest_dimension_mm": 60.0,
+      "largest_dimension_mm": 60.0000002,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -298,11 +312,11 @@
       "material": "ASA",
       "print_orientation": "largest flat face on bed",
       "bounds_mm": [
-        60.0,
-        30.0,
-        3.0
+        60.0000002,
+        30.0000002,
+        3.0000001
       ],
-      "largest_dimension_mm": 60.0,
+      "largest_dimension_mm": 60.0000002,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -312,11 +326,11 @@
       "material": "ASA",
       "print_orientation": "largest flat face on bed",
       "bounds_mm": [
-        40.0,
-        30.0,
-        4.0
+        40.0000002,
+        30.0000002,
+        4.0000001
       ],
-      "largest_dimension_mm": 40.0,
+      "largest_dimension_mm": 40.0000002,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -325,9 +339,9 @@
   "process_notes": [
     "The cabinet prints acoustic floor down: every gasket land and seat face is either horizontal or a vertical bore, so no sealing surface is a support interface.",
     "Component pockets are horizontal bores in a vertical wall; their upper 90 degrees bridge over a 0.3 mm-clearance arc and are not sealing surfaces.",
-    "Clamp rings print lip-up so the loaded lip face is a top surface.",
+    "Clamp rings print lip-face down so the loaded face is formed against the bed.",
     "Heat-set insert bores are blind and vertical or horizontal; none requires support.",
-    "The grille cage prints upright on its bottom retention ring."
+    "The outer shell prints upright on its base band."
   ],
   "physical_gate": {
     "evidence": "REQUIRES_PHYSICAL_VALIDATION",

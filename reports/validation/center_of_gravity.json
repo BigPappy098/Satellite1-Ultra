@@ -2,30 +2,31 @@
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
   "method": "B-rep volume x material density, plus catalogued component masses",
-  "total_mass_g": 3488.069400553985,
+  "total_mass_g": 3527.804052974747,
   "center_of_gravity_mm": {
-    "x": 0.0016266024545082325,
-    "y": -5.398736863594221,
-    "z": -137.90094871600797
+    "x": 0.0016082815721163008,
+    "y": -5.337929367042597,
+    "z": -138.68054054008073
   },
-  "cg_height_above_support_mm": 80.09905128399203,
+  "cg_height_above_support_mm": 79.31945945991927,
   "support_polygon_mm": {
     "x_half": 94.0,
     "y_half": 104.0
   },
   "static_tipping_angles_deg": {
-    "+X": 49.56461058519275,
-    "-X": 49.56558948596238,
-    "+Y": 53.78933362534161,
-    "-Y": 50.91120800282055
+    "+X": 49.84103936993571,
+    "-X": 49.84200569912394,
+    "+Y": 54.0409029306917,
+    "-Y": 51.20242745765632
   },
-  "minimum_tipping_angle_deg": 49.56461058519275,
+  "minimum_tipping_angle_deg": 49.84103936993571,
   "ballast": {
-    "material": "three removable 120 x 120 x 3 mm mild-steel plates",
-    "mass_g": 1017.3599999999999,
-    "three_g_retention_load_n": 29.930680331999994,
+    "material": "two removable 110 x 122 x 5 mm mild-steel plates",
+    "mass_g": 1053.4699999999998,
+    "three_g_retention_load_n": 30.993034726499992,
     "design_factor_of_safety": 5.0,
-    "retainer_design_load_n": 149.65340166,
+    "retainer_design_load_n": 154.96517363249995,
+    "retention_fasteners": 4,
     "moisture_containment": "dry plate stack in a closed printed cartridge; no wet casting"
   },
   "mass_elements": [
@@ -39,18 +40,18 @@
     },
     {
       "name": "ballast_cartridge",
-      "mass_g": 58.072176006882174,
-      "x_mm": -2.090530007262299e-15,
-      "y_mm": 8.311846762341486e-15,
-      "z_mm": -208.0638619390998,
+      "mass_g": 61.18464521560394,
+      "x_mm": 2.324160036006271e-15,
+      "y_mm": -1.08633108954134e-14,
+      "z_mm": -207.8738797285234,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "ballast_cartridge_lid",
-      "mass_g": 55.73268773209902,
-      "x_mm": -4.0089998584827625e-16,
-      "y_mm": -5.928528337684887e-17,
-      "z_mm": -197.69138738234957,
+      "mass_g": 56.244870944139315,
+      "x_mm": 4.758101698952692e-16,
+      "y_mm": 2.3254121074561015e-15,
+      "z_mm": -197.68509139474548,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
@@ -167,7 +168,7 @@
     },
     {
       "name": "steel ballast",
-      "mass_g": 1017.3599999999999,
+      "mass_g": 1053.4699999999998,
       "x_mm": 0,
       "y_mm": 0,
       "z_mm": -207.5,

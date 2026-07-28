@@ -19,7 +19,6 @@ jobs:
         with:
           name: satellite1-ultra-validation
           path: |
-            exports/
-            reports/
-            docs/
-
+            release/Satellite1-Ultra-RC1.zip
+            reports/validation/
+            reports/FINAL_RELEASE_STATUS.md

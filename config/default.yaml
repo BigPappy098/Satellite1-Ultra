@@ -68,12 +68,14 @@ acoustics:
   passive_radiator_count: 2
   target_tuning_hz: 60.0
   leakage_q: 7.0
-  damping_volume_fraction: 0.02
+  # RC1 has no internal damping material. Add damping only after a measured
+  # acoustic test establishes a safe location and a revised displacement value.
+  damping_volume_fraction: 0.0
   amplifier_voltage_rms: 10.0
   amplifier_peak_current_a: 6.0
 
 ballast:
-  target_mass_g: 1100
+  target_mass_g: 1054
   maximum_mass_g: 1250
   cartridge_material: steel_plate_stack
 

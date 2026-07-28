@@ -6,7 +6,11 @@ from dataclasses import fields
 
 import pytest
 
-from satellite1_ultra.configuration import load_design_parameters
+from satellite1_ultra.configuration import (
+    CALIBRATION_LIMITS,
+    load_design_parameters,
+    validate_physical_calibration,
+)
 from satellite1_ultra.geometry import DEFAULT_PARAMETERS
 
 
@@ -33,3 +37,16 @@ def test_insert_bore_is_smaller_than_the_insert_it_receives() -> None:
     p = load_design_parameters()
     assert p.insert_bore_diameter < p.insert_outer_diameter
     assert p.insert_bore_depth > p.insert_depth
+
+
+def test_calibration_limits_accept_nominal_values_and_reject_absurd_inputs() -> None:
+    nominal = {key: 0.0 for key in CALIBRATION_LIMITS}
+    nominal |= {
+        "gasket_sheet_thickness_mm": 2.0,
+        "active_driver_flange_thickness_mm": 3.0,
+        "passive_radiator_flange_thickness_mm": 4.0,
+    }
+    validate_physical_calibration(nominal)
+    nominal["xy_scale_correction_fraction"] = 0.5
+    with pytest.raises(ValueError, match="outside the safe range"):
+        validate_physical_calibration(nominal)

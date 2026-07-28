@@ -16,6 +16,29 @@ GENERATED = (
     ROOT / "reports" / "renders",
     ROOT / "reports" / "drawings",
     ROOT / "build",
+    ROOT / "release",
+)
+GENERATED_DOCS = (
+    "Satellite1-Ultra-Build-Manual.pdf",
+    "START_HERE.md",
+    "CALIBRATION_GUIDE.md",
+    "PRINTING_GUIDE.md",
+    "HARDWARE_AND_MATERIALS_GUIDE.md",
+    "ASSEMBLY_GUIDE.md",
+    "TESTING_AND_COMMISSIONING_GUIDE.md",
+    "MAINTENANCE_GUIDE.md",
+    "ENGINEERING_APPENDIX.md",
+    "BOM.csv",
+    "FASTENERS.csv",
+    "GASKETS.csv",
+    "RISK_REGISTER.csv",
+    "source-commit.txt",
+    "START_HERE.pdf",
+    "START_HERE_CALIBRATION_GUIDE.pdf",
+    "PRINTING_GUIDE.pdf",
+    "ASSEMBLY_GUIDE.pdf",
+    "TESTING_AND_COMMISSIONING_GUIDE.pdf",
+    "MAINTENANCE_GUIDE.pdf",
 )
 
 
@@ -82,11 +105,13 @@ def acoustics() -> None:
 def export() -> None:
     """Export and round-trip validate every manufacturing file."""
     from satellite1_ultra.assemblies import export_assemblies
-    from satellite1_ultra.exporting import export_parts
+    from satellite1_ultra.exporting import export_gasket_templates, export_parts
 
     parameters = load_design_parameters()
     records = export_parts(parameters=parameters)
     click.echo(f"  {len(records)} parts exported to STEP, STL and 3MF")
+    templates = export_gasket_templates(parameters=parameters)
+    click.echo(f"  {len(templates)} gasket cutting templates exported to DXF")
     written = export_assemblies(parameters=parameters)
     for label, path in written.items():
         click.echo(f"  assembly {label} -> {path.relative_to(ROOT)}")
@@ -121,11 +146,33 @@ def docs() -> None:
 
 @main.command("manual")
 def manual_command() -> None:
-    """Generate the PDF build manual."""
-    from satellite1_ultra.manual import build_manual
+    """Generate the complete illustrated PDF guide set."""
+    from satellite1_ultra.manual import build_manuals
 
-    path = build_manual()
-    click.echo(f"  {path.relative_to(ROOT)} ({path.stat().st_size // 1024} KiB)")
+    for path in build_manuals():
+        click.echo(f"  {path.relative_to(ROOT)} ({path.stat().st_size // 1024} KiB)")
+
+
+@main.command("docs-check")
+def docs_check() -> None:
+    """Validate every builder guide, schedule, image reference, export, and PDF."""
+    from satellite1_ultra.doc_validation import validate_documentation
+
+    result = validate_documentation()
+    click.echo(
+        f"  documentation {result['status']}; "
+        f"{len(result['checked_files'])} guides, {len(result['pdfs'])} PDFs"
+    )
+
+
+@main.command("package")
+def package_command() -> None:
+    """Create the clean user-facing RC1 directory and zip archive."""
+    from satellite1_ultra.release import package_release
+
+    path = package_release()
+    count = sum(1 for item in path.rglob("*") if item.is_file())
+    click.echo(f"  {path.relative_to(ROOT)} ({count} files)")
 
 
 @main.command()
@@ -135,16 +182,28 @@ def clean() -> None:
         if directory.exists():
             shutil.rmtree(directory)
             click.echo(f"  removed {directory.relative_to(ROOT)}")
-    manual_pdf = ROOT / "docs" / "Satellite1-Ultra-Build-Manual.pdf"
-    if manual_pdf.exists():
-        manual_pdf.unlink()
+    for name in GENERATED_DOCS:
+        path = ROOT / "docs" / name
+        if path.exists():
+            path.unlink()
 
 
 @main.command("all")
 @click.pass_context
 def run_all(context: click.Context) -> None:
     """Run the complete pipeline in dependency order."""
-    for step in (build, validate, acoustics, export, renders, drawings, docs, manual_command):
+    for step in (
+        build,
+        validate,
+        acoustics,
+        export,
+        renders,
+        drawings,
+        docs,
+        manual_command,
+        docs_check,
+        package_command,
+    ):
         click.echo(f"== {step.name}")
         context.invoke(step)
 

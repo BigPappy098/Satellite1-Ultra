@@ -112,7 +112,7 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "grille cage guard",
+      "feature": "outer-shell moving-part guard",
       "actual_mm": 3.0,
       "minimum_mm": 2.4,
       "margin_mm": 0.6000000000000001,
@@ -121,7 +121,7 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "grille cage rail",
+      "feature": "outer-shell slot rail",
       "actual_mm": 4.0,
       "minimum_mm": 3.2,
       "margin_mm": 0.7999999999999998,

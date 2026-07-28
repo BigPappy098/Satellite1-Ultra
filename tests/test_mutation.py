@@ -21,7 +21,12 @@ from typing import Any
 
 import pytest
 
-from satellite1_ultra.configuration import ROOT, load_design_parameters
+from satellite1_ultra.configuration import (
+    ROOT,
+    load_design_parameters,
+    validate_physical_calibration,
+)
+from satellite1_ultra.doc_validation import validate_documentation
 from satellite1_ultra.geometry import DesignParameters
 from satellite1_ultra.validation import (
     clearance_report,
@@ -178,26 +183,70 @@ def test_losing_the_ballast_is_caught_by_the_stability_gate() -> None:
 # Configuration-file mutations
 # ---------------------------------------------------------------------- #
 def test_configuration_file_mutation_reaches_the_geometry() -> None:
-    """Mutate default.yaml on disk and confirm the loader and gate both react."""
+    """Mutate default.yaml on disk and confirm the loader rejects it early."""
     path = ROOT / "config" / "default.yaml"
     with mutated_config(path, "  wall_thickness: 4.0", "  wall_thickness: 2.0"):
-        mutated = load_design_parameters()
-        assert mutated.wall_thickness == pytest.approx(2.0)
-        assert wall_thickness_report(mutated)["status"] == "FAIL"
+        with pytest.raises(ValueError, match="wall_thickness"):
+            load_design_parameters()
     assert load_design_parameters().wall_thickness == pytest.approx(4.0)
     assert wall_thickness_report(load_design_parameters())["status"] == "PASS"
 
 
 def test_component_data_mutation_reaches_the_mechanical_interface() -> None:
-    """A wrong published cutout diameter must move the bore and fail a gate."""
+    """A wrong published cutout diameter must fail before geometry generation."""
     path = ROOT / "config" / "components.yaml"
     with mutated_config(path, "    cutout_diameter_mm: 88.5", "    cutout_diameter_mm: 108.0"):
-        mutated = load_design_parameters()
-        assert mutated.driver_cutout_diameter == pytest.approx(108.0)
-        report = clearance_report(mutated)
-        assert report["status"] == "FAIL"
-        assert any(
-            "gasket land radial width" in feature
-            for feature in _failed_features(report, "clearances")
-        )
+        with pytest.raises(ValueError, match="active-driver bore"):
+            load_design_parameters()
     assert load_design_parameters().driver_cutout_diameter == pytest.approx(88.5)
+
+
+def test_impossible_physical_calibration_is_rejected_before_geometry_build() -> None:
+    values = {
+        "xy_scale_correction_fraction": 0.0,
+        "z_scale_correction_fraction": 0.0,
+        "fastener_clearance_diameter_offset_mm": 0.0,
+        "insert_bore_diameter_offset_mm": 0.0,
+        "driver_cutout_diameter_offset_mm": 0.0,
+        "passive_radiator_cutout_diameter_offset_mm": 0.0,
+        "cable_passage_diameter_offset_mm": 0.0,
+        "gasket_sheet_thickness_mm": 2.0,
+        "gasket_compressed_thickness_offset_mm": 0.0,
+        "active_driver_flange_thickness_mm": 30.0,
+        "passive_radiator_flange_thickness_mm": 4.0,
+    }
+    with pytest.raises(ValueError, match="outside the safe range"):
+        validate_physical_calibration(values)
+
+
+# ---------------------------------------------------------------------- #
+# Documentation mutations
+# ---------------------------------------------------------------------- #
+def test_missing_documentation_image_is_caught() -> None:
+    path = ROOT / "docs" / "ASSEMBLY_GUIDE.md"
+    with mutated_config(
+        path,
+        "IMAGES/assembly_stage_03_driver.png",
+        "IMAGES/intentionally_missing.png",
+    ):
+        with pytest.raises(ValueError, match="missing image"):
+            validate_documentation()
+
+
+def test_unknown_fastener_id_is_caught() -> None:
+    path = ROOT / "docs" / "ASSEMBLY_GUIDE.md"
+    with mutated_config(path, "F09, 4 screws", "F99, 4 screws"):
+        with pytest.raises(ValueError, match="unknown fastener ID"):
+            validate_documentation()
+
+
+def test_missing_bom_entry_is_caught() -> None:
+    path = ROOT / "docs" / "BOM.csv"
+    original = path.read_text(encoding="utf-8")
+    filtered = "\n".join(line for line in original.splitlines() if not line.startswith("H01,"))
+    try:
+        path.write_text(filtered + "\n", encoding="utf-8")
+        with pytest.raises(ValueError, match="unknown BOM ID"):
+            validate_documentation()
+    finally:
+        path.write_text(original, encoding="utf-8")

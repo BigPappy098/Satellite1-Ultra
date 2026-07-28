@@ -32,6 +32,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, replace
+from functools import lru_cache
 from math import cos, pi, sin
 from typing import cast
 
@@ -122,7 +123,7 @@ class DesignParameters:
     brace_rib_width: float = 5.0
     brace_rib_depth: float = 8.0
     board_revision: str = "public_batch_1"
-    ballast_mass_g: float = 1100.0
+    ballast_mass_g: float = 1054.0
 
     # ------------------------------------------------------------------ #
     # Derived quantities
@@ -222,6 +223,73 @@ class DesignParameters:
 
 
 DEFAULT_PARAMETERS = DesignParameters()
+
+
+def validate_design_parameters(parameters: DesignParameters) -> None:
+    """Reject impossible or unsupported parameter combinations before OCCT work."""
+    p = parameters
+    errors: list[str] = []
+
+    def require(condition: bool, message: str) -> None:
+        if not condition:
+            errors.append(message)
+
+    require(120.0 <= p.outer_width <= 224.0, "outer_width must be 120-224 mm")
+    require(140.0 <= p.outer_depth <= 224.0, "outer_depth must be 140-224 mm")
+    require(2.4 <= p.wall_thickness <= 8.0, "wall_thickness must be 2.4-8.0 mm")
+    require(
+        p.wall_thickness + 4.0 < p.corner_radius < min(p.outer_width, p.outer_depth) / 2.0,
+        "corner_radius must clear the wall and remain below half the enclosure span",
+    )
+    require(
+        120.0 <= p.acoustic_top_z - p.acoustic_bottom_z <= 210.0,
+        "acoustic chamber height must be 120-210 mm",
+    )
+    require(
+        p.base_bottom_z < p.acoustic_bottom_z < p.acoustic_top_z < p.official_interface_z,
+        "Z planes must order base < acoustic bottom < acoustic top < official interface",
+    )
+    require(p.acoustic_floor_thickness >= 4.0, "acoustic_floor_thickness must be >= 4 mm")
+    require(3.0 <= p.divider_thickness <= 8.0, "divider_thickness must be 3-8 mm")
+    require(3.0 <= p.bottom_plate_thickness <= 8.0, "bottom_plate_thickness must be 3-8 mm")
+    require(
+        0.15 <= p.gasket_compression_fraction <= 0.45,
+        "gasket_compression_fraction must be 0.15-0.45",
+    )
+    require(1.0 <= p.gasket_thickness <= 4.0, "gasket_thickness must be 1-4 mm")
+    require(0.10 <= p.print_clearance <= 1.0, "print_clearance must be 0.10-1.0 mm")
+    require(
+        p.insert_bore_diameter < p.insert_outer_diameter,
+        "insert bore must be smaller than the insert outside diameter",
+    )
+    require(
+        p.insert_bore_depth > p.insert_depth,
+        "insert bore must be deeper than the insert",
+    )
+    require(
+        p.driver_bore_diameter < p.driver_outer_diameter < p.driver_clamp_ring_diameter,
+        "active-driver bore, flange, and clamp diameters must increase in that order",
+    )
+    require(
+        p.pr_bore_diameter < p.pr_outer_diameter < p.pr_clamp_ring_diameter,
+        "passive-radiator bore, flange, and clamp diameters must increase in that order",
+    )
+    require(
+        p.driver_pad_diameter > p.driver_clamp_ring_diameter,
+        "driver pad must extend beyond the clamp ring",
+    )
+    require(
+        p.pr_pad_diameter > p.pr_clamp_ring_diameter,
+        "radiator pad must extend beyond the clamp ring",
+    )
+    require(
+        p.outer_width + p.grille_width_margin <= 256.0
+        and p.outer_depth + p.grille_depth_margin <= 256.0,
+        "outer shell must fit the 256 x 256 mm build envelope",
+    )
+    require(p.ballast_mass_g > 0.0, "ballast_mass_g must be positive")
+    if errors:
+        raise ValueError("Invalid design parameters: " + "; ".join(errors))
 
 
 # ---------------------------------------------------------------------- #
@@ -556,6 +624,7 @@ def _compression_stop(
 # ---------------------------------------------------------------------- #
 # Structural cabinet
 # ---------------------------------------------------------------------- #
+@lru_cache(maxsize=16)
 def main_cabinet(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """Structural acoustic cabinet: walls, floor, mounts, bracing, interfaces."""
     p = parameters
@@ -966,6 +1035,29 @@ def cable_gland(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     return cast(cq.Shape, gland.cut(slot).val())
 
 
+def leak_test_adapter(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """Temporary TPU hose adapter for a low-pressure pre-wiring leak test.
+
+    This service tool replaces the cable gland only while the electronics are
+    absent. It is never part of the operating acoustic pressure boundary.
+    """
+    p = parameters
+    flange = cq.Workplane("XY").circle(7.0).extrude(1.5)
+    body = cq.Workplane("XY", origin=(0.0, 0.0, 1.5)).circle(4.15).extrude(p.divider_thickness)
+    spigot = (
+        cq.Workplane("XY", origin=(0.0, 0.0, 1.5 + p.divider_thickness)).circle(2.0).extrude(12.0)
+    )
+    adapter = flange.union(body).union(spigot)
+    hose_bore = cq.Workplane("XY").circle(1.0).extrude(1.5 + p.divider_thickness + 12.0)
+    adapter = adapter.cut(hose_bore)
+    for x in (-2.0, 2.0):
+        wire_bore = (
+            cq.Workplane("XY", origin=(x, 0.0, 0.0)).circle(0.9).extrude(1.5 + p.divider_thickness)
+        )
+        adapter = adapter.cut(wire_bore)
+    return cast(cq.Shape, adapter.val())
+
+
 # ---------------------------------------------------------------------- #
 # Base, ballast and service parts
 # ---------------------------------------------------------------------- #
@@ -1106,22 +1198,72 @@ def ballast_plate_extent(
     return (width - 10.0, depth - 10.0, 10.0)
 
 
+def ballast_lid_fastener_positions(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[tuple[float, float], ...]:
+    """Four lid screws outside the steel stack and tied into the tray walls."""
+    p = parameters
+    plate_width, plate_depth, _ = ballast_plate_extent(p)
+    offset = p.boss_outer_diameter / 2.0 + 0.5
+    return (
+        (-plate_width / 2.0 - offset, -plate_depth / 2.0 - offset),
+        (-plate_width / 2.0 - offset, plate_depth / 2.0 + offset),
+        (plate_width / 2.0 + offset, -plate_depth / 2.0 - offset),
+        (plate_width / 2.0 + offset, plate_depth / 2.0 + offset),
+    )
+
+
 def ballast_cartridge(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Removable dry ballast tray for a two-plate mild-steel stack."""
+    """Removable dry ballast tray with four blind insert-retained lid bosses."""
     p = parameters
     width, depth = ballast_tray_extent(p)
     tray = rounded_prism(width, depth, 14.0, 0.0, 10.0)
     cavity = rounded_prism(width - 8.0, depth - 8.0, 12.0, 2.0, 6.0)
-    return tray.cut(cavity)
+    tray = tray.cut(cavity)
+    for x, y in ballast_lid_fastener_positions(p):
+        boss = cq.Solid.makeCylinder(
+            p.boss_outer_diameter / 2.0,
+            12.0,
+            cq.Vector(x, y, 2.0),
+            cq.Vector(0.0, 0.0, 1.0),
+        )
+        tray = tray.fuse(boss)
+        tray = tray.cut(_blind_insert(x, y, 14.0, -1.0, p))
+    return tray
 
 
 def ballast_cartridge_lid(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Compression-retained lid with a clearance tongue; no structural glue."""
+    """Mechanically retained lid with a locating tongue; no structural glue."""
     p = parameters
     width, depth = ballast_tray_extent(p)
     flange = rounded_prism(width, depth, 2.0, 1.5, 10.0)
     tongue = rounded_prism(width - 8.6, depth - 8.6, 1.5, 0.0, 5.7)
-    return flange.fuse(tongue)
+    lid = flange.fuse(tongue)
+    for x, y in ballast_lid_fastener_positions(p):
+        pad = cq.Solid.makeCylinder(
+            p.boss_outer_diameter / 2.0,
+            2.0,
+            cq.Vector(x, y, 1.5),
+            cq.Vector(0.0, 0.0, 1.0),
+        )
+        lid = lid.fuse(pad)
+        lid = lid.cut(
+            cq.Solid.makeCylinder(
+                (p.boss_outer_diameter + p.print_clearance) / 2.0,
+                1.5,
+                cq.Vector(x, y, 0.0),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+        lid = lid.cut(
+            cq.Solid.makeCylinder(
+                p.fastener_clearance_diameter / 2.0,
+                3.5,
+                cq.Vector(x, y, 0.0),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+    return lid
 
 
 # ---------------------------------------------------------------------- #
@@ -1375,6 +1517,7 @@ def passive_radiator_keepout(
 # ---------------------------------------------------------------------- #
 # Assemblies
 # ---------------------------------------------------------------------- #
+@lru_cache(maxsize=16)
 def placed_functional_parts(
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> dict[str, cq.Shape]:

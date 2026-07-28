@@ -124,7 +124,7 @@ BATCH2_HAT = OfficialPart(
     mesh_path="assets/Hat R2025.03.18.stl",
 )
 
-#: Core placement is UNDETERMINED.  The published FutureProofHomes assets do
+#: Core placement requires physical validation. The published FutureProofHomes assets do
 #: not contain an assembled Core+HAT model, and every stack-up this project
 #: trialled put the Core inside the official mid-plate solid, so no placement is
 #: asserted.  The Core is registered here for provenance and for its measured
@@ -137,7 +137,7 @@ BATCH1_CORE = OfficialPart(
     (0.05, 0.24, 0.34, 1.0),
     (0.0, 0.0, 0.0),
     mesh_path="assets/Core R2024.12.06.stl",
-    placement_evidence="UNDETERMINED",
+    placement_evidence="REQUIRES_PHYSICAL_VALIDATION",
 )
 BATCH2_CORE = OfficialPart(
     "official_core_batch2_rev5_1",
@@ -145,7 +145,7 @@ BATCH2_CORE = OfficialPart(
     (0.05, 0.24, 0.34, 1.0),
     (0.0, 0.0, 0.0),
     mesh_path="assets/Core R2025.03.stl",
-    placement_evidence="UNDETERMINED",
+    placement_evidence="REQUIRES_PHYSICAL_VALIDATION",
 )
 
 UPPER_STACK = (MID_PLATE, MID_PLATE_THREADS, TOP_PLATE, PCB_SPACER, LOCK_RING)

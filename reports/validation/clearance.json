@@ -162,29 +162,33 @@
     },
     {
       "feature": "pressure_divider to official_mid_plate_threads",
-      "nominal_mm": 6.599999999999984,
+      "nominal_mm": 6.5999998999999825,
       "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "pressure_divider to official_top_plate",
-      "nominal_mm": 7.895,
+      "nominal_mm": 7.894999899999943,
       "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "pressure_divider to official_pcb_spacer",
-      "nominal_mm": 10.860705358769293,
+      "nominal_mm": 10.8,
       "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "pressure_divider to official_lock_ring",
-      "nominal_mm": 7.9999999999999885,
+      "nominal_mm": 7.999999899999988,
       "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
@@ -192,6 +196,7 @@
       "feature": "pressure_divider to official_hat_batch1_rev4_1",
       "nominal_mm": 10.150000095367432,
       "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
@@ -199,6 +204,7 @@
       "feature": "electronics_shroud to official_mid_plate",
       "nominal_mm": 1.21035598705501,
       "minimum_mm": 0.3,
+      "note": "exact OCCT minimum distance",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
@@ -206,37 +212,42 @@
       "feature": "electronics_shroud to official_mid_plate_threads",
       "nominal_mm": 4.285685188826863,
       "minimum_mm": 0.3,
+      "note": "exact OCCT minimum distance",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "electronics_shroud to official_top_plate",
-      "nominal_mm": 8.586792485237975,
+      "nominal_mm": 1.094999799999941,
       "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "electronics_shroud to official_pcb_spacer",
-      "nominal_mm": 15.043361233194938,
+      "nominal_mm": 3.9999998999999975,
       "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "electronics_shroud to official_lock_ring",
-      "nominal_mm": 1.9872217759948079,
+      "nominal_mm": 1.199999799999986,
       "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "electronics_shroud to official_hat_batch1_rev4_1",
-      "nominal_mm": 13.470400011289266,
+      "nominal_mm": 3.3499999953674284,
       "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     }
   ],
-  "tolerance_note": "Physical coupon corrections are applied through config/physical_compensation.yaml."
+  "tolerance_note": "Physical coupon corrections are applied through config/physical_calibration.yaml."
 }

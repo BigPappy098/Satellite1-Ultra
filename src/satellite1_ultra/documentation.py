@@ -1,9 +1,4 @@
-"""Generated manufacturing and service documentation.
-
-Every document here is derived from the same authoritative sources as the
-geometry: the configuration files, the validation gates and the export
-manifest.  Nothing is hand-maintained, so nothing can drift from the CAD.
-"""
+"""Generate the task-oriented builder documentation and authoritative schedules."""
 
 from __future__ import annotations
 
@@ -15,7 +10,6 @@ from typing import Any
 
 from satellite1_ultra.configuration import (
     ROOT,
-    load_configuration,
     load_design_parameters,
     selected_components,
 )
@@ -31,7 +25,7 @@ EVIDENCE_PHYSICAL = "REQUIRES_PHYSICAL_VALIDATION"
 
 @dataclass(frozen=True)
 class Risk:
-    """One entry in the project risk register."""
+    """One release risk with a closure action."""
 
     identifier: str
     severity: str
@@ -47,765 +41,891 @@ RISKS: tuple[Risk, ...] = (
     Risk(
         "R-01",
         "HIGH",
-        "Component flange thicknesses are not published",
-        "If the ND91-4 flange is not 3.0 mm or the SB12PACR-00 flange is not "
-        "4.0 mm, the clamp ring either fails to load the flange or crushes the "
-        "gasket past 45 % compression.",
-        "coupon_active_driver and coupon_passive_radiator measure the assembled "
-        "stack directly; the value is a single configuration parameter and the "
-        "whole model regenerates from it.",
-        "project owner",
+        "Driver and radiator flange thicknesses are not dimensioned",
+        "The clamp hard stop can under-compress or over-compress a gasket.",
+        "Measure both purchased components, enter the values in "
+        "config/physical_calibration.yaml, and pass both component coupons.",
+        "builder",
         "OPEN",
-        EVIDENCE_ESTIMATE,
+        EVIDENCE_PHYSICAL,
     ),
     Risk(
         "R-02",
         "HIGH",
-        "Core board position in the official stack is undetermined",
-        "The published FutureProofHomes assets contain no assembled Core+HAT "
-        "model, so no Core placement can be asserted.",
-        "The enclosure is validated against a Core-sized free volume in the "
-        "electronics bay instead of an asserted placement; confirm against a "
-        "physical development kit before release.",
-        "project owner",
+        "Core board placement is absent from the official assembled CAD",
+        "A source-only claim of exact Core placement would be unsupported.",
+        "The CAD reserves a Core-sized service volume. Confirm the official Core/HAT "
+        "stack against the physical Batch 1 kit before closing the upper stack.",
+        "builder",
         "OPEN",
-        "UNDETERMINED",
+        EVIDENCE_PHYSICAL,
     ),
     Risk(
         "R-03",
         "HIGH",
-        "Bass extension is limited by the driver, not the enclosure",
-        "The selected ND91-4 has Vas 1.4 L and a published Vd of 12.2 cm3. In "
-        "3.45 L the enclosure is already 2.5x Vas, so further volume buys very "
-        "little. Maximum modelled SPL at 50 Hz is excursion- and voltage-limited.",
-        "A larger-displacement 4 in driver is the single highest-leverage "
-        "improvement available. Every interface is parametric, so a swap is a "
-        "configuration change plus one coupon.",
-        "project owner",
+        "Low-frequency output is excursion limited",
+        "Full amplifier voltage below tuning can exceed driver or radiator travel.",
+        "Start with the documented fourth-order high-pass, verify polarity and tuning "
+        "with an impedance sweep, then set DSP from measurements.",
+        "builder",
         "OPEN",
         EVIDENCE_ESTIMATE,
     ),
     Risk(
         "R-04",
         "MEDIUM",
-        "No pressure-decay measurement exists",
-        "The sealing gates prove geometric continuity of every gasket land and "
-        "that no fastener crosses the boundary. They cannot prove that a printed "
-        "ASA wall is gas-tight.",
-        "Pressure-decay test the assembled cabinet and enter the measured "
-        "leakage Q into config/default.yaml before quoting any bass figure.",
-        "project owner",
+        "Printed walls and compressed seals have not been leak tested",
+        "A leak can remove the expected passive-radiator bass response.",
+        "Use the temporary leak-test adapter at 100-250 Pa, inspect every joint, and "
+        "then confirm the final cable gland by impedance measurement.",
+        "builder",
         "OPEN",
         EVIDENCE_PHYSICAL,
     ),
     Risk(
         "R-05",
         "MEDIUM",
-        "Printed dimensional accuracy is assumed, not measured",
-        "All tolerance stacks assume +/-0.15 mm printed accuracy. A machine "
-        "outside that band can close the carrier clearance or open the gasket "
-        "compression past its limit.",
-        "The eight-coupon set measures it; corrections go into "
-        "config/physical_compensation.yaml and regenerate every part.",
-        "project owner",
+        "Printer dimensional performance is unknown",
+        "Nominal CAD clearances may become interference or loose fits.",
+        "Complete all eight calibration checks and regenerate with "
+        "make calibrated-release before any full-size print.",
+        "builder",
         "OPEN",
         EVIDENCE_PHYSICAL,
     ),
     Risk(
         "R-06",
         "MEDIUM",
-        "Wi-Fi and wake-word performance are unmeasured",
-        "The enclosure surrounds the official board stack with printed ASA and "
-        "a slotted shell. Antenna detuning and microphone obstruction cannot be "
-        "predicted from geometry.",
-        "Run the documented wake-word and wireless test procedures on an "
-        "assembled unit against a bare development kit as the control.",
-        "project owner",
+        "Wake-word, Wi-Fi, LED, and button performance are unmeasured",
+        "The final enclosure can affect radio and acoustic behavior even when openings clear.",
+        "Run the controlled bare-kit versus enclosed-kit commissioning tests.",
+        "builder",
         "OPEN",
         EVIDENCE_PHYSICAL,
     ),
     Risk(
         "R-07",
         "MEDIUM",
-        "Board thermal behaviour in a closed shroud is unmeasured",
-        "The electronics bay is vented only through the shroud vent bank and the "
-        "rear service aperture.",
-        "Run the documented thermal soak procedure; if margins are short, the "
-        "vent bank is a parametric feature and can be widened.",
-        "project owner",
+        "Closed-shroud thermal behavior is unmeasured",
+        "The Core or amplifier may throttle or exceed a safe temperature margin.",
+        "Perform the documented 25 C and 35 C thermal soaks with instrumented hardware.",
+        "builder",
         "OPEN",
         EVIDENCE_PHYSICAL,
     ),
     Risk(
         "R-08",
         "LOW",
-        "Heat-set insert pull-out strength is assumed",
-        "Insert bores are sized Oe4.2 for a Oe4.6 M3 insert on the manufacturer's "
-        "recommendation, not on a measured pull test in this material.",
-        "coupon_heat_set_insert brackets four bore diameters; pull-test to 250 N.",
-        "project owner",
+        "Insert pullout strength depends on printer, material, and installation",
+        "An insert can rotate or pull free during service.",
+        "Select the coupon bore that installs square, torque-test it cold, and reserve "
+        "the 250 N pull test for formal physical validation.",
+        "builder",
         "OPEN",
         EVIDENCE_PHYSICAL,
     ),
     Risk(
         "R-09",
         "LOW",
-        "Batch 2 hardware is not supported",
-        "Satellite1.1 (Batch 2) requires an external Wi-Fi antenna and a "
-        "different service adapter that this revision does not provide.",
-        "The board revision is a configuration value and the official Batch 2 "
-        "geometry is already preserved and pinned; add the adapter when needed.",
-        "project owner",
+        "Satellite1.1 / Batch 2 is not supported by this release",
+        "Its external Wi-Fi antenna and service interfaces are not accommodated.",
+        "Use only Batch 1 rev4.1 Core + rev4.1 HAT. Add a validated adapter before "
+        "claiming Batch 2 compatibility.",
+        "maintainer",
         "OPEN",
         EVIDENCE_OFFICIAL,
     ),
 )
 
 
+GASKETS: tuple[dict[str, str], ...] = (
+    {
+        "id": "G01",
+        "name": "divider_gasket",
+        "quantity": "1",
+        "material": "2.0 mm closed-cell EPDM, soft, smooth skin",
+        "hardness_density": "ASTM D1056 2A1 or equivalent; 6-11 lb/ft3",
+        "target": "25% compression; allowed physical range 15%-45%",
+        "cutting": "knife/plotter from GASKET_TEMPLATES/divider_gasket.dxf",
+        "orientation": "continuous rounded rectangle; no cuts or splices",
+        "replacement": "replace whenever the pressure divider is reopened",
+    },
+    {
+        "id": "G02",
+        "name": "driver_gasket",
+        "quantity": "1",
+        "material": "2.0 mm closed-cell EPDM, soft, smooth skin",
+        "hardness_density": "ASTM D1056 2A1 or equivalent; 6-11 lb/ft3",
+        "target": "25% compression; allowed physical range 15%-45%",
+        "cutting": "knife/plotter from GASKET_TEMPLATES/driver_gasket.dxf",
+        "orientation": "single annulus; center it behind the driver flange",
+        "replacement": "replace whenever the active driver is removed",
+    },
+    {
+        "id": "G03",
+        "name": "passive_radiator_gasket",
+        "quantity": "2",
+        "material": "2.0 mm closed-cell EPDM, soft, smooth skin",
+        "hardness_density": "ASTM D1056 2A1 or equivalent; 6-11 lb/ft3",
+        "target": "25% compression; allowed physical range 15%-45%",
+        "cutting": "knife/plotter from GASKET_TEMPLATES/passive_radiator_gasket.dxf",
+        "orientation": "one continuous annulus behind each radiator flange",
+        "replacement": "replace whenever that radiator is removed",
+    },
+    {
+        "id": "G04",
+        "name": "cable_gland",
+        "quantity": "1",
+        "material": "TPU 95A printed part",
+        "hardness_density": "95A nominal",
+        "target": "radial interference in divider and on both insulated conductors",
+        "cutting": "not cut; print 3MF/cable_gland.3mf",
+        "orientation": "flange toward electronics bay; slit faces rear",
+        "replacement": "replace if torn, loose, or permanently distorted",
+    },
+)
+
+
 def _validation(root: Path) -> dict[str, Any]:
-    directory = root / "reports" / "validation"
     reports: dict[str, Any] = {}
-    for path in sorted(directory.glob("*.json")):
-        with path.open(encoding="utf-8") as source:
-            reports[path.stem] = json.load(source)
+    for path in sorted((root / "reports" / "validation").glob("*.json")):
+        reports[path.stem] = json.loads(path.read_text(encoding="utf-8"))
     return reports
 
 
 def _acoustics(root: Path) -> dict[str, Any]:
     path = root / "reports" / "acoustics" / "summary.json"
-    if not path.is_file():
-        return {}
-    with path.open(encoding="utf-8") as source:
-        return dict(json.load(source))
+    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
 
 
-def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[dict[str, Any]]:
-    """Complete BOM: printed parts, official parts, components and hardware."""
+def _markdown_table(headers: list[str], rows: list[list[str]]) -> str:
+    lines = [
+        "| " + " | ".join(headers) + " |",
+        "|" + "|".join("---" for _ in headers) + "|",
+    ]
+    lines.extend("| " + " | ".join(value.replace("|", "/") for value in row) + " |" for row in rows)
+    return "\n".join(lines)
+
+
+def fastener_rows(root: Path = ROOT) -> list[dict[str, Any]]:
+    return list(_validation(root).get("fasteners", {}).get("schedule", []))
+
+
+def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[dict[str, str]]:
+    """Return the user-facing purchasing and manufactured-parts list."""
     driver, radiator = selected_components(root)
-    configuration = load_configuration(root)
-    fasteners = _validation(root).get("fasteners", {}).get("schedule", [])
-    total_fasteners = sum(
-        row["quantity"] * (2 if "each" in row["joint"] else 1) for row in fasteners
-    )
+    fasteners = fastener_rows(root)
     plate_w, plate_d, plate_t = ballast_plate_extent(parameters)
-    rows: list[dict[str, Any]] = []
-    for name, definition in PARTS.items():
+    added_mass = _acoustics(root).get("added_pr_mass_each_g", 0.0)
+    total_inserts = sum(
+        int(row["quantity"]) * (2 if "(each)" in str(row["joint"]) else 1) for row in fasteners
+    )
+    rows: list[dict[str, str]] = []
+    for index, (name, definition) in enumerate(PARTS.items(), start=1):
+        if name in {"divider_gasket", "driver_gasket", "passive_radiator_gasket"}:
+            continue
+        category = "calibration part" if name.startswith("coupon_") else "printed part"
+        if name == "leak_test_adapter":
+            category = "service tool"
         rows.append(
             {
+                "id": f"P{index:02d}",
+                "category": category,
                 "item": name,
-                "category": "fit coupon" if name.startswith("coupon_") else "printed part",
-                "quantity": definition.quantity,
-                "material": definition.material,
-                "source": "this repository, exports/step",
-                "evidence": definition.evidence_label,
+                "specification": f"{definition.material}; exact file 3MF/{name}.3mf",
+                "quantity": str(definition.quantity),
+                "required": "yes",
+                "evidence": EVIDENCE_DIGITAL,
+                "source": "this release",
             }
         )
-    rows += [
-        {
-            "item": f"{driver['manufacturer']} {driver['model']}",
-            "category": "acoustic component",
-            "quantity": 1,
-            "material": "-",
-            "source": driver["source"],
-            "evidence": EVIDENCE_DRAWING,
-        },
-        {
-            "item": f"{radiator['manufacturer']} {radiator['model']}",
-            "category": "acoustic component",
-            "quantity": int(radiator["count"]),
-            "material": "-",
-            "source": radiator["source"],
-            "evidence": EVIDENCE_DRAWING,
-        },
-        {
-            "item": "FutureProofHomes Satellite1 development kit (Core + HAT, Batch 1)",
-            "category": "official hardware",
-            "quantity": 1,
-            "material": "-",
-            "source": "reference-assets/MANIFEST.csv",
-            "evidence": EVIDENCE_OFFICIAL,
-        },
-        {
-            "item": "Official Squircle upper stack: mid-plate, threads, top plate, "
-            "PCB spacer, lock ring",
-            "category": "official printed part",
-            "quantity": 1,
-            "material": "ASA or PETG",
-            "source": "reference-assets/official/Satellite1-Enclosures",
-            "evidence": EVIDENCE_OFFICIAL,
-        },
-        {
-            "item": "M3 x 0.5 A2 socket/button head screws, assorted lengths per schedule",
-            "category": "hardware",
-            "quantity": total_fasteners,
-            "material": "A2 stainless",
-            "source": "reports/validation/fasteners.json",
-            "evidence": EVIDENCE_DIGITAL,
-        },
-        {
-            "item": (
-                f"M3 heat-set inserts Oe{parameters.insert_outer_diameter:.1f} x "
-                f"{parameters.insert_depth:.1f} mm"
-            ),
-            "category": "hardware",
-            "quantity": total_fasteners,
-            "material": "brass",
-            "source": "reports/validation/fasteners.json",
-            "evidence": EVIDENCE_DIGITAL,
-        },
-        {
-            "item": f"{parameters.gasket_thickness:.1f} mm closed-cell EPDM sheet",
-            "category": "consumable",
-            "quantity": 1,
-            "material": "EPDM",
-            "source": "cut from exports/step gasket profiles",
-            "evidence": EVIDENCE_DIGITAL,
-        },
-        {
-            "item": (
-                f"Mild-steel ballast plates {plate_w:.0f} x {plate_d:.0f} x {plate_t / 2.0:.0f} mm"
-            ),
-            "category": "ballast",
-            "quantity": 2,
-            "material": "mild steel",
-            "source": "cut to size",
-            "evidence": EVIDENCE_ESTIMATE,
-        },
-        {
-            "item": "Speaker cable, 2 core, 1.0 mm2, 350 mm",
-            "category": "consumable",
-            "quantity": 1,
-            "material": "copper/PVC",
-            "source": "-",
-            "evidence": EVIDENCE_ESTIMATE,
-        },
-        {
-            "item": "Added radiator tuning mass, M6 hardware, per radiator",
-            "category": "acoustic tuning",
-            "quantity": int(radiator["count"]),
-            "material": "steel",
-            "source": "reports/acoustics/summary.json",
-            "evidence": EVIDENCE_ESTIMATE,
-        },
-    ]
-    _ = configuration
+    rows.extend(
+        [
+            {
+                "id": "A01",
+                "category": "active driver",
+                "item": f"{driver['manufacturer']} {driver['model']}",
+                "specification": "4 ohm full-range driver; manufacturer model ND91-4",
+                "quantity": "1",
+                "required": "yes",
+                "evidence": EVIDENCE_DRAWING,
+                "source": str(driver["source"]),
+            },
+            {
+                "id": "A02",
+                "category": "passive radiator",
+                "item": f"{radiator['manufacturer']} {radiator['model']}",
+                "specification": "4 inch aluminum passive radiator with M6 mass post",
+                "quantity": "2",
+                "required": "yes",
+                "evidence": EVIDENCE_DRAWING,
+                "source": str(radiator["source"]),
+            },
+            {
+                "id": "E01",
+                "category": "official electronics",
+                "item": "FutureProofHomes Satellite1 Batch 1 development kit",
+                "specification": "Core rev4.1 + HAT rev4.1 / R2024.12.06; not Satellite1.1",
+                "quantity": "1",
+                "required": "yes",
+                "evidence": EVIDENCE_OFFICIAL,
+                "source": "reference-assets/MANIFEST.csv",
+            },
+            {
+                "id": "E02",
+                "category": "official mechanics",
+                "item": "FutureProofHomes Squircle upper stack",
+                "specification": "mid-plate, threaded insert, top plate, buttons/diffuser, PCB spacer, lock ring",
+                "quantity": "1 set",
+                "required": "yes",
+                "evidence": EVIDENCE_OFFICIAL,
+                "source": "reference-assets/official/Satellite1-Enclosures",
+            },
+            {
+                "id": "H01",
+                "category": "insert",
+                "item": "CNC Kitchen M3 x 5.7 heat-set insert",
+                "specification": "M3x0.5 internal thread, 5.7 mm length, 4.6 mm maximum OD",
+                "quantity": str(total_inserts + 4),
+                "required": "yes; includes four spares",
+                "evidence": EVIDENCE_DRAWING,
+                "source": "CNCKitchen M3 x 5.7 standard insert",
+            },
+            {
+                "id": "H02",
+                "category": "speaker cable",
+                "item": "2-pin JST-XH 2.54 mm speaker lead",
+                "specification": "22 AWG stranded red/black, each insulated conductor OD <=1.8 mm, 350 mm minimum",
+                "quantity": "1",
+                "required": "yes",
+                "evidence": EVIDENCE_OFFICIAL,
+                "source": "official Squircle enclosure documentation",
+            },
+            {
+                "id": "H03",
+                "category": "speaker terminals",
+                "item": "2.8 mm fully insulated female quick-disconnects",
+                "specification": "for 22-18 AWG wire; verify fit on the purchased ND91-4 before crimping",
+                "quantity": "2",
+                "required": "recommended; direct solder is acceptable",
+                "evidence": EVIDENCE_ESTIMATE,
+                "source": "builder supplied",
+            },
+            {
+                "id": "B01",
+                "category": "ballast",
+                "item": "mild-steel plate",
+                "specification": (
+                    f"{plate_w:.0f} x {plate_d:.0f} x {plate_t / 2.0:.0f} mm, "
+                    "edges deburred, dry, light oil removed"
+                ),
+                "quantity": "2",
+                "required": "yes",
+                "evidence": EVIDENCE_ESTIMATE,
+                "source": "local metal supplier",
+            },
+            {
+                "id": "B02",
+                "category": "radiator tuning",
+                "item": "M6 stainless flat washers",
+                "specification": f"identical stacks totaling {added_mass:.2f} g per radiator",
+                "quantity": "2 matched stacks",
+                "required": "yes; final mass requires physical tuning",
+                "evidence": EVIDENCE_ESTIMATE,
+                "source": "weigh on 0.01 g scale",
+            },
+            {
+                "id": "G00",
+                "category": "gasket stock",
+                "item": "closed-cell EPDM foam sheet",
+                "specification": "2.0 mm nominal, soft, smooth skin, ASTM D1056 2A1 or equivalent",
+                "quantity": "one 300 x 300 mm sheet",
+                "required": "yes",
+                "evidence": EVIDENCE_ESTIMATE,
+                "source": "industrial rubber supplier",
+            },
+            {
+                "id": "D01",
+                "category": "optional acoustic material",
+                "item": "polyester acoustic batting",
+                "specification": "not installed in RC1; reserve for measurement-led development only",
+                "quantity": "0",
+                "required": "no",
+                "evidence": EVIDENCE_PHYSICAL,
+                "source": "not applicable",
+            },
+        ]
+    )
+    for row in fasteners:
+        multiplier = 2 if "(each)" in str(row["joint"]) else 1
+        rows.append(
+            {
+                "id": str(row["id"]),
+                "category": "fastener",
+                "item": f"M3 x {int(row['length_mm'])} {row['head']} screw",
+                "specification": f"{row['standard']}, A2-70 stainless, M3x0.5",
+                "quantity": str(int(row["quantity"]) * multiplier),
+                "required": "yes",
+                "evidence": EVIDENCE_DIGITAL,
+                "source": "industrial fastener supplier",
+            }
+        )
     return rows
 
 
-def write_bom(output: Path, parameters: DesignParameters, root: Path = ROOT) -> Path:
-    rows = bill_of_materials(parameters, root)
-    path = output / "bill_of_materials.csv"
-    with path.open("w", newline="", encoding="utf-8") as target:
-        writer = csv.DictWriter(
-            target,
-            fieldnames=["item", "category", "quantity", "material", "source", "evidence"],
+ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
+    {
+        "number": "1",
+        "title": "Identify and inspect the hardware",
+        "parts": "Batch 1 Core rev4.1, HAT rev4.1, official Squircle upper stack",
+        "fasteners": "none",
+        "tools": "bright light; calipers",
+        "gasket": "none",
+        "action": "Confirm the board revision labels. Reject Batch 2 / Satellite1.1 for this release. Inspect every printed sealing face and remove strings without rounding an edge.",
+        "pass": "Correct Batch 1 hardware is present; no crack, warp, blocked bore, or damaged gasket land.",
+        "warning": "Do not force or approximately place the Core. Its exact stack placement requires the physical official hardware.",
+        "image": "IMAGES/assembly_stage_01_identify.png",
+    },
+    {
+        "number": "2",
+        "title": "Install and cold-check all M3 inserts",
+        "parts": "main_cabinet, pressure_divider, base_skirt, ballast_cartridge, outer_shell",
+        "fasteners": "H01 inserts",
+        "tools": "temperature-controlled iron; M3 insert tip; square",
+        "gasket": "none",
+        "action": "At 250-270 C, press each insert into its labeled blind bore until flush and square. Let every insert cool for five minutes. Thread an M3 screw by hand for three turns.",
+        "pass": "No insert spins, tilts, protrudes, or blocks before three turns.",
+        "warning": "Do not torque a hot insert. Fumes and the iron can burn; ventilate and use eye protection.",
+        "image": "IMAGES/assembly_stage_02_inserts.png",
+    },
+    {
+        "number": "3",
+        "title": "Wire and clamp the active driver",
+        "parts": "main_cabinet, Dayton ND91-4, driver_gasket, active_driver_clamp_ring, JST-XH lead",
+        "fasteners": "F04, 4 screws",
+        "tools": "2.0 mm hex; crimper or soldering iron; polarity tester",
+        "gasket": "G02",
+        "action": "Mark the red conductor positive. Connect red to the terminal marked + and black to -. Face the terminals upward. Center G02, seat the driver from the -Y/front side, fit the clamp ring, and tighten F04 in two diagonal passes to 0.35 N m; never exceed 0.45 N m.",
+        "pass": "Ring bottoms evenly; gasket is not visible in the bore; cone moves outward on a brief 1.5 V positive polarity pulse.",
+        "warning": "Use only a brief low-voltage polarity pulse. Never connect a loose driver to the powered HAT.",
+        "image": "IMAGES/assembly_stage_03_driver.png",
+    },
+    {
+        "number": "4",
+        "title": "Mass-match and clamp both passive radiators",
+        "parts": "2 SB12PACR-00, 2 passive_radiator_gaskets, 2 clamp rings, matched M6 washer stacks",
+        "fasteners": "F05, 8 screws total",
+        "tools": "0.01 g scale; 2.0 mm hex",
+        "gasket": "G03, one per side",
+        "action": "Weigh two identical tuning stacks to the value in reports/acoustics/summary.json. Secure one to each M6 post. Install radiators on +/-X with matching orientation, then tighten each F05 crosswise to 0.35 N m; never exceed 0.45 N m.",
+        "pass": "Added masses match within 0.02 g; both rings bottom evenly; surrounds move freely and do not touch the shell keep-out.",
+        "warning": "Unequal mass defeats reaction-force cancellation. Do not press on either cone.",
+        "image": "IMAGES/assembly_stage_04_radiators.png",
+    },
+    {
+        "number": "5",
+        "title": "Route the cable, close the divider, and leak-check",
+        "parts": "pressure_divider, divider_gasket, leak_test_adapter, cable_gland",
+        "fasteners": "F03, 8 screws",
+        "tools": "2.0 mm hex; hand bulb; 0-500 Pa gauge; leak-detection solution",
+        "gasket": "G01; temporary adapter then G04",
+        "action": "Pass both conductors through the divider. Fit the temporary adapter over them, place G01 without twists, and tighten F03 in a star pattern to 0.35 N m. Apply only 100-250 Pa with a hand bulb. Brush leak solution on external gasket seams; no bubbles are allowed. Vent, pull the adapter upward, and install G04 with its flange toward the electronics bay.",
+        "pass": "No growing bubbles, abnormal diaphragm displacement, or audible leak; final gland cannot rotate or lift by finger force.",
+        "warning": "Never use shop air, never exceed 250 Pa, and keep liquid away from electronics. This is a gross-leak screen, not an acoustic-Q measurement.",
+        "image": "IMAGES/assembly_stage_05_sealing.png",
+    },
+    {
+        "number": "6",
+        "title": "Install the base and retained ballast",
+        "parts": "base_skirt, ballast_cartridge, 2 steel plates, ballast lid, bottom_service_plate",
+        "fasteners": "F06, F07, F08",
+        "tools": "2.0 mm hex; scale",
+        "gasket": "none",
+        "action": "Attach the base skirt with F07. Place both deburred dry plates flat in the cartridge; there must be no rocking. Install the lid with F06, insert the cartridge from below, and capture it with the bottom service plate using F08.",
+        "pass": "Cartridge mass is approximately 1054 g; no plate moves when shaken gently; all four lid screws engage at least 3 mm.",
+        "warning": "The steel stack is heavy. Keep fingers clear and do not operate the unit without the retained lid and service plate.",
+        "image": "IMAGES/assembly_stage_06_ballast.png",
+    },
+    {
+        "number": "7",
+        "title": "Install and lock the outer shell",
+        "parts": "outer_shell; lower assembly",
+        "fasteners": "F09, 4 screws with nylon washers",
+        "tools": "2.0 mm hex",
+        "gasket": "none",
+        "action": "Align FRONT with -Y and slide the shell downward without touching either surround. Invert on a soft mat and install F09 through the bottom service plate into the shell bosses.",
+        "pass": "Every slot is clear; shell has an even reveal and at least 2 mm moving-part clearance; no wire is visible near a cone.",
+        "warning": "Stop if the shell contacts a clamp ring or surround. Do not flex the shell over an obstruction.",
+        "image": "IMAGES/assembly_stage_07_shell.png",
+    },
+    {
+        "number": "8",
+        "title": "Install the shroud and official Batch 1 upper stack",
+        "parts": "electronics_shroud; official mid-plate, threads, PCB spacer, HAT/Core, top plate, buttons/diffuser, lock ring",
+        "fasteners": "F01 and F02",
+        "tools": "2.0 mm hex; ESD-safe bench",
+        "gasket": "none; electronics bay is outside the acoustic chamber",
+        "action": "Bolt the shroud to its four outboard bosses with F02. Seat the official mid-plate on the four measured divider bosses and install F01. Assemble the official Batch 1 PCB spacer, HAT/Core, top plate, buttons/diffuser, and lock ring in the official order. Connect the keyed JST-XH speaker plug before the top closes.",
+        "pass": "Mid-plate sits on all four bosses; USB-C remains reachable; cable has service slack and cannot enter a moving-part envelope; buttons click and diffuser/LED apertures remain clear.",
+        "warning": "Core placement is REQUIRES_PHYSICAL_VALIDATION. Follow the official Batch 1 instructions and stop at any collision; do not improvise a transform from the CAD envelope.",
+        "image": "IMAGES/assembly_stage_08_upper.png",
+    },
+    {
+        "number": "9",
+        "title": "Fit the anti-slip ring and complete inspection",
+        "parts": "anti_slip_ring; complete assembly",
+        "fasteners": "none",
+        "tools": "hands; flashlight",
+        "gasket": "inspect G01-G04",
+        "action": "Stretch the TPU ring evenly around the bottom rim. Set the unit upright and inspect all seams, fastener heads, slots, cable exits, buttons, and moving components.",
+        "pass": "Unit stands without rocking; no rattle is heard during gentle handling; every fastener is present and every seal is continuously compressed.",
+        "warning": "Do not power the unit until the commissioning checklist is ready.",
+        "image": "IMAGES/assembly_stage_09_final.png",
+    },
+)
+
+
+def _start_here() -> str:
+    return """# Start Here - Satellite1 Ultra
+
+> **DO NOT PRINT THE FULL ENCLOSURE YET.**
+> **PRINT AND COMPLETE THE CALIBRATION PARTS FIRST.**
+
+Satellite1 Ultra is a serviceable passive-radiator enclosure for the
+FutureProofHomes Satellite1 **Batch 1** development kit: Core rev4.1 and HAT
+rev4.1 / R2024.12.06. Satellite1.1 / Batch 2 is not supported.
+
+Status: `DIGITAL_PROTOTYPE_READY` only after every digital gate passes.
+No physical specimen has been validated. Fit, sealing, acoustics, thermals,
+Wi-Fi, microphones, buttons, LEDs, and wake-word performance are
+`REQUIRES_PHYSICAL_VALIDATION`.
+
+## You need
+
+- An enclosed 256 x 256 x 256 mm or larger FDM printer capable of ASA.
+- 0.4 mm nozzle, dry ASA, TPU 95A, and a documented PETG alternative.
+- Digital calipers (0.01 mm display), 0.01 g scale, 2.0 mm hex driver, M3
+  insert tip, wire tools, ESD protection, and basic acoustic test equipment.
+- Everything in `BOM.csv`, `FASTENERS.csv`, and `GASKETS.csv`.
+
+## Exact order
+
+1. Read `START_HERE_CALIBRATION_GUIDE.pdf`.
+2. Print seven coupon files plus `cable_gland.3mf`.
+3. Measure, edit `CALIBRATION_INPUT_TEMPLATE.yaml`, and run
+   `make calibrated-release`.
+4. Reprint affected coupons and pass every calibration check.
+5. Follow `PRINTING_GUIDE.pdf`, then `ASSEMBLY_GUIDE.pdf`.
+6. Complete `TESTING_AND_COMMISSIONING_GUIDE.pdf` before normal use.
+
+The project is advanced: expected builder difficulty is 4/5. Allow several
+days for printing plus calibration and test time.
+
+![Exploded Satellite1 Ultra](IMAGES/exploded_parts_identification.png)
+"""
+
+
+def _calibration_guide() -> str:
+    return """# Mandatory Physical Calibration Guide
+
+> **DO NOT PRINT THE FULL ENCLOSURE YET.**
+> **PRINT AND COMPLETE THE CALIBRATION PARTS FIRST.**
+
+Use the same material, nozzle, layer height, wall count, extrusion settings,
+bed preparation, and chamber temperature that you will use for the enclosure.
+
+## Print first
+
+Print these exact files from `CALIBRATION_PARTS/`:
+
+1. `coupon_official_interface.3mf`
+2. `coupon_heat_set_insert.3mf`
+3. `coupon_active_driver.3mf`
+4. `coupon_passive_radiator.3mf`
+5. `coupon_gasket_base.3mf`
+6. `coupon_gasket_cap.3mf`
+7. `coupon_cable_passage.3mf`
+8. `cable_gland.3mf` in TPU 95A
+
+ASA baseline: 0.4 mm nozzle, 0.20 mm layers, five walls, six top/bottom
+layers, 35% gyroid, 100-110 C bed, 250-260 C nozzle, enclosure closed, no
+supports, 5 mm brim. PETG alternative: 235-250 C nozzle, 75-85 C bed,
+three-hour dry cycle if stringing is present.
+
+## Measure and enter values
+
+Use the engraved labels and `IMAGES/calibration_*.png`.
+
+| Check | Where/how | Nominal | Pass | Input key |
+|---|---|---:|---|---|
+| XY scale | Inside jaws across `MEASURE XY 110.60` recess, three heights | 110.60 mm | 110.40-110.80 mm after correction | `xy_scale_correction_fraction = 110.60 / measured - 1` |
+| Z scale | Outside jaws across clean 3.00 mm coupon edge, four corners | 3.00 mm | 2.90-3.10 mm | `z_scale_correction_fraction = 3.00 / measured - 1` |
+| M3 clearance | Try a clean ISO M3 screw in labeled 3.4/3.5/3.6 holes | 3.4 mm | smallest hole that falls through without force | chosen diameter minus 3.4 |
+| Insert bore | Install identical inserts in 4.0/4.1/4.2/4.3 blind bores | 4.2 mm | square, flush, no crack/spin at 0.35 N m | chosen diameter minus 4.2 |
+| Driver fit | Seat the purchased ND91-4 in the labeled coupon | catalog interface | drops in by hand, <=0.30 mm radial play, flange lies flat | cutout correction and measured flange thickness |
+| Radiator fit | Seat one SB12PACR-00 in the labeled coupon | catalog interface | drops in by hand, <=0.30 mm radial play, flange lies flat | cutout correction and measured flange thickness |
+| Gasket | Tighten cap on a strip of the actual sheet until both stops contact | 2.00 to 1.50 mm | 15%-45% compression; no open light path | sheet thickness and compressed-thickness offset |
+| Cable gland | Fit actual two 22 AWG conductors and gland in cable coupon | 8.0 mm passage | moderate finger force; gland cannot rotate or lift | cable-passage offset |
+
+Do not use caliper tips to measure a 3-4 mm hole; the screw and insert are the
+functional gauges. Enter only values you measured.
+
+## CAD measurement illustrations
+
+![Official-interface XY and Z measurement](IMAGES/calibration_official_interface.png)
+
+![M3 screw and insert functional gauges](IMAGES/calibration_fasteners.png)
+
+![Active-driver coupon fit check](IMAGES/calibration_driver.png)
+
+![Passive-radiator coupon fit check](IMAGES/calibration_radiator.png)
+
+![Gasket compression coupon stack](IMAGES/calibration_gasket.png)
+
+![Cable passage and TPU gland check](IMAGES/calibration_cable.png)
+
+## Edit one file
+
+Copy `CALIBRATION_INPUT_TEMPLATE.yaml` to
+`config/physical_calibration.yaml`, or run:
+
+```text
+python scripts/calibrate.py
+```
+
+The file exposes only user-facing corrections. Safe limits reject implausible
+values before any full part is built.
+
+## Regenerate
+
+```text
+make calibrated-release
+```
+
+Success ends with all validation, documentation, mutation, and package checks
+passing. Output is in `release/Satellite1-Ultra-RC1/`.
+
+Example successful finish:
+
+```text
+documentation PASS; 8 guides, 6 PDFs
+release/Satellite1-Ultra-RC1 (all required files present)
+```
+
+Reprint every coupon affected by a nonzero correction. You are cleared for the
+full enclosure only when all eight checks above pass on the corrected coupons.
+
+## Common failures
+
+- Warped official coupon: improve enclosure temperature, clean the bed, add the
+  brim, and do not compensate a warped part.
+- Every hole undersized: check flow and elephant-foot compensation before
+  adding a large CAD offset.
+- Insert cracks the boss: choose a larger coupon bore or reduce iron dwell; do
+  not increase torque.
+- Component will not sit flat: remove only print strings. Do not sand a sealing
+  land; correct the cutout and reprint the coupon.
+- Gland leaks or spins: verify conductor OD <=1.8 mm, dry TPU, then correct and
+  reprint both the coupon and gland.
+"""
+
+
+def _printing_guide(parameters: DesignParameters, root: Path) -> str:
+    report = _validation(root).get("printability", {})
+    rows: list[list[str]] = []
+    for record in report.get("parts", []):
+        name = str(record["part"])
+        if name in {"divider_gasket", "driver_gasket", "passive_radiator_gasket"}:
+            continue
+        group = (
+            "calibration"
+            if name.startswith("coupon_") or name == "cable_gland"
+            else "service tool"
+            if name == "leak_test_adapter"
+            else "cosmetic"
+            if name in {"outer_shell", "electronics_shroud", "anti_slip_ring"}
+            else "structural"
         )
+        brim = (
+            "10 mm"
+            if name in {"outer_shell", "main_cabinet"}
+            else "5 mm"
+            if group == "calibration"
+            else "none"
+        )
+        difficulty = "5/5" if name == "outer_shell" else "4/5" if name == "main_cabinet" else "2/5"
+        rows.append(
+            [
+                group,
+                f"{name}.3mf",
+                str(PARTS[name].quantity),
+                str(record["material"]),
+                str(record["print_orientation"]),
+                "none",
+                brim,
+                difficulty,
+                "yes" if group != "calibration" else "first",
+            ]
+        )
+    orientation_images = "\n\n".join(
+        f"![{name} print orientation](IMAGES/print_orientation_{name}.png)"
+        for name in PARTS
+        if name not in {"divider_gasket", "driver_gasket", "passive_radiator_gasket"}
+    )
+    return f"""# Printing Guide
+
+`VERIFIED_DIGITALLY` for part geometry, stored 3MF units, and bounding boxes.
+Actual print time, material use, shrinkage, warping, and airtightness are
+`REQUIRES_PHYSICAL_VALIDATION`.
+
+## Authoritative slicer baseline
+
+- ASA primary; PETG alternative. Do not mix materials within a bolted joint.
+- 0.4 mm nozzle; 0.20 mm layer; 0.45 mm line width.
+- Five walls; six top and six bottom layers; 35% gyroid.
+- ASA: 250-260 C nozzle, 100-110 C bed, enclosed printer, low part cooling,
+  draft shield if chamber is below 40 C.
+- PETG: 235-250 C nozzle, 75-85 C bed, moderate cooling after layer three.
+- Supports: disabled. The horizontal acoustic openings are self-progressing
+  circular overhangs; inspect their upper arcs and never place support on a
+  gasket seat.
+- Seam: rear (+Y) for cabinet/shell/shroud; away from all gasket lands.
+- Elephant-foot compensation: set in the slicer from your coupon, not by
+  sanding the part.
+
+## Print order and exact orientation
+
+{_markdown_table(["Group", "Filename", "Qty", "Material", "Face/orientation", "Supports", "Brim", "Difficulty", "Calibration"], rows)}
+
+The 3MF files already store millimetres and the documented orientation.
+
+## CAD-derived orientation sheets
+
+{orientation_images}
+
+## Inspection before continuing
+
+- Cabinet and divider: continuous, glossy-enough gasket lands; no seam gap,
+  crack, under-extrusion, or insert bore opened into the chamber.
+- Shell: all slots open, four retention bridges intact, no warp at either rim.
+- Clamp rings: flat within 0.20 mm on a surface plate; lip clean and continuous.
+- Ballast cartridge: lid holes align; both plates lie flat; four bosses sound.
+- TPU parts: no tear, string in a wire bore, or layer split.
+
+Approximate filament and time vary too much by slicer and machine to be
+verified digitally. Your slicer estimate is authoritative for planning; record
+it before starting each full-size print.
+"""
+
+
+def _hardware_guide(parameters: DesignParameters, root: Path) -> str:
+    bom = bill_of_materials(parameters, root)
+    rows = [
+        [r["id"], r["category"], r["item"], r["specification"], r["quantity"], r["required"]]
+        for r in bom
+        if not r["id"].startswith("P")
+    ]
+    return f"""# Hardware and Materials Guide
+
+Use Batch 1 only. The public Batch 1 pair is Core rev4.1 plus HAT rev4.1 /
+R2024.12.06. If the board or packaging says Satellite1.1, rev5.1 Core, rev6.1
+HAT, or requires an external Wi-Fi antenna, stop: that hardware is unsupported.
+
+{_markdown_table(["ID", "Category", "Item", "Exact specification", "Qty", "Required"], rows)}
+
+All purchasing availability and prices must be checked by the builder.
+Manufacturer geometry and electrical parameters are
+`DERIVED_FROM_MANUFACTURER_DRAWING`; supplier availability is an
+`ENGINEERING_ESTIMATE`.
+
+No structural glue is used. No damping material is installed in RC1. Gaskets
+are replaceable mechanically compressed EPDM, and the cable seal is TPU 95A.
+"""
+
+
+def _assembly_guide() -> str:
+    part_rows = [
+        [name, str(definition.quantity), definition.material]
+        for name, definition in PARTS.items()
+        if not name.startswith("coupon_") and name != "leak_test_adapter"
+    ]
+    lines = [
+        "# Illustrated Assembly Guide",
+        "",
+        "Front is -Y, rear is +Y, left/right radiators are -X/+X, and +Z points",
+        "toward the microphones. All torque values are `ENGINEERING_ESTIMATE`",
+        "until the selected insert/process is pull-tested.",
+        "",
+        "![Exploded part identification](IMAGES/exploded_parts_identification.png)",
+        "",
+        "## Exploded-view part key",
+        "",
+        _markdown_table(["Exact part name", "Qty", "Material"], part_rows),
+        "",
+        "![Fastener identification](IMAGES/fastener_identification.png)",
+        "",
+    ]
+    for step in ASSEMBLY_STEPS:
+        lines.extend(
+            [
+                f"## Step {step['number']}: {step['title']}",
+                "",
+                f"- Parts: {step['parts']}",
+                f"- Fasteners: {step['fasteners']}",
+                f"- Tools: {step['tools']}",
+                f"- Gasket/seal: {step['gasket']}",
+                f"- Action: {step['action']}",
+                f"- Pass: {step['pass']}",
+                f"- Warning: {step['warning']}",
+                "",
+                f"![Step {step['number']} - {step['title']}]({step['image']})",
+                "",
+            ]
+        )
+    return "\n".join(lines)
+
+
+def _testing_guide(root: Path) -> str:
+    acoustics = _acoustics(root)
+    return f"""# Testing and Commissioning Guide
+
+Every result in this guide requires a physical unit and is
+`REQUIRES_PHYSICAL_VALIDATION`.
+
+![Seal locations](IMAGES/gasket_placement.png)
+
+![Final assembled inspection](IMAGES/assembly_stage_09_final.png)
+
+## Before power
+
+1. Verify red driver lead to + and black to -.
+2. Confirm both radiators carry equal added mass: model target
+   {acoustics.get("added_pr_mass_each_g", 0):.2f} g each.
+3. Confirm every screw ID and quantity against `FASTENERS.csv`.
+4. Confirm G01-G04 are continuous and no wire touches a moving component.
+5. Perform the 100-250 Pa gross-leak screen during assembly. Never use shop air.
+
+## Controlled first power
+
+Use a current-limited supported USB-C supply and the official Batch 1
+firmware. Start muted, then at minimum volume.
+
+- LEDs: all segments visible and even.
+- Buttons: each click registers once and returns freely.
+- USB-C: plug inserts/removes without shell contact.
+- Wi-Fi: connect and record RSSI beside a bare Batch 1 control.
+- Microphones: verify all four channels, then run 50 wake-word trials at 1, 3,
+  and 5 m on-axis and 45 degrees.
+- Audio: play a polarity pulse, then a 100-500 Hz sweep at low level. Stop for
+  rub, buzz, air noise, or asymmetric radiator motion.
+
+## Acoustic commissioning
+
+Measure impedance magnitude and phase from 20 Hz to 20 kHz at low level. The
+two low-frequency peaks should bracket tuning; the minimum between them is the
+real Fb. Model targets are {acoustics.get("target_tuning_hz", 0):.1f} Hz Fb,
+{acoustics.get("minimum_modeled_impedance_ohm", 0):.2f} ohm minimum impedance,
+and {acoustics.get("passive_radiator_f3_hz", 0):.1f} Hz f3. They are
+`ENGINEERING_ESTIMATE`, not pass/fail measurements.
+
+Start DSP with the modelled {acoustics.get("recommended_high_pass_hz", 0):.1f}
+Hz fourth-order high-pass and no positive bass boost. Final EQ, limiter, and
+tuning mass require measured response and excursion.
+
+## Thermal and reliability
+
+Instrument Core SoC, amplifier area, and electronics-bay air. Test 60 minutes
+idle and 60 minutes pink noise at 25 C, then repeat at 35 C. Pass only if every
+supplier limit retains 15 C margin, there is no throttling, and no printed part
+softens. Perform a gentle rattle check and repeat the leak/impedance check after
+five service cycles.
+
+Record results; do not change the repository status to physically validated
+without the measurements.
+"""
+
+
+def _maintenance_guide() -> str:
+    return """# Maintenance and Service Guide
+
+Disconnect power and wait five minutes before service. Work on a soft mat.
+
+## Access order
+
+- Electronics: remove official top/lock ring as documented by
+  FutureProofHomes, disconnect JST-XH, remove F01, then F02 and the shroud.
+- Driver/radiators: remove anti-slip ring, F09, outer shell, then the relevant
+  F04/F05 clamp ring. Replace the opened G02/G03 gasket.
+- Divider/cable gland: remove the upper stack and shroud, then F03. Replace G01
+  whenever the divider is lifted.
+- Ballast: remove anti-slip ring and F08 bottom plate; withdraw cartridge.
+  Remove F06 lid screws while the cartridge is supported.
+
+Never cut a wire for service; unplug or release its terminal. Never reuse a
+torn, permanently flattened, or contaminated gasket. Never lever a clamp ring
+against a cone.
+
+After service, repeat polarity, gross leak, low-level sweep, buttons, LEDs,
+microphones, Wi-Fi, and thermal spot checks. Store spare G01-G04 seals flat,
+dark, and clean. Vacuum shell slots with a soft brush; do not use solvents on
+ASA.
+
+![Service disassembly direction](IMAGES/service_disassembly.png)
+"""
+
+
+def _engineering_appendix(root: Path) -> str:
+    acoustics = _acoustics(root)
+    reports = _validation(root)
+    gates = [
+        [name, str(value.get("status")), str(value.get("evidence"))]
+        for name, value in sorted(reports.items())
+        if isinstance(value, dict) and "status" in value
+    ]
+    risks = [[r.identifier, r.severity, r.title, r.mitigation, r.evidence] for r in RISKS]
+    return f"""# Engineering Appendix
+
+Source commit at generation: `{source_commit()}`.
+
+## Coordinate system
+
+- Origin: center of the measured official mid-plate interface plane.
+- +Z: microphones/top; -Y: active-driver front; +/-X: opposed radiators.
+- Units: millimetres.
+
+## Current digital acoustic model
+
+- Net acoustic volume: {acoustics.get("net_acoustic_volume_l", 0):.3f} L,
+  `VERIFIED_DIGITALLY` from the connected OCCT air domain.
+- Tuning: {acoustics.get("target_tuning_hz", 0):.1f} Hz.
+- Added mass: {acoustics.get("added_pr_mass_each_g", 0):.2f} g per radiator.
+- Modelled f3: {acoustics.get("passive_radiator_f3_hz", 0):.1f} Hz.
+- Modelled minimum impedance:
+  {acoustics.get("minimum_modeled_impedance_ohm", 0):.2f} ohm.
+
+All acoustic performance values are `ENGINEERING_ESTIMATE`.
+
+## Digital gates
+
+{_markdown_table(["Gate", "Status", "Evidence"], gates)}
+
+## Risk register
+
+{_markdown_table(["ID", "Severity", "Risk", "Closure", "Evidence"], risks)}
+
+Detailed machine-readable evidence remains under `reports/validation/`,
+`reports/acoustics/`, `reports/research/`, and `reference-assets/MANIFEST.csv`.
+"""
+
+
+def _write_csv(path: Path, rows: list[dict[str, Any]]) -> Path:
+    if not rows:
+        raise ValueError(f"cannot write empty schedule {path}")
+    with path.open("w", newline="", encoding="utf-8") as target:
+        writer = csv.DictWriter(target, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
     return path
-
-
-def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
-    lines = ["| " + " | ".join(headers) + " |", "|" + "---|" * len(headers)]
-    lines += ["| " + " | ".join(row) + " |" for row in rows]
-    return lines
-
-
-def fastener_schedule_markdown(root: Path = ROOT) -> list[str]:
-    schedule = _validation(root).get("fasteners", {}).get("schedule", [])
-    rows = [
-        [
-            row["joint"],
-            str(row["quantity"]),
-            f"M3 x {row['length_mm']:.0f}",
-            row["head"],
-            f"{row['clamped_stack_mm']:.1f}",
-            f"{row['engagement_mm']:.1f}",
-            f"{row['bottoming_margin_mm']:.1f}",
-            row["access_direction"],
-            row["torque_guidance_nm"],
-        ]
-        for row in schedule
-    ]
-    return _table(
-        [
-            "Joint",
-            "Qty",
-            "Screw",
-            "Head",
-            "Stack (mm)",
-            "Engagement (mm)",
-            "Bottoming margin (mm)",
-            "Access",
-            "Torque (Nm)",
-        ],
-        rows,
-    )
-
-
-def gasket_schedule_markdown(parameters: DesignParameters) -> list[str]:
-    p = parameters
-    compressed = p.compressed_gasket_thickness
-    rows = [
-        [
-            "divider_gasket",
-            "1",
-            f"{p.gasket_thickness:.1f} mm closed-cell EPDM",
-            f"{p.gasket_land_width:.1f} mm continuous rim land",
-            f"{compressed:.2f}",
-            "25 %",
-            "eight M3 compression stops on the cabinet rim",
-        ],
-        [
-            "driver_gasket",
-            "1",
-            f"{p.gasket_thickness:.1f} mm closed-cell EPDM",
-            f"Oe{p.driver_seat_diameter:.1f} / Oe{p.driver_bore_diameter + 3.0:.1f} annulus",
-            f"{compressed:.2f}",
-            "25 %",
-            "clamp ring bottoms on the cabinet outer face",
-        ],
-        [
-            "passive_radiator_gasket",
-            "2",
-            f"{p.gasket_thickness:.1f} mm closed-cell EPDM",
-            f"Oe{p.pr_seat_diameter:.1f} / Oe{p.pr_bore_diameter + 3.0:.1f} annulus",
-            f"{compressed:.2f}",
-            "25 %",
-            "clamp ring bottoms on the cabinet ledge",
-        ],
-        [
-            "cable_gland",
-            "1",
-            "TPU 95A, printed",
-            f"Oe{p.cable_passage_diameter:.1f} divider passage",
-            "interference",
-            "-",
-            "slit body, radial interference on two conductors",
-        ],
-    ]
-    return _table(
-        [
-            "Seal",
-            "Qty",
-            "Material",
-            "Land",
-            "Assembled thickness (mm)",
-            "Compression",
-            "Compression control",
-        ],
-        rows,
-    )
-
-
-GUIDES: dict[str, str] = {}
-
-
-def _print_guide(parameters: DesignParameters, root: Path) -> str:
-    printability = _validation(root).get("printability", {})
-    process = printability.get("process", {})
-    rows = [
-        [
-            record["part"],
-            str(PARTS[record["part"]].quantity),
-            record["material"],
-            record["print_orientation"],
-            " x ".join(f"{value:.1f}" for value in record["bounds_mm"]),
-        ]
-        for record in printability.get("parts", [])
-    ]
-    lines = [
-        "# Printing guide",
-        "",
-        "`VERIFIED_DIGITALLY` for geometry and orientation. Everything about how "
-        "a specific printer behaves is `REQUIRES_PHYSICAL_VALIDATION`.",
-        "",
-        "## Do the coupons first",
-        "",
-        "Print and measure the eight fit coupons before any full-size part. Enter "
-        "the results in `config/physical_compensation.yaml` and regenerate. See "
-        "`docs/fit-coupons.md`.",
-        "",
-        "## Process",
-        "",
-        f"- Primary material: {process.get('primary_material', 'ASA')} "
-        f"(alternative {process.get('alternative_material', 'PETG')})",
-        f"- Nozzle {process.get('nozzle_mm', 0.4)} mm, layer "
-        f"{process.get('layer_height_mm', 0.2)} mm",
-        f"- {process.get('walls', 5)} walls, {process.get('top_bottom_layers', 6)} "
-        f"top/bottom layers, {process.get('infill', '35% gyroid')}",
-        "- Heated chamber or a draught-free enclosure is required for ASA",
-        "- Do not enable any slicer XY compensation; the model carries its own",
-        "",
-        "## Orientation and support",
-        "",
-        *_table(["Part", "Qty", "Material", "Orientation", "Bounds (mm)"], rows),
-        "",
-        "## Process notes",
-        "",
-        *[f"- {note}" for note in printability.get("process_notes", [])],
-        "",
-        "## Post-processing",
-        "",
-        "- Install every heat-set insert with a temperature-controlled M3 tip, "
-        "square to the boss. Do not torque a hot insert.",
-        "- Deburr the component seats and the divider rim land with a scraper; do "
-        "not sand a gasket land, sanding rounds the edge and opens a leak path.",
-        f"- Cut the EPDM seals from {parameters.gasket_thickness:.1f} mm sheet "
-        "using the exported gasket profiles as templates.",
-        "",
-    ]
-    return "\n".join(lines)
-
-
-def _assembly_guide(root: Path) -> str:
-    assembly = _validation(root).get("assembly", {})
-    steps = assembly.get("assembly_order", [])
-    tools = {row["step"]: row for row in assembly.get("tool_access", [])}
-    lines = [
-        "# Assembly guide",
-        "",
-        "`VERIFIED_DIGITALLY` for the order and for tool access. Physical fit is "
-        "`REQUIRES_PHYSICAL_VALIDATION` until a set of parts has been built.",
-        "",
-        "The order below is the topological order of the validated dependency "
-        "graph in `reports/validation/assembly.json`; it is acyclic and has no "
-        "trapped parts.",
-        "",
-    ]
-    for index, step in enumerate(steps, start=1):
-        row = tools.get(step, {})
-        lines.append(
-            f"{index}. **{step}** — insert along `{row.get('insertion_direction', '-')}`, "
-            f"tool: {row.get('tool', '-')}"
-        )
-    lines += [
-        "",
-        "## Before you start",
-        "",
-        "- All eight fit coupons have passed and their corrections are entered.",
-        "- All heat-set inserts are installed and square.",
-        "- Every gasket is cut, clean and dry. A gasket is single-use once "
-        "compressed; keep a spare set.",
-        "",
-        "## Torque",
-        "",
-        "Every M3 joint is 0.45-0.55 Nm. All gasketed joints are hard-stopped by "
-        "geometry, so torque sets clamp load, not compression. Tighten opposing "
-        "pairs in two passes.",
-        "",
-    ]
-    return "\n".join(lines)
-
-
-def _disassembly_guide(root: Path) -> str:
-    assembly = _validation(root).get("assembly", {})
-    lines = [
-        "# Disassembly guide",
-        "",
-        "`VERIFIED_DIGITALLY`. Reverse of the validated assembly order; every part "
-        "leaves along the reverse of its insertion direction.",
-        "",
-    ]
-    for index, step in enumerate(assembly.get("disassembly_order", []), start=1):
-        lines.append(f"{index}. reverse: {step}")
-    lines += [
-        "",
-        "## Rules",
-        "",
-        "- Replace any gasket whose joint you open. Compressed closed-cell EPDM "
-        "does not recover, and a reused seal is the most likely source of a leak.",
-        "- Never lever a clamp ring; it is a slip fit in its seat with 0.30 mm of "
-        "radial clearance and will come out by hand once its four screws are out.",
-        "- Support the cabinet when the base skirt is off; the ballast is loose in its cartridge.",
-        "",
-    ]
-    return "\n".join(lines)
-
-
-def _maintenance_guide(root: Path) -> str:
-    tasks = _validation(root).get("assembly", {}).get("service_tasks", [])
-    rows = [
-        [
-            task["task"],
-            ", ".join(task["remove"]),
-            task["tool"],
-            "yes" if task["gasket_replacement_required"] else "no",
-        ]
-        for task in tasks
-    ]
-    return "\n".join(
-        [
-            "# Maintenance guide",
-            "",
-            "`VERIFIED_DIGITALLY` for access paths.",
-            "",
-            *_table(["Task", "Parts to remove", "Tool", "New gasket required"], rows),
-            "",
-            "## Routine",
-            "",
-            "- Vacuum the shell slots with a soft brush. Do not use solvents on ASA.",
-            "- Check the four shell screws annually; the shell is the only part "
-            "that carries handling load.",
-            "- If bass output changes audibly, suspect a seal before suspecting a "
-            "component: open, inspect and replace the divider gasket first.",
-            "",
-        ]
-    )
-
-
-def _acoustic_test_guide(root: Path) -> str:
-    acoustics = _acoustics(root)
-    return "\n".join(
-        [
-            "# Acoustic test guide",
-            "",
-            f"`{EVIDENCE_PHYSICAL}`. The modelled values below are targets to "
-            "compare against, not results.",
-            "",
-            "## 1. Impedance sweep (do this first)",
-            "",
-            "Measure impedance magnitude and phase, 20 Hz to 20 kHz, on the fully "
-            "assembled and sealed cabinet at a level low enough to stay linear.",
-            "",
-            "- The two impedance peaks bracket the system tuning; the minimum "
-            "between them is the real Fb.",
-            f"- Modelled Fb target: {acoustics.get('target_tuning_hz', 'n/a')} Hz.",
-            f"- Modelled minimum impedance: "
-            f"{acoustics.get('minimum_modeled_impedance_ohm', float('nan')):.2f} ohm. "
-            "If the measured minimum drops below 3.2 ohm, stop and re-check before "
-            "driving the amplifier hard.",
-            "- Enter the measured Fb and the derived leakage Q into "
-            "`config/default.yaml` and re-run the acoustic stage.",
-            "",
-            "## 2. Sealed-box leak check",
-            "",
-            "Pressurise the acoustic chamber to about 1 kPa through the cable "
-            "gland passage with the driver and radiators fitted, and record the "
-            "decay over 60 s. A fast decay means a leak; find it before measuring "
-            "anything else.",
-            "",
-            "## 3. Nearfield response",
-            "",
-            "Measure nearfield at the driver and at each radiator, scale by area "
-            "ratio and sum, then splice to a gated farfield measurement above "
-            "300 Hz. Compare against `reports/acoustics/response.csv`.",
-            "",
-            f"- Modelled f3: {acoustics.get('passive_radiator_f3_hz', float('nan')):.1f} Hz.",
-            "",
-            "## 4. Maximum output and distortion",
-            "",
-            "Step the level in 3 dB increments at 50, 80 and 200 Hz, recording "
-            "THD and radiator excursion. Stop at 10 % THD or at the radiator's "
-            "9 mm mechanical limit, whichever comes first.",
-            "",
-            f"- Modelled maximum SPL at 100 Hz: "
-            f"{acoustics.get('maximum_spl_at_100_hz_db', float('nan')):.1f} dB at 1 m.",
-            "",
-            "## 5. Tuning-mass adjustment",
-            "",
-            f"The model calls for "
-            f"{acoustics.get('added_pr_mass_each_g', float('nan')):.2f} g added to "
-            "each radiator's M6 post. Adjust both radiators identically; unequal "
-            "mass destroys the force cancellation that the opposed layout exists "
-            "for.",
-            "",
-        ]
-    )
-
-
-def _wake_word_test_guide() -> str:
-    return "\n".join(
-        [
-            "# Wake-word and microphone test guide",
-            "",
-            f"`{EVIDENCE_PHYSICAL}`. The enclosure does not move, cover or "
-            "obstruct any microphone: the official top plate, diffuser, buttons "
-            "and PCB spacer are used unmodified and the microphone openings are "
-            "untouched. That is a geometric fact, not an acoustic result.",
-            "",
-            "## Control",
-            "",
-            "Run every test twice: once on a bare Satellite1 development kit and "
-            "once on the assembled Satellite1 Ultra, in the same room, same "
-            "positions, same firmware.",
-            "",
-            "## Procedure",
-            "",
-            "1. Wake-word detection rate: 50 utterances at 1, 3 and 5 m, on axis "
-            "and at 45 degrees. Record hits and false rejects.",
-            "2. Barge-in: repeat at playback levels of 60, 70 and 80 dBA measured "
-            "at 1 m, using pink noise and then music.",
-            "3. False accepts: 60 minutes of continuous speech-shaped noise and "
-            "60 minutes of television audio.",
-            "4. Button and LED check: every button actuates through the official "
-            "top plate without binding, and the LED ring is evenly visible from "
-            "30 degrees above horizontal at 2 m.",
-            "",
-            "## Pass criteria",
-            "",
-            "Detection rate must not fall by more than 5 percentage points "
-            "against the control at any distance, and barge-in must not fall by "
-            "more than 5 points at 70 dBA. Anything worse is a finding against "
-            "this enclosure, not against the kit.",
-            "",
-        ]
-    )
-
-
-def _thermal_test_guide() -> str:
-    return "\n".join(
-        [
-            "# Thermal test guide",
-            "",
-            f"`{EVIDENCE_PHYSICAL}`. No thermal simulation has been performed and none is claimed.",
-            "",
-            "## Procedure",
-            "",
-            "1. Instrument the Core SoC, the amplifier and the air in the "
-            "electronics bay with thermocouples.",
-            "2. Soak at 25 C ambient, idle, for 60 minutes; record steady state.",
-            "3. Play pink noise at the maximum level the DSP allows for 60 "
-            "minutes; record steady state.",
-            "4. Repeat both at 35 C ambient.",
-            "5. Repeat the 35 C playback case with the rear service aperture "
-            "taped shut, to bound the worst case.",
-            "",
-            "## Pass criteria",
-            "",
-            "No component exceeds its supplier's maximum operating temperature "
-            "with 15 C of margin, and the enclosure does not thermally throttle "
-            "during the 60-minute playback soak. If margins are short, the shroud "
-            "vent bank is parametric and can be opened up without touching the "
-            "acoustic chamber.",
-            "",
-        ]
-    )
-
-
-def _risk_register() -> str:
-    rows = [
-        [
-            risk.identifier,
-            risk.severity,
-            risk.title,
-            risk.consequence,
-            risk.mitigation,
-            risk.owner,
-            risk.state,
-            f"`{risk.evidence}`",
-        ]
-        for risk in RISKS
-    ]
-    return "\n".join(
-        [
-            "# Risk register",
-            "",
-            "Unresolved `CRITICAL` and `HIGH` risks are release blockers for "
-            "physical prototyping. None of them blocks the digital prototype, "
-            "because each is explicitly labelled and each has a defined "
-            "measurement that closes it.",
-            "",
-            *_table(
-                [
-                    "ID",
-                    "Severity",
-                    "Risk",
-                    "Consequence",
-                    "Mitigation / verification",
-                    "Owner",
-                    "State",
-                    "Evidence",
-                ],
-                rows,
-            ),
-            "",
-        ]
-    )
-
-
-def _release_checklist(root: Path) -> str:
-    validation = _validation(root)
-    acoustics = _acoustics(root)
-    gates = [
-        ("Clean build from a fresh checkout with one command", "make release"),
-        ("Lint, format and strict type check", "make check"),
-        ("Official asset checksums and provenance", "tests/test_official_manifest.py"),
-    ]
-    lines = [
-        "# Release checklist",
-        "",
-        "## Digital gates",
-        "",
-    ]
-    lines += [f"- [x] {label} — `{how}`" for label, how in gates]
-    for name in sorted(validation):
-        if name in {"export_validation", "summary"}:
-            continue
-        status = validation[name].get("status", "?")
-        mark = "x" if status == "PASS" else " "
-        lines.append(f"- [{mark}] Validation gate `{name}`: {status}")
-    if acoustics:
-        mark = "x" if acoustics.get("status") == "PASS" else " "
-        lines.append(
-            f"- [{mark}] Acoustic alignment matches the optimiser "
-            f"(deviation {acoustics.get('tuning_deviation_hz', float('nan')):.1f} Hz)"
-        )
-    lines += [
-        "- [x] STEP, STL and 3MF exported, reopened and volume/bounds compared",
-        "- [x] Mutation suite demonstrates the gates detect representative defects",
-        "- [x] Renders and cross-sections generated from the CAD itself",
-        "- [x] BOM, fastener schedule, gasket schedule and all guides generated",
-        "- [x] Risk register current",
-        "",
-        "## Physical gates — none of these is met",
-        "",
-        "- [ ] Eight fit coupons printed, measured and compensations entered",
-        "- [ ] Pressure-decay leak test passed",
-        "- [ ] Insert pull test to 250 N passed",
-        "- [ ] Impedance sweep measured and fed back into the acoustic model",
-        "- [ ] Nearfield and farfield response measured",
-        "- [ ] Wake-word control comparison passed",
-        "- [ ] Thermal soak passed",
-        "- [ ] Tip and 3 g ballast retention tests passed",
-        "",
-        "The design may be marked `DIGITAL_PROTOTYPE_READY` when the digital "
-        "gates are complete. It may not be marked `PHYSICALLY_VALIDATED` until "
-        "every physical gate above has measured evidence.",
-        "",
-    ]
-    return "\n".join(lines)
-
-
-def _revision_history(root: Path) -> str:
-    import subprocess
-
-    try:
-        log = subprocess.run(
-            ["git", "log", "--pretty=format:%h|%ad|%s", "--date=short"],
-            cwd=root,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-    except (OSError, subprocess.CalledProcessError):  # pragma: no cover
-        log = ""
-    rows = []
-    for line in log.splitlines():
-        parts = line.split("|", 2)
-        if len(parts) == 3:
-            rows.append([f"`{parts[0]}`", parts[1], parts[2]])
-    return "\n".join(
-        [
-            "# Revision history",
-            "",
-            "Generated from the Git history of this repository. The Codex "
-            "history is preserved; nothing has been rewritten.",
-            "",
-            *_table(["Commit", "Date", "Change"], rows),
-            "",
-        ]
-    )
 
 
 def generate_documentation(
@@ -813,65 +933,71 @@ def generate_documentation(
     parameters: DesignParameters | None = None,
     root: Path = ROOT,
 ) -> list[Path]:
-    """Write every generated document."""
+    """Write every task-oriented guide and authoritative schedule."""
     p = parameters or load_design_parameters(root)
     output.mkdir(parents=True, exist_ok=True)
-    written = [write_bom(output, p, root)]
 
     documents = {
-        "fastener-schedule.md": "\n".join(
-            [
-                "# Fastener schedule",
-                "",
-                "`VERIFIED_DIGITALLY` for stack, engagement and bottoming margin. "
-                "Torque is `ENGINEERING_ESTIMATE`.",
-                "",
-                "Every insert bore is blind and is drilled deeper than the insert "
-                "itself, so no screw can bottom on the bore floor. No fastener "
-                "crosses the acoustic pressure boundary.",
-                "",
-                *fastener_schedule_markdown(root),
-                "",
-                f"- Insert: M3 heat-set, Oe{p.insert_outer_diameter:.1f} x "
-                f"{p.insert_depth:.1f} mm into a Oe{p.insert_bore_diameter:.1f} x "
-                f"{p.insert_bore_depth:.1f} mm bore",
-                f"- Boss outside diameter: Oe{p.boss_outer_diameter:.1f} mm "
-                f"({(p.boss_outer_diameter - p.insert_outer_diameter) / 2.0:.1f} mm wall)",
-                "- Tool: 2.0 mm hex key throughout",
-                "",
-            ]
-        ),
-        "gasket-schedule.md": "\n".join(
-            [
-                "# Gasket schedule",
-                "",
-                "`VERIFIED_DIGITALLY` for land geometry and assembled thickness. "
-                "Sealing performance is `REQUIRES_PHYSICAL_VALIDATION`.",
-                "",
-                *gasket_schedule_markdown(p),
-                "",
-                "Every seal is replaceable, mechanically compressed and hard-stopped "
-                "by printed geometry. No structural or sealing glue is used anywhere "
-                "in this design.",
-                "",
-            ]
-        ),
-        "print-guide.md": _print_guide(p, root),
-        "assembly-guide.md": _assembly_guide(root),
-        "disassembly-guide.md": _disassembly_guide(root),
-        "maintenance-guide.md": _maintenance_guide(root),
-        "acoustic-test-guide.md": _acoustic_test_guide(root),
-        "wake-word-test-guide.md": _wake_word_test_guide(),
-        "thermal-test-guide.md": _thermal_test_guide(),
-        "risk-register.md": _risk_register(),
-        "release-checklist.md": _release_checklist(root),
-        "revision-history.md": _revision_history(root),
+        "START_HERE.md": _start_here(),
+        "CALIBRATION_GUIDE.md": _calibration_guide(),
+        "PRINTING_GUIDE.md": _printing_guide(p, root),
+        "HARDWARE_AND_MATERIALS_GUIDE.md": _hardware_guide(p, root),
+        "ASSEMBLY_GUIDE.md": _assembly_guide(),
+        "TESTING_AND_COMMISSIONING_GUIDE.md": _testing_guide(root),
+        "MAINTENANCE_GUIDE.md": _maintenance_guide(),
+        "ENGINEERING_APPENDIX.md": _engineering_appendix(root),
     }
-    for name, text in documents.items():
+    written: list[Path] = []
+    for name, content in documents.items():
         path = output / name
-        path.write_text(text, encoding="utf-8")
+        path.write_text(content.rstrip() + "\n", encoding="utf-8")
         written.append(path)
 
+    bom = bill_of_materials(p, root)
+    written.append(_write_csv(output / "BOM.csv", bom))
+
+    fasteners = fastener_rows(root)
+    fastener_csv = [
+        {
+            "id": row["id"],
+            "standard": row["standard"],
+            "thread": row["thread"],
+            "length_mm": row["length_mm"],
+            "head": row["head"],
+            "material": row["material"],
+            "quantity": int(row["quantity"]) * (2 if "(each)" in row["joint"] else 1),
+            "washer": row["washer"],
+            "insert": row["insert"],
+            "engagement_mm": row["engagement_mm"],
+            "torque_guidance_nm": "0.35 target; 0.45 maximum",
+            "tool": row["tool"],
+            "assembly_joint": row["joint"],
+            "seal_requirement": {
+                "F03": "clamps G01",
+                "F04": "clamps G02",
+                "F05": "clamps G03",
+            }.get(str(row["id"]), "none"),
+            "purchasing_specification": f"{row['standard']} A2-70 stainless",
+        }
+        for row in fasteners
+    ]
+    written.append(_write_csv(output / "FASTENERS.csv", fastener_csv))
+    written.append(_write_csv(output / "GASKETS.csv", [dict(row) for row in GASKETS]))
+
+    risk_rows = [
+        {
+            "id": risk.identifier,
+            "severity": risk.severity,
+            "risk": risk.title,
+            "consequence": risk.consequence,
+            "mitigation": risk.mitigation,
+            "owner": risk.owner,
+            "state": risk.state,
+            "evidence": risk.evidence,
+        }
+        for risk in RISKS
+    ]
+    written.append(_write_csv(output / "RISK_REGISTER.csv", risk_rows))
     (output / "source-commit.txt").write_text(source_commit() + "\n", encoding="utf-8")
     written.append(output / "source-commit.txt")
     return written

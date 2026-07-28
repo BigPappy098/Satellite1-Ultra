@@ -107,6 +107,6 @@
   ],
   "physical_gate": {
     "evidence": "REQUIRES_PHYSICAL_VALIDATION",
-    "requirement": "Pressure-decay test the sealed cabinet: pressurise to 1 kPa and record decay over 60 s; target leakage Q >= 7."
+    "requirement": "Use the temporary adapter for a 100-250 Pa gross leak screen with dilute soap solution, then confirm final sealing and tuning with an impedance sweep after installing the production cable gland."
   }
 }

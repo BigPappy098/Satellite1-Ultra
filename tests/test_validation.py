@@ -27,8 +27,7 @@ GATES = (
 
 def _load(name: str) -> dict:
     path = REPORTS / f"{name}.json"
-    if not path.is_file():
-        pytest.skip(f"{path} not generated; run `make validate` first")
+    assert path.is_file(), f"{path} not generated; run `make validate` first"
     with path.open(encoding="utf-8") as source:
         return dict(json.load(source))
 
@@ -72,8 +71,7 @@ def test_assembly_graph_is_acyclic_with_no_unresolved_steps() -> None:
 @pytest.mark.deep
 def test_exports_are_current_and_reopen() -> None:
     path = REPORTS / "export_validation.json"
-    if not path.is_file():
-        pytest.skip("exports not generated; run `make exports` first")
+    assert path.is_file(), "exports not generated; run `make exports` first"
     with path.open(encoding="utf-8") as source:
         records = json.load(source)
     assert records
@@ -97,8 +95,7 @@ def test_generated_step_reopens_in_a_second_independent_reader() -> None:
 
     step_dir = ROOT / "exports" / "step"
     files = sorted(step_dir.glob("*.step"))
-    if not files:
-        pytest.skip("exports not generated; run `make exports` first")
+    assert files, "exports not generated; run `make exports` first"
 
     with (REPORTS / "export_validation.json").open(encoding="utf-8") as source:
         expected = {record["part"]: record for record in json.load(source)}
