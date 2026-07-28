@@ -250,3 +250,11 @@ def test_missing_bom_entry_is_caught() -> None:
             validate_documentation()
     finally:
         path.write_text(original, encoding="utf-8")
+
+
+def test_changed_export_source_is_caught() -> None:
+    path = ROOT / "config" / "default.yaml"
+    with mutated_config(path, "wall_thickness: 4.0", "wall_thickness: 4.01"):
+        with pytest.raises(ValueError, match="stale export"):
+            validate_documentation()
+    assert validate_documentation()["status"] == "PASS"

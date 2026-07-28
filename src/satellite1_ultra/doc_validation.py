@@ -11,7 +11,7 @@ from typing import Any
 from pypdf import PdfReader
 
 from satellite1_ultra.configuration import ROOT
-from satellite1_ultra.exporting import PARTS, source_commit
+from satellite1_ultra.exporting import PARTS, export_sources_match
 from satellite1_ultra.official import OFFICIAL_PRINT_PARTS, OFFICIAL_PRINT_PARTS_REQUIRED
 
 EVIDENCE_LABELS = {
@@ -126,10 +126,9 @@ def validate_documentation(root: Path = ROOT) -> dict[str, Any]:
             )
         for record in records:
             name = str(record["part"])
-            if record.get("source_commit") != source_commit():
-                errors.append(
-                    f"stale export {name}: {record.get('source_commit')} != {source_commit()}"
-                )
+            recorded_commit = str(record.get("source_commit", ""))
+            if not export_sources_match(recorded_commit):
+                errors.append(f"stale export {name}: source inputs changed since {recorded_commit}")
             for directory, suffix in (("step", ".step"), ("stl", ".stl"), ("3mf", ".3mf")):
                 if not (root / "exports" / directory / f"{name}{suffix}").is_file():
                     errors.append(f"missing export: exports/{directory}/{name}{suffix}")

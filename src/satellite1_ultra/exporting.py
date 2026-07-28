@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import re
 import subprocess
 import zipfile
 from collections.abc import Callable
@@ -43,6 +44,14 @@ from satellite1_ultra.geometry import (
 ROOT = Path(__file__).resolve().parents[2]
 THREE_MF_NS = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
+EXPORT_SOURCE_PATHS = (
+    "src/satellite1_ultra",
+    "config",
+    "reference-assets/official",
+    "reference-assets/MANIFEST.csv",
+    "pyproject.toml",
+    "requirements.lock",
+)
 
 
 @dataclass(frozen=True)
@@ -109,6 +118,53 @@ def source_commit() -> str:
         ).stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         return "UNKNOWN"
+
+
+def export_sources_match(recorded_commit: str) -> bool:
+    """Return whether exports still match their recorded source revision.
+
+    Generated files cannot truthfully record the commit that first contains
+    those same files: committing them necessarily creates a newer revision.
+    A recorded ancestor is therefore current only when every input that can
+    affect geometry or export serialization is unchanged in the checked-out
+    tree. This also rejects dirty tracked inputs and untracked source files.
+    """
+    if not re.fullmatch(r"[0-9a-f]{40}", recorded_commit):
+        return False
+    try:
+        ancestor = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", recorded_commit, "HEAD"],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+        )
+        if ancestor.returncode != 0:
+            return False
+        changed = subprocess.run(
+            ["git", "diff", "--quiet", recorded_commit, "--", *EXPORT_SOURCE_PATHS],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+        )
+        if changed.returncode != 0:
+            return False
+        untracked = subprocess.run(
+            [
+                "git",
+                "ls-files",
+                "--others",
+                "--exclude-standard",
+                "--",
+                *EXPORT_SOURCE_PATHS,
+            ],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return not untracked.stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return recorded_commit == source_commit()
 
 
 def sha256(path: Path) -> str:
