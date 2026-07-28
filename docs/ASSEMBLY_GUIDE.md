@@ -25,17 +25,23 @@ until the selected insert/process is pull-tested.
 | bottom_service_plate | 1 | ASA |
 | ballast_cartridge | 1 | ASA |
 | ballast_cartridge_lid | 1 | ASA |
+| official_mid_plate | 1 | ASA (PETG alternative) |
+| official_mid_plate_threads | 1 | ASA (PETG alternative) |
+| official_pcb_spacer | 1 | ASA (PETG alternative) |
+| official_lock_ring | 1 | ASA (PETG alternative) |
+| official_top_plate | 1 | ASA (PETG alternative) |
+| official_top_plate_snap_in_diffuser_ring | 1 | ASA (PETG alternative) |
 
 ![Fastener identification](IMAGES/fastener_identification.png)
 
 ## Step 1: Identify and inspect the hardware
 
-- Parts: Batch 1 Core rev4.1, HAT rev4.1, official Squircle upper stack
+- Parts: Batch 1 Core rev4.1 and HAT rev4.1; O01 official_mid_plate; O02 official_mid_plate_threads; O03 official_pcb_spacer; O04 official_lock_ring; O05 official_top_plate; O06 official_top_plate_snap_in_diffuser_ring
 - Fasteners: none
 - Tools: bright light; calipers
 - Gasket/seal: none
-- Action: Confirm the board revision labels. Reject Batch 2 / Satellite1.1 for this release. Inspect every printed sealing face and remove strings without rounding an edge.
-- Pass: Correct Batch 1 hardware is present; no crack, warp, blocked bore, or damaged gasket land.
+- Action: Confirm the board revision labels. Reject Batch 2 / Satellite1.1. Check off all six required official filenames in OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL and every required custom 3MF in the Printing Guide. Inspect every sealing face and remove strings without rounding an edge.
+- Pass: Correct Batch 1 hardware and every required printed part are present; no crack, warp, blocked bore, or damaged gasket land.
 - Warning: Do not force or approximately place the Core. Its exact stack placement requires the physical official hardware.
 
 ![Step 1 - Identify and inspect the hardware](IMAGES/assembly_stage_01_identify.png)
@@ -114,11 +120,11 @@ until the selected insert/process is pull-tested.
 
 ## Step 8: Install the shroud and official Batch 1 upper stack
 
-- Parts: electronics_shroud; official mid-plate, threads, PCB spacer, HAT/Core, top plate, buttons/diffuser, lock ring
-- Fasteners: F01 and F02
+- Parts: electronics_shroud; O01-O06 official prints; Batch 1 HAT/Core
+- Fasteners: F01, F02, F10, and F11; 4 of each
 - Tools: 2.0 mm hex; ESD-safe bench
 - Gasket/seal: none; electronics bay is outside the acoustic chamber
-- Action: Bolt the shroud to its four outboard bosses with F02. Seat the official mid-plate on the four measured divider bosses and install F01. Assemble the official Batch 1 PCB spacer, HAT/Core, top plate, buttons/diffuser, and lock ring in the official order. Connect the keyed JST-XH speaker plug before the top closes.
+- Action: Bolt the shroud to its four outboard bosses with F02. Seat O01 on the four measured divider bosses and install F01. Snap O06 into O05 (or use both O07/O08 during a multi-material O05 print; never install O06 and O08 together). Align O03's taller standoffs with the I/O side and locate the HAT. Install the Core/HAT using the official Batch 1 sequence. Align the logos and I/O on O04/O05, engage the snaps, and rotate the lock ring. Align O02's four nubs with O01 and keep I/O toward rear/+Y. Connect the keyed JST-XH speaker plug before closure.
 - Pass: Mid-plate sits on all four bosses; USB-C remains reachable; cable has service slack and cannot enter a moving-part envelope; buttons click and diffuser/LED apertures remain clear.
 - Warning: Core placement is REQUIRES_PHYSICAL_VALIDATION. Follow the official Batch 1 instructions and stop at any collision; do not improvise a transform from the CAD envelope.
 

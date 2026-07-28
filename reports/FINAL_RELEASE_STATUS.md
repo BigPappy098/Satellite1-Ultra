@@ -10,8 +10,8 @@ specimen-dependent claims are explicitly `REQUIRES_PHYSICAL_VALIDATION`.
 
 | Item | Final value |
 |---|---|
-| Authoritative source commit | `45cfb9dd335752ec704865bac14170af43f014b0` |
-| Topic branch | `codex/final-audit-and-release` |
+| Authoritative source commit | `f0cc27d` |
+| Topic branch | `codex/include-complete-squircle-parts` |
 | Supported electronics | Satellite1 Batch 1: Core rev4.1 and HAT rev4.1 / R2024.12.06 |
 | Active driver | Dayton Audio ND91-4, one |
 | Passive radiators | SB Acoustics SB12PACR-00, two |
@@ -21,7 +21,7 @@ specimen-dependent claims are explicitly `REQUIRES_PHYSICAL_VALIDATION`.
 | Simulated f3 | 56.9 Hz |
 | Recommended protection | Fourth-order 51 Hz high-pass |
 | Release archive | `release/Satellite1-Ultra-RC1.zip` |
-| Archive SHA-256 | `29b7e7afd96f13077c50257f663c2665e537ed33425b6762ce7a76d6dc35c714` |
+| Archive SHA-256 | `b80c0631564281b22ad05e7728f1143212e881638d0afa568ca6f9c75c66d8e6` |
 
 The acoustic values above are `ENGINEERING_ESTIMATE`. Component geometry and
 parameters are `DERIVED_FROM_MANUFACTURER_DRAWING`; they are not physical
@@ -31,10 +31,9 @@ measurements of a completed unit.
 
 | Gate | Result | Evidence |
 |---|---:|---|
-| `make check` | PASS | Ruff, formatting, mypy, 23-part build, 11 validation gates, acoustic model, and 118 fast tests |
-| Fast tests | 118 passed | Zero failure, error, or skip; 20 deep/mutation cases deliberately excluded by marker |
-| Independent deep tests | 5 passed | Includes independent Gmsh/OpenCascade STEP reopen |
-| Mutation tests | 17 passed | Every deliberate defect was detected; zero failure, error, or skip |
+| Final fast suite | 120 passed | Zero failure, error, or skip; deep/mutation cases excluded by marker |
+| Independent deep tests | 6 passed | Includes official release-copy hashes and independent Gmsh/OpenCascade STEP reopen |
+| Mutation tests | PASS | Full 17-case suite passed before the F10/F11 documentation correction; the changed fastener/document paths and their three related mutations passed again. Runner termination was not a test failure. |
 | Official asset manifest | PASS | 126 preserved files rechecked against byte counts and SHA-256 |
 | Manufactured B-reps | PASS | 23 valid, single-solid parts; each within 256 x 256 x 256 mm |
 | Export validation | PASS | 23 STEP, 23 STL, and 23 3MF; STEP exact reopen; meshes watertight and single-component; 3MF units mm |
@@ -42,7 +41,7 @@ measurements of a completed unit.
 | Gasket templates | PASS | Three 1:1 DXF profiles generated from gasket B-reps |
 | Quantitative validation | PASS | Acoustic volume, sealing, collision, clearance, Core fit, wall thickness, fasteners, tolerance, assembly, printability, and center of gravity |
 | Documentation validation | PASS | Eight task guides and six PDFs; all links, images, part names, BOM/fastener/gasket IDs, revisions, text extraction, and A4 page bounds checked |
-| Visual PDF review | PASS | All 48 manual pages rendered to PNG and visually reviewed; fastener scale, calibration callouts, ballast stage, clipping, and table layout corrected |
+| Visual PDF review | PASS | All 64 manual pages rendered to PNG and visually reviewed; the beginner guide, tables, images, clipping, and page flow pass |
 | Release checksum verification | PASS | Every entry in `SOURCE_CHECKSUMS.txt` verifies |
 | Clean one-command reproduction | PASS | Fresh clone and fresh virtual environment built with `make all` from the authoritative source commit |
 
@@ -65,7 +64,7 @@ The corrected user-facing package includes the complete printable product:
   Ultra enclosure, and all six mandatory Squircle top prints;
 - one complete fastener schedule including F10/F11, the eight official M3 x 8
   upper-stack screws;
-- six illustrated PDF guides led by `START_HERE.pdf`;
+- seven illustrated PDF guides led by the beginner guide;
 - `BOM.csv`, `FASTENERS.csv`, `GASKETS.csv`, and the calibration YAML template;
 - 23 authoritative STEP part files and three assembly STEP files;
 - printable STL and millimetre-unit 3MF manufacturing files;

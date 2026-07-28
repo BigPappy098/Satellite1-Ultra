@@ -22,7 +22,6 @@ P23,calibration part,coupon_cable_passage,ASA; exact file 3MF/coupon_cable_passa
 A01,active driver,Dayton Audio ND91-4,4 ohm full-range driver; manufacturer model ND91-4,1,yes,DERIVED_FROM_MANUFACTURER_DRAWING,references/manufacturer/Dayton_ND91-4_spec_2026-02-26.pdf
 A02,passive radiator,SB Acoustics SB12PACR-00,4 inch aluminum passive radiator with M6 mass post,2,yes,DERIVED_FROM_MANUFACTURER_DRAWING,references/manufacturer/SB_Acoustics_SB12PACR-00.pdf
 E01,official electronics,FutureProofHomes Satellite1 Batch 1 development kit,Core rev4.1 + HAT rev4.1 / R2024.12.06; not Satellite1.1,1,yes,DERIVED_FROM_OFFICIAL_CAD,reference-assets/MANIFEST.csv
-E02,official mechanics,FutureProofHomes Squircle upper stack,"mid-plate, threaded insert, top plate, buttons/diffuser, PCB spacer, lock ring",1 set,yes,DERIVED_FROM_OFFICIAL_CAD,reference-assets/official/Satellite1-Enclosures
 H01,insert,CNC Kitchen M3 x 5.7 heat-set insert,"M3x0.5 internal thread, 5.7 mm length, 4.6 mm maximum OD",48,yes; includes four spares,DERIVED_FROM_MANUFACTURER_DRAWING,CNCKitchen M3 x 5.7 standard insert
 H02,speaker cable,2-pin JST-XH 2.54 mm speaker lead,"22 AWG stranded red/black, each insulated conductor OD <=1.8 mm, 350 mm minimum",1,yes,DERIVED_FROM_OFFICIAL_CAD,official Squircle enclosure documentation
 H03,speaker terminals,2.8 mm fully insulated female quick-disconnects,for 22-18 AWG wire; verify fit on the purchased ND91-4 before crimping,2,recommended; direct solder is acceptable,ENGINEERING_ESTIMATE,builder supplied
@@ -30,6 +29,14 @@ B01,ballast,mild-steel plate,"110 x 122 x 5 mm, edges deburred, dry, light oil r
 B02,radiator tuning,M6 stainless flat washers,identical stacks totaling 0.78 g per radiator,2 matched stacks,yes; final mass requires physical tuning,ENGINEERING_ESTIMATE,weigh on 0.01 g scale
 G00,gasket stock,closed-cell EPDM foam sheet,"2.0 mm nominal, soft, smooth skin, ASTM D1056 2A1 or equivalent",one 300 x 300 mm sheet,yes,ENGINEERING_ESTIMATE,industrial rubber supplier
 D01,optional acoustic material,polyester acoustic batting,not installed in RC1; reserve for measurement-led development only,0,no,REQUIRES_PHYSICAL_VALIDATION,not applicable
+O01,official printed part,official_mid_plate,ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_mid_plate.stl; preserved official STL,1,yes,DERIVED_FROM_OFFICIAL_CAD,DIY Enclosures/Squircle Enclosures/Geometry Files/STL/Mid-Plate/Mid-Plate.stl
+O02,official printed part,official_mid_plate_threads,ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_mid_plate_threads.stl; preserved official STL,1,yes,DERIVED_FROM_OFFICIAL_CAD,DIY Enclosures/Squircle Enclosures/Geometry Files/STL/Mid-Plate/Mid-Plate Threads.stl
+O03,official printed part,official_pcb_spacer,ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_pcb_spacer.stl; preserved official STL,1,yes,DERIVED_FROM_OFFICIAL_CAD,DIY Enclosures/Squircle Enclosures/Geometry Files/STL/Squircle Top/PCB Spacer.stl
+O04,official printed part,official_lock_ring,ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_lock_ring.stl; preserved official STL,1,yes,DERIVED_FROM_OFFICIAL_CAD,DIY Enclosures/Squircle Enclosures/Geometry Files/STL/Squircle Top/Lock Ring.stl
+O05,official printed part,official_top_plate,ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_top_plate.stl; preserved official STL,1,yes,DERIVED_FROM_OFFICIAL_CAD,DIY Enclosures/Squircle Enclosures/Geometry Files/STL/Squircle Top/Top Plate.stl
+O06,official printed part,official_top_plate_snap_in_diffuser_ring,ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_top_plate_snap_in_diffuser_ring.stl; preserved official STL,1,yes,DERIVED_FROM_OFFICIAL_CAD,DIY Enclosures/Squircle Enclosures/Geometry Files/STL/Squircle Top/Top Plate Snap-In Diffuser Ring.stl
+O07,official printed part,official_top_plate_mm_buttons,ASA (PETG alternative); exact file OFFICIAL_PARTS/OPTIONAL_MULTI_MATERIAL/official_top_plate_mm_buttons.stl; preserved official STL,1,optional alternative,DERIVED_FROM_OFFICIAL_CAD,DIY Enclosures/Squircle Enclosures/Geometry Files/STL/Squircle Top/Top Plate MM Buttons.stl
+O08,official printed part,official_top_plate_mm_diffuser_ring,ASA (PETG alternative); exact file OFFICIAL_PARTS/OPTIONAL_MULTI_MATERIAL/official_top_plate_mm_diffuser_ring.stl; preserved official STL,1,optional alternative,DERIVED_FROM_OFFICIAL_CAD,DIY Enclosures/Squircle Enclosures/Geometry Files/STL/Squircle Top/Top Plate MM Diffuser Ring.stl
 F01,fastener,M3 x 6 socket cap screw,"ISO 4762, A2-70 stainless, M3x0.5",4,yes,VERIFIED_DIGITALLY,industrial fastener supplier
 F02,fastener,M3 x 8 button head screw,"ISO 7380-1, A2-70 stainless, M3x0.5",4,yes,VERIFIED_DIGITALLY,industrial fastener supplier
 F03,fastener,M3 x 10 socket cap screw,"ISO 4762, A2-70 stainless, M3x0.5",8,yes,VERIFIED_DIGITALLY,industrial fastener supplier
@@ -39,3 +46,5 @@ F06,fastener,M3 x 8 button head screw,"ISO 7380-1, A2-70 stainless, M3x0.5",4,ye
 F07,fastener,M3 x 10 socket cap screw,"ISO 4762, A2-70 stainless, M3x0.5",4,yes,VERIFIED_DIGITALLY,industrial fastener supplier
 F08,fastener,M3 x 8 button head screw,"ISO 7380-1, A2-70 stainless, M3x0.5",4,yes,VERIFIED_DIGITALLY,industrial fastener supplier
 F09,fastener,M3 x 8 button head screw,"ISO 7380-1, A2-70 stainless, M3x0.5",4,yes,VERIFIED_DIGITALLY,industrial fastener supplier
+F10,fastener,M3 x 8 socket cap screw,"ISO 4762, A2-70 stainless, M3x0.5",4,yes,VERIFIED_DIGITALLY,industrial fastener supplier
+F11,fastener,M3 x 8 socket cap screw,"ISO 4762, A2-70 stainless, M3x0.5",4,yes,VERIFIED_DIGITALLY,industrial fastener supplier

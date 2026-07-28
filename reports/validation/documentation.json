@@ -1,7 +1,8 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "checked_files": [
+    "docs/BEGINNER_BUILD_GUIDE.md",
     "docs/START_HERE.md",
     "docs/CALIBRATION_GUIDE.md",
     "docs/PRINTING_GUIDE.md",
@@ -13,24 +14,29 @@
   ],
   "pdfs": [
     {
+      "file": "BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf",
+      "pages": 7,
+      "bytes": 874628
+    },
+    {
       "file": "START_HERE.pdf",
       "pages": 2,
-      "bytes": 241618
+      "bytes": 242110
     },
     {
       "file": "START_HERE_CALIBRATION_GUIDE.pdf",
       "pages": 8,
-      "bytes": 559329
+      "bytes": 559328
     },
     {
       "file": "PRINTING_GUIDE.pdf",
-      "pages": 22,
-      "bytes": 2318488
+      "pages": 31,
+      "bytes": 3184955
     },
     {
       "file": "ASSEMBLY_GUIDE.pdf",
       "pages": 11,
-      "bytes": 2111159
+      "bytes": 2130597
     },
     {
       "file": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
@@ -40,8 +46,10 @@
     {
       "file": "MAINTENANCE_GUIDE.pdf",
       "pages": 2,
-      "bytes": 258155
+      "bytes": 258158
     }
   ],
-  "errors": []
+  "errors": [
+    "missing image referenced by ASSEMBLY_GUIDE.md: IMAGES/intentionally_missing.png"
+  ]
 }

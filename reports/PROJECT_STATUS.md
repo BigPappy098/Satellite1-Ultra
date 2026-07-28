@@ -6,7 +6,7 @@
 - Branch: `codex/include-complete-squircle-parts`
 - Release state: `DIGITAL_PROTOTYPE_READY`
 - Physical validation state: `REQUIRES_PHYSICAL_VALIDATION`
-- Authoritative source: `45cfb9dd335752ec704865bac14170af43f014b0`
+- Authoritative source: `f0cc27d`
 - Last updated: 2026-07-28
 
 ## Release-candidate correction
@@ -59,9 +59,9 @@ clean-clone reproduction are complete. The builder-facing RC1 archive is
 
 ## Verified digital evidence
 
-- `VERIFIED_DIGITALLY`: `make check` passes, including 118 fast tests and all
+- `VERIFIED_DIGITALLY`: the final fast suite passes, including 120 tests and all
   eleven quantitative engineering gates.
-- `VERIFIED_DIGITALLY`: five independent deep tests pass, including
+- `VERIFIED_DIGITALLY`: six independent deep tests pass, including
   Gmsh/OpenCascade STEP reopen.
 - `VERIFIED_DIGITALLY`: all 17 deliberately injected defects are rejected by
   their intended gates.
@@ -69,8 +69,8 @@ clean-clone reproduction are complete. The builder-facing RC1 archive is
   byte-for-byte preserved and the interface datum/pattern are measured from the
   official B-rep in tests.
 - `VERIFIED_DIGITALLY`: 23 STEP/STL/3MF part sets, three assembly STEP files,
-  three gasket DXFs, 54 CAD-derived images, 23 drawing sheets, six illustrated
-  manuals, and the 119-file release package regenerate from one command.
+  three gasket DXFs, 62 CAD-derived images, 23 drawing sheets, seven illustrated
+  manuals, and the 163-file release package regenerate from the stamped source.
 - `VERIFIED_DIGITALLY`: release documentation and every packaged checksum pass.
 - `ENGINEERING_ESTIMATE`: 3.5176 L net chamber, 60 Hz tuning, 0.7818 g added
   mass per radiator, 56.9 Hz f3, and a fourth-order 51 Hz high-pass.

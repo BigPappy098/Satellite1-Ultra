@@ -80,7 +80,7 @@ passing. Output is in `release/Satellite1-Ultra-RC1/`.
 Example successful finish:
 
 ```text
-documentation PASS; 8 guides, 6 PDFs
+documentation PASS; 9 guides, 7 PDFs
 release/Satellite1-Ultra-RC1 (all required files present)
 ```
 
