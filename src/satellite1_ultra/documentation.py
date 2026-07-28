@@ -15,6 +15,10 @@ from satellite1_ultra.configuration import (
 )
 from satellite1_ultra.exporting import PARTS, source_commit
 from satellite1_ultra.geometry import DesignParameters, ballast_plate_extent
+from satellite1_ultra.official import (
+    OFFICIAL_PRINT_PARTS,
+    OFFICIAL_PRINT_PARTS_REQUIRED,
+)
 
 EVIDENCE_DIGITAL = "VERIFIED_DIGITALLY"
 EVIDENCE_OFFICIAL = "DERIVED_FROM_OFFICIAL_CAD"
@@ -272,16 +276,6 @@ def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[d
                 "source": "reference-assets/MANIFEST.csv",
             },
             {
-                "id": "E02",
-                "category": "official mechanics",
-                "item": "FutureProofHomes Squircle upper stack",
-                "specification": "mid-plate, threaded insert, top plate, buttons/diffuser, PCB spacer, lock ring",
-                "quantity": "1 set",
-                "required": "yes",
-                "evidence": EVIDENCE_OFFICIAL,
-                "source": "reference-assets/official/Satellite1-Enclosures",
-            },
-            {
                 "id": "H01",
                 "category": "insert",
                 "item": "CNC Kitchen M3 x 5.7 heat-set insert",
@@ -356,6 +350,23 @@ def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[d
             },
         ]
     )
+    for part in OFFICIAL_PRINT_PARTS:
+        rows.append(
+            {
+                "id": part.identifier,
+                "category": "official printed part",
+                "item": part.name,
+                "specification": (
+                    f"{part.material}; exact file OFFICIAL_PARTS/"
+                    f"{'REQUIRED_SINGLE_MATERIAL' if part.required else 'OPTIONAL_MULTI_MATERIAL'}"
+                    f"/{part.filename}; preserved official STL"
+                ),
+                "quantity": str(part.quantity),
+                "required": "yes" if part.required else "optional alternative",
+                "evidence": EVIDENCE_OFFICIAL,
+                "source": part.stl_relative_path,
+            }
+        )
     for row in fasteners:
         multiplier = 2 if "(each)" in str(row["joint"]) else 1
         rows.append(
@@ -377,12 +388,17 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
     {
         "number": "1",
         "title": "Identify and inspect the hardware",
-        "parts": "Batch 1 Core rev4.1, HAT rev4.1, official Squircle upper stack",
+        "parts": (
+            "Batch 1 Core rev4.1 and HAT rev4.1; O01 official_mid_plate; "
+            "O02 official_mid_plate_threads; O03 official_pcb_spacer; O04 "
+            "official_lock_ring; O05 official_top_plate; O06 "
+            "official_top_plate_snap_in_diffuser_ring"
+        ),
         "fasteners": "none",
         "tools": "bright light; calipers",
         "gasket": "none",
-        "action": "Confirm the board revision labels. Reject Batch 2 / Satellite1.1 for this release. Inspect every printed sealing face and remove strings without rounding an edge.",
-        "pass": "Correct Batch 1 hardware is present; no crack, warp, blocked bore, or damaged gasket land.",
+        "action": "Confirm the board revision labels. Reject Batch 2 / Satellite1.1. Check off all six required official filenames in OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL and every required custom 3MF in the Printing Guide. Inspect every sealing face and remove strings without rounding an edge.",
+        "pass": "Correct Batch 1 hardware and every required printed part are present; no crack, warp, blocked bore, or damaged gasket land.",
         "warning": "Do not force or approximately place the Core. Its exact stack placement requires the physical official hardware.",
         "image": "IMAGES/assembly_stage_01_identify.png",
     },
@@ -461,11 +477,11 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
     {
         "number": "8",
         "title": "Install the shroud and official Batch 1 upper stack",
-        "parts": "electronics_shroud; official mid-plate, threads, PCB spacer, HAT/Core, top plate, buttons/diffuser, lock ring",
+        "parts": "electronics_shroud; O01-O06 official prints; Batch 1 HAT/Core",
         "fasteners": "F01 and F02",
         "tools": "2.0 mm hex; ESD-safe bench",
         "gasket": "none; electronics bay is outside the acoustic chamber",
-        "action": "Bolt the shroud to its four outboard bosses with F02. Seat the official mid-plate on the four measured divider bosses and install F01. Assemble the official Batch 1 PCB spacer, HAT/Core, top plate, buttons/diffuser, and lock ring in the official order. Connect the keyed JST-XH speaker plug before the top closes.",
+        "action": "Bolt the shroud to its four outboard bosses with F02. Seat O01 on the four measured divider bosses and install F01. Snap O06 into O05 (or use both O07/O08 during a multi-material O05 print; never install O06 and O08 together). Align O03's taller standoffs with the I/O side and locate the HAT. Install the Core/HAT using the official Batch 1 sequence. Align the logos and I/O on O04/O05, engage the snaps, and rotate the lock ring. Align O02's four nubs with O01 and keep I/O toward rear/+Y. Connect the keyed JST-XH speaker plug before closure.",
         "pass": "Mid-plate sits on all four bosses; USB-C remains reachable; cable has service slack and cannot enter a moving-part envelope; buttons click and diffuser/LED apertures remain clear.",
         "warning": "Core placement is REQUIRES_PHYSICAL_VALIDATION. Follow the official Batch 1 instructions and stop at any collision; do not improvise a transform from the CAD envelope.",
         "image": "IMAGES/assembly_stage_08_upper.png",
@@ -502,7 +518,9 @@ Wi-Fi, microphones, buttons, LEDs, and wake-word performance are
 
 ## You need
 
-- An enclosed 256 x 256 x 256 mm or larger FDM printer capable of ASA.
+- An enclosed printer with at least **212 x 192 x 189 mm of genuinely usable
+  travel** (X/Y may be swapped). A 220 x 220 x 200 mm printer is the practical
+  minimum; the 192 x 212 x 189 mm outer shell is the limiting part.
 - 0.4 mm nozzle, dry ASA, TPU 95A, and a documented PETG alternative.
 - Digital calipers (0.01 mm display), 0.01 g scale, 2.0 mm hex driver, M3
   insert tip, wire tools, ESD protection, and basic acoustic test equipment.
@@ -515,8 +533,10 @@ Wi-Fi, microphones, buttons, LEDs, and wake-word performance are
 3. Measure, edit `CALIBRATION_INPUT_TEMPLATE.yaml`, and run
    `make calibrated-release`.
 4. Reprint affected coupons and pass every calibration check.
-5. Follow `PRINTING_GUIDE.pdf`, then `ASSEMBLY_GUIDE.pdf`.
-6. Complete `TESTING_AND_COMMISSIONING_GUIDE.pdf` before normal use.
+5. Print **both** groups in `PRINTING_GUIDE.pdf`: every required custom Ultra
+   3MF and all six official Squircle STL files.
+6. Follow `ASSEMBLY_GUIDE.pdf`.
+7. Complete `TESTING_AND_COMMISSIONING_GUIDE.pdf` before normal use.
 
 The project is advanced: expected builder difficulty is 4/5. Allow several
 days for printing plus calibration and test time.
@@ -648,7 +668,9 @@ def _printing_guide(parameters: DesignParameters, root: Path) -> str:
         )
         brim = (
             "10 mm"
-            if name in {"outer_shell", "main_cabinet"}
+            if name == "main_cabinet"
+            else "3 mm maximum on a 220 mm bed"
+            if name == "outer_shell"
             else "5 mm"
             if group == "calibration"
             else "none"
@@ -672,11 +694,59 @@ def _printing_guide(parameters: DesignParameters, root: Path) -> str:
         for name in PARTS
         if name not in {"divider_gasket", "driver_gasket", "passive_radiator_gasket"}
     )
+    official_rows = [
+        [
+            "official required",
+            f"OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/{part.filename}",
+            str(part.quantity),
+            part.material,
+            "lowest native-Z face on bed, as illustrated",
+            "none",
+            "none",
+            "2/5",
+            "after calibration",
+        ]
+        for part in OFFICIAL_PRINT_PARTS_REQUIRED
+    ]
+    rows.extend(official_rows)
+    official_orientation_images = "\n\n".join(
+        f"![{part.name} print orientation](IMAGES/print_orientation_{part.name}.png)"
+        for part in OFFICIAL_PRINT_PARTS
+    )
     return f"""# Printing Guide
 
 `VERIFIED_DIGITALLY` for part geometry, stored 3MF units, and bounding boxes.
 Actual print time, material use, shrinkage, warping, and airtightness are
 `REQUIRES_PHYSICAL_VALIDATION`.
+
+## Complete-part warning
+
+You must print **both** the custom Ultra parts and the official Squircle upper
+stack. The six mandatory official files are in
+`OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/`; they are included in the release
+and listed in the table below.
+
+Do **not** print the official original speaker chamber, original speaker plate,
+or original anti-slip ring. `main_cabinet.3mf`, the Ultra driver/radiator
+hardware, `base_skirt.3mf`, and `anti_slip_ring.3mf` replace those parts.
+
+O07 and O08 are optional multi-material inserts. If using them, load O05, O07,
+and O08 together in the slicer and omit O06. For an ordinary single-material
+printer, use O05 plus O06 and ignore the optional folder.
+
+## Minimum printer volume
+
+- Limiting part: `outer_shell.3mf`, exactly 192.0 x 212.0 x 189.0 mm in its
+  required upright orientation.
+- Absolute usable travel: 212 x 192 x 189 mm (X/Y may be swapped).
+- Practical minimum: 220 x 220 x 200 mm only when the full 220 mm is usable;
+  this leaves 4 mm per long-side edge and limits the shell brim to 3 mm.
+- If purge lines, bed clips, firmware exclusions, or a wider shell brim reduce
+  usable travel below 218 mm, use a larger printer. A 230 mm bed is preferable,
+  but it is not the geometric minimum.
+- In-plane rotation cannot fit the shell on a 210 x 210 mm bed. Side printing
+  is unsupported because it creates extensive support contact and degrades
+  slots and cosmetic surfaces.
 
 ## Authoritative slicer baseline
 
@@ -702,6 +772,10 @@ The 3MF files already store millimetres and the documented orientation.
 ## CAD-derived orientation sheets
 
 {orientation_images}
+
+## Official Squircle orientation sheets
+
+{official_orientation_images}
 
 ## Inspection before continuing
 
@@ -749,6 +823,9 @@ def _assembly_guide() -> str:
         for name, definition in PARTS.items()
         if not name.startswith("coupon_") and name != "leak_test_adapter"
     ]
+    part_rows.extend(
+        [part.name, str(part.quantity), part.material] for part in OFFICIAL_PRINT_PARTS_REQUIRED
+    )
     lines = [
         "# Illustrated Assembly Guide",
         "",

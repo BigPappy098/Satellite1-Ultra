@@ -3,13 +3,34 @@
 ## Status
 
 - Project: Satellite1 Ultra
-- Branch: `codex/final-audit-and-release`
+- Branch: `codex/include-complete-squircle-parts`
 - Release state: `DIGITAL_PROTOTYPE_READY`
 - Physical validation state: `REQUIRES_PHYSICAL_VALIDATION`
 - Authoritative source: `45cfb9dd335752ec704865bac14170af43f014b0`
 - Last updated: 2026-07-28
 
-## Completed milestone
+## Release-candidate correction
+
+The previous RC1 package omitted the six required official Squircle
+upper-stack print files by representing them only as a vague BOM “set.” This
+was a release-blocking documentation/package defect. The correction now:
+
+- packages all six mandatory official STL files byte-for-byte under
+  `OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/`;
+- separates the two optional multi-material inserts;
+- names every official print individually in the BOM, Printing Guide, and
+  Assembly Guide;
+- explicitly tells builders to print both the Ultra and official groups, while
+  excluding the original chamber, speaker plate, and anti-slip ring that the
+  Ultra replaces;
+- validates official release copies against their pinned source hashes; and
+- states the measured limiting mesh envelope: 192 x 212 x 189 mm, with
+  212 x 192 x 189 mm absolute usable travel and 220 x 220 x 200 mm practical
+  minimum when the full bed is usable.
+
+Regeneration and final validation are in progress on the topic branch.
+
+## Previous completed milestone
 
 The final engineering audit, corrective CAD pass, release regeneration,
 documentation rewrite, mutation testing, PDF visual review, and independent

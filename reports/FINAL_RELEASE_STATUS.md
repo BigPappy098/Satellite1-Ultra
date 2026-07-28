@@ -58,12 +58,14 @@ non-geometric container metadata, so their byte hashes vary between builds.
 
 ## Release contents
 
-The user-facing package contains 119 files:
+The corrected user-facing package includes the complete printable product:
 
 - six illustrated PDF guides led by `START_HERE.pdf`;
 - `BOM.csv`, `FASTENERS.csv`, `GASKETS.csv`, and the calibration YAML template;
 - 23 authoritative STEP part files and three assembly STEP files;
 - printable STL and millimetre-unit 3MF manufacturing files;
+- six mandatory unmodified official Squircle upper-stack STL files and two
+  optional multi-material inserts in clearly separated folders;
 - eight calibration print files;
 - three gasket DXF templates;
 - 54 current CAD-derived images;
@@ -72,6 +74,12 @@ The user-facing package contains 119 files:
 The mandatory first action is stated in the entry document: do not print the
 full enclosure until the calibration coupons have passed and a calibrated
 release has been regenerated.
+
+The limiting print is the 192 x 212 x 189 mm outer shell. Absolute usable
+machine travel is 212 x 192 x 189 mm (X/Y may be swapped). A fully usable
+220 x 220 x 200 mm machine is the practical minimum and permits at most a 3 mm
+shell brim; bed clips, purge lines, or firmware exclusions may require a larger
+bed.
 
 ## Required physical gates
 

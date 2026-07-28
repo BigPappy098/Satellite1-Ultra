@@ -12,6 +12,7 @@ from pypdf import PdfReader
 
 from satellite1_ultra.configuration import ROOT
 from satellite1_ultra.exporting import PARTS, source_commit
+from satellite1_ultra.official import OFFICIAL_PRINT_PARTS, OFFICIAL_PRINT_PARTS_REQUIRED
 
 EVIDENCE_LABELS = {
     "VERIFIED_DIGITALLY",
@@ -95,8 +96,17 @@ def validate_documentation(root: Path = ROOT) -> dict[str, Any]:
         errors.append(f"unknown fastener ID in guides: {identifier}")
     for identifier in sorted(set(re.findall(r"\bG\d{2}\b", combined)) - gasket_ids - {"G00"}):
         errors.append(f"unknown gasket ID in guides: {identifier}")
-    for identifier in sorted(set(re.findall(r"\b[ABDEHP]\d{2}\b", combined)) - bom_ids):
+    for identifier in sorted(set(re.findall(r"\b[ABDEHOP]\d{2}\b", combined)) - bom_ids):
         errors.append(f"unknown BOM ID in guides: {identifier}")
+
+    for part in OFFICIAL_PRINT_PARTS:
+        if not part.stl_path.is_file():
+            errors.append(f"missing preserved official printable: {part.stl_path}")
+        if not part.step_path.is_file():
+            errors.append(f"missing preserved official B-rep: {part.step_path}")
+    for part in OFFICIAL_PRINT_PARTS_REQUIRED:
+        if part.filename not in combined:
+            errors.append(f"required official printable is absent from guides: {part.filename}")
 
     export_report = root / "reports" / "validation" / "export_validation.json"
     if not export_report.is_file():

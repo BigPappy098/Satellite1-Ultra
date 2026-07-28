@@ -67,6 +67,29 @@ class OfficialPart:
         return None if self.mesh_path is None else OFFICIAL / self.mesh_path
 
 
+@dataclass(frozen=True)
+class OfficialPrintPart:
+    """One unmodified official printable included in the builder release."""
+
+    identifier: str
+    name: str
+    filename: str
+    stl_relative_path: str
+    step_relative_path: str
+    role: str
+    required: bool = True
+    quantity: int = 1
+    material: str = "ASA (PETG alternative)"
+
+    @property
+    def stl_path(self) -> Path:
+        return OFFICIAL / self.stl_relative_path
+
+    @property
+    def step_path(self) -> Path:
+        return OFFICIAL / self.step_relative_path
+
+
 _SQUIRCLE = "DIY Enclosures/Squircle Enclosures/Geometry Files"
 
 MID_PLATE = OfficialPart(
@@ -149,6 +172,86 @@ BATCH2_CORE = OfficialPart(
 )
 
 UPPER_STACK = (MID_PLATE, MID_PLATE_THREADS, TOP_PLATE, PCB_SPACER, LOCK_RING)
+
+_SQUIRCLE_STL = f"{_SQUIRCLE}/STL"
+_SQUIRCLE_STEP = f"{_SQUIRCLE}/STEP"
+
+# These are the complete official Squircle prints needed by the Ultra.  The
+# original speaker chamber, speaker plate and anti-slip ring are deliberately
+# excluded because the Ultra cabinet, base and TPU ring replace them.
+OFFICIAL_PRINT_PARTS_REQUIRED = (
+    OfficialPrintPart(
+        "O01",
+        "official_mid_plate",
+        "official_mid_plate.stl",
+        f"{_SQUIRCLE_STL}/Mid-Plate/Mid-Plate.stl",
+        f"{_SQUIRCLE_STEP}/Mid-Plate/Mid-Plate.step",
+        "Satellite1 electronics mid-plate",
+    ),
+    OfficialPrintPart(
+        "O02",
+        "official_mid_plate_threads",
+        "official_mid_plate_threads.stl",
+        f"{_SQUIRCLE_STL}/Mid-Plate/Mid-Plate Threads.stl",
+        f"{_SQUIRCLE_STEP}/Mid-Plate/Mid-Plate Threads.step",
+        "threaded interface between the mid-plate and top assembly",
+    ),
+    OfficialPrintPart(
+        "O03",
+        "official_pcb_spacer",
+        "official_pcb_spacer.stl",
+        f"{_SQUIRCLE_STL}/Squircle Top/PCB Spacer.stl",
+        f"{_SQUIRCLE_STEP}/Squircle Top/PCB Spacer.step",
+        "locates the HAT below the top plate",
+    ),
+    OfficialPrintPart(
+        "O04",
+        "official_lock_ring",
+        "official_lock_ring.stl",
+        f"{_SQUIRCLE_STL}/Squircle Top/Lock Ring.stl",
+        f"{_SQUIRCLE_STEP}/Squircle Top/Lock Ring.step",
+        "locks the top plate to the threaded interface",
+    ),
+    OfficialPrintPart(
+        "O05",
+        "official_top_plate",
+        "official_top_plate.stl",
+        f"{_SQUIRCLE_STL}/Squircle Top/Top Plate.stl",
+        f"{_SQUIRCLE_STEP}/Squircle Top/Top Plate.step",
+        "single-material top plate",
+    ),
+    OfficialPrintPart(
+        "O06",
+        "official_top_plate_snap_in_diffuser_ring",
+        "official_top_plate_snap_in_diffuser_ring.stl",
+        f"{_SQUIRCLE_STL}/Squircle Top/Top Plate Snap-In Diffuser Ring.stl",
+        f"{_SQUIRCLE_STEP}/Squircle Top/Top Plate Snap-In Diffuser Ring.step",
+        "snap-in LED diffuser for the single-material top plate",
+    ),
+)
+
+OFFICIAL_PRINT_PARTS_OPTIONAL_MM = (
+    OfficialPrintPart(
+        "O07",
+        "official_top_plate_mm_buttons",
+        "official_top_plate_mm_buttons.stl",
+        f"{_SQUIRCLE_STL}/Squircle Top/Top Plate MM Buttons.stl",
+        f"{_SQUIRCLE_STEP}/Squircle Top/Top Plate MM Buttons.step",
+        "optional multi-material button inserts",
+        required=False,
+    ),
+    OfficialPrintPart(
+        "O08",
+        "official_top_plate_mm_diffuser_ring",
+        "official_top_plate_mm_diffuser_ring.stl",
+        f"{_SQUIRCLE_STL}/Squircle Top/Top Plate MM Diffuser Ring.stl",
+        f"{_SQUIRCLE_STEP}/Squircle Top/Top Plate MM Diffuser Ring.step",
+        "optional multi-material diffuser; replaces O06",
+        required=False,
+    ),
+)
+OFFICIAL_PRINT_PARTS = OFFICIAL_PRINT_PARTS_REQUIRED + OFFICIAL_PRINT_PARTS_OPTIONAL_MM
+
 #: Boards whose placement in the master system is established.
 PLACED_BOARDS = {"public_batch_1": (BATCH1_HAT,), "public_batch_2": (BATCH2_HAT,)}
 #: Boards whose placement is not established; size only.
