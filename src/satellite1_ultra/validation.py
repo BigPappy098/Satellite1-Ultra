@@ -859,6 +859,9 @@ class Joint:
     access: str
     washer: str
     note: str = ""
+    uses_heat_set_insert: bool = True
+    fixed_length_mm: float | None = None
+    pilot_depth_mm: float | None = None
 
 
 def _joints(p: DesignParameters) -> list[Joint]:
@@ -948,6 +951,32 @@ def _joints(p: DesignParameters) -> list[Joint]:
             "bottom",
             "nylon washer",
         ),
+        Joint(
+            "F10",
+            "official HAT and PCB spacer to official top plate",
+            4,
+            4.0,
+            "socket cap",
+            "top, before the lock ring closes",
+            "none",
+            "Official Batch 1 assembly screw; tighten only until the board stack is seated.",
+            False,
+            8.0,
+            5.285,
+        ),
+        Joint(
+            "F11",
+            "official mid-plate to official threaded plate",
+            4,
+            1.0,
+            "socket cap",
+            "bottom of the upper stack before fitting it to the Ultra divider",
+            "none",
+            "Align the four official nubs and rear I/O before starting these screws.",
+            False,
+            8.0,
+            8.995,
+        ),
     ]
 
 
@@ -960,12 +989,13 @@ def fastener_report(parameters: DesignParameters) -> dict[str, Any]:
     schedule: list[dict[str, Any]] = []
     for joint in _joints(p):
         target = joint.clamped_stack_mm + p.insert_depth * 0.85
-        length = min(
+        length = joint.fixed_length_mm or min(
             (value for value in STANDARD_M3_LENGTHS if value >= joint.clamped_stack_mm + 3.5),
             key=lambda value: abs(value - target),
         )
         engagement = length - joint.clamped_stack_mm
-        bottoms = engagement > p.insert_bore_depth
+        bore_depth = joint.pilot_depth_mm or p.insert_bore_depth
+        bottoms = engagement > bore_depth
         status = "PASS" if engagement >= 3.0 and not bottoms else "FAIL"
         schedule.append(
             {
@@ -982,26 +1012,33 @@ def fastener_report(parameters: DesignParameters) -> dict[str, Any]:
                 "insert": (
                     f"M3 heat-set, Ø{p.insert_outer_diameter:.1f} x {p.insert_depth:.1f} mm "
                     f"into a Ø{p.insert_bore_diameter:.1f} x {p.insert_bore_depth:.1f} mm bore"
+                    if joint.uses_heat_set_insert
+                    else "none; unmodified official printed pilot"
                 ),
                 "boss_outer_diameter_mm": p.boss_outer_diameter,
                 "clamped_stack_mm": joint.clamped_stack_mm,
                 "engagement_mm": engagement,
-                "bore_depth_mm": p.insert_bore_depth,
-                "bottoming_margin_mm": p.insert_bore_depth - engagement,
+                "bore_depth_mm": bore_depth,
+                "bottoming_margin_mm": bore_depth - engagement,
                 "access_direction": joint.access,
                 "torque_guidance_nm": "0.35 target; 0.45 maximum",
                 "note": joint.note,
                 "status": status,
-                "evidence": EVIDENCE_DIGITAL,
+                "evidence": (EVIDENCE_DIGITAL if joint.uses_heat_set_insert else EVIDENCE_OFFICIAL),
             }
         )
     total = sum(row["quantity"] * (2 if "each" in row["joint"] else 1) for row in schedule)
+    total_inserts = sum(
+        row["quantity"] * (2 if "each" in row["joint"] else 1)
+        for row in schedule
+        if str(row["insert"]).startswith("M3 heat-set")
+    )
     return {
         "status": "PASS" if all(row["status"] == "PASS" for row in schedule) else "FAIL",
         "evidence": EVIDENCE_DIGITAL,
         "method": "computed stack, engagement and bottoming margin per joint",
         "total_fasteners": total,
-        "total_inserts": total,
+        "total_inserts": total_inserts,
         "schedule": schedule,
         "installation_note": (
             "Install inserts with a temperature-controlled M3 insert tip; do not "

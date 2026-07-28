@@ -227,7 +227,9 @@ def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[d
     plate_w, plate_d, plate_t = ballast_plate_extent(parameters)
     added_mass = _acoustics(root).get("added_pr_mass_each_g", 0.0)
     total_inserts = sum(
-        int(row["quantity"]) * (2 if "(each)" in str(row["joint"]) else 1) for row in fasteners
+        int(row["quantity"]) * (2 if "(each)" in str(row["joint"]) else 1)
+        for row in fasteners
+        if str(row["insert"]).startswith("M3 heat-set")
     )
     rows: list[dict[str, str]] = []
     for index, (name, definition) in enumerate(PARTS.items(), start=1):
@@ -483,7 +485,7 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
         "number": "8",
         "title": "Install the shroud and official Batch 1 upper stack",
         "parts": "electronics_shroud; O01-O06 official prints; Batch 1 HAT/Core",
-        "fasteners": "F01 and F02",
+        "fasteners": "F01, F02, F10, and F11; 4 of each",
         "tools": "2.0 mm hex; ESD-safe bench",
         "gasket": "none; electronics bay is outside the acoustic chamber",
         "action": "Bolt the shroud to its four outboard bosses with F02. Seat O01 on the four measured divider bosses and install F01. Snap O06 into O05 (or use both O07/O08 during a multi-material O05 print; never install O06 and O08 together). Align O03's taller standoffs with the I/O side and locate the HAT. Install the Core/HAT using the official Batch 1 sequence. Align the logos and I/O on O04/O05, engage the snaps, and rotate the lock ring. Align O02's four nubs with O01 and keep I/O toward rear/+Y. Connect the keyed JST-XH speaker plug before closure.",
@@ -674,7 +676,21 @@ Do not begin assembly with a missing part.
 ## Step 6 — Assemble in this order
 
 Keep `ASSEMBLY_GUIDE.pdf` open for the picture that goes with each numbered
-step. The short version is:
+step. Use this screw-and-seal checklist so nothing is assumed:
+
+| Step | What you install | Screws | Seal |
+|---|---|---|---|
+| 1 | Check all parts | none | none |
+| 2 | Brass inserts | H01; keep four spares | none |
+| 3 | Main speaker and clamp ring | four F04 | G02 |
+| 4 | Two side radiators and two clamp rings | eight F05 total | one G03 per side |
+| 5 | Electronics divider | eight F03 | G01, then flexible wire seal G04 |
+| 6 | Bottom base, weight-tray lid, access panel | four F07, four F06, four F08 | none |
+| 7 | Outer shell | four F09 with nylon washers | none |
+| 8 | Electronics cover and Satellite top | four each of F02, F01, F10, and F11 | none |
+| 9 | Flexible bottom grip | none | none |
+
+Then follow these actions:
 
 1. Check the electronics label and every print.
 2. Install the brass inserts. Let them cool before using a screw.

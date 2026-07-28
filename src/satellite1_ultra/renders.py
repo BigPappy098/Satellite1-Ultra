@@ -561,11 +561,16 @@ def render_fastener_identification(output: Path) -> Path:
     axis.axis("off")
     screw_specs = (
         ("F01", 6.0, "M3 × 6 ISO 4762 socket cap"),
-        ("F02 / F06 / F08 / F09", 8.0, "M3 × 8 ISO 7380-1 button head; F09 adds washer"),
+        (
+            "F02 / F06 / F08 / F09",
+            8.0,
+            "M3 × 8 ISO 7380-1 button head; F09 adds washer",
+        ),
+        ("F10 / F11", 8.0, "M3 × 8 ISO 4762 socket cap; official upper stack"),
         ("F03 / F04 / F05 / F07", 10.0, "M3 × 10 ISO 4762 socket cap"),
     )
     for index, (identifier, length, label) in enumerate(screw_specs):
-        y = 29.0 - index * 10.0
+        y = 32.0 - index * 8.5
         axis.add_patch(
             Rectangle((8.0, y - 1.5), length, 3.0, facecolor="#617b96", edgecolor="#24313d")
         )

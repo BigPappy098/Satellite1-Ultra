@@ -44,6 +44,12 @@ package now adds:
 Technical reports and exchange files remain available but are explicitly
 outside the normal first-time-builder path.
 
+The beginner-path review also found that the eight official upper-stack
+M3 x 8 screws were assumed rather than listed. F10 and F11 now cover those two
+four-screw joints in `FASTENERS.csv`, the BOM, the fastener picture, and the
+beginner assembly checklist. They use the measured official printed pilots and
+do not increase the heat-set-insert quantity.
+
 ## Previous completed milestone
 
 The final engineering audit, corrective CAD pass, release regeneration,
