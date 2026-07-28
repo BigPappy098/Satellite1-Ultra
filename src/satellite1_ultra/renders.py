@@ -35,6 +35,10 @@ TESSELLATION_TOLERANCE = 0.35
 ANGULAR_TOLERANCE = 0.35
 LIGHT = np.array([-0.45, -0.75, 0.49])
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
+_TESSELLATION_CACHE: dict[
+    tuple[int, float, float, float, float],
+    tuple[NDArray[np.float64], NDArray[np.int64]],
+] = {}
 
 
 @dataclass(frozen=True)
@@ -56,9 +60,21 @@ VIEWS = (
 
 def triangles(shape: cq.Shape) -> tuple[NDArray[np.float64], NDArray[np.int64]]:
     """Tessellate a B-rep solid into vertices and triangle indices."""
+    center = shape.Center()
+    key = (
+        id(shape.wrapped),
+        round(shape.Volume(), 5),
+        round(center.x, 5),
+        round(center.y, 5),
+        round(center.z, 5),
+    )
+    cached = _TESSELLATION_CACHE.get(key)
+    if cached is not None:
+        return cached
     vertices, faces = shape.tessellate(TESSELLATION_TOLERANCE, ANGULAR_TOLERANCE)
     points = np.array([[v.x, v.y, v.z] for v in vertices], dtype=np.float64)
     indices = np.array(faces, dtype=np.int64)
+    _TESSELLATION_CACHE[key] = (points, indices)
     return points, indices
 
 
@@ -515,6 +531,55 @@ def render_assembly_stages(
     return written
 
 
+def render_fastener_identification(output: Path) -> Path:
+    """Render the authoritative visual fastener schedule without loading CAD."""
+    output.mkdir(parents=True, exist_ok=True)
+    figure, axis = plt.subplots(figsize=(11.0, 5.5), dpi=180)
+    axis.set_aspect("equal")
+    axis.set_xlim(0, 78)
+    axis.set_ylim(0, 38)
+    axis.axis("off")
+    screw_specs = (
+        ("F01", 6.0, "M3 × 6 ISO 4762 socket cap"),
+        ("F02 / F06 / F08 / F09", 8.0, "M3 × 8 ISO 7380-1 button head; F09 adds washer"),
+        ("F03 / F04 / F05 / F07", 10.0, "M3 × 10 ISO 4762 socket cap"),
+    )
+    for index, (identifier, length, label) in enumerate(screw_specs):
+        y = 29.0 - index * 10.0
+        axis.add_patch(
+            Rectangle((8.0, y - 1.5), length, 3.0, facecolor="#617b96", edgecolor="#24313d")
+        )
+        axis.add_patch(Circle((8.0, y), 2.75, facecolor="#617b96", edgecolor="#24313d"))
+        axis.annotate(
+            "",
+            xy=(8.0, y - 4.0),
+            xytext=(8.0 + length, y - 4.0),
+            arrowprops={"arrowstyle": "<->", "color": "#bd3b32", "linewidth": 1.5},
+        )
+        axis.text(8.0 + length / 2.0, y - 5.8, f"{length:.0f} mm", ha="center", fontsize=9)
+        axis.text(30.0, y + 0.8, identifier, fontsize=10, weight="bold")
+        axis.text(30.0, y - 2.0, label, fontsize=9)
+    axis.text(
+        4.0,
+        36.0,
+        "Fastener identification - proportional dimensions",
+        fontsize=15,
+        weight="bold",
+    )
+    axis.text(
+        4.0,
+        0.5,
+        "All screws: M3 × 0.5, A2-70 stainless. Use a 2.0 mm hex tool. "
+        "Torque 0.35 N m target; never exceed 0.45 N m. Use stated dimensions, "
+        "not printed-page scale.",
+        fontsize=9,
+    )
+    fastener_path = output / "fastener_identification.png"
+    figure.savefig(fastener_path, bbox_inches="tight", facecolor="#f4f4f5")
+    plt.close(figure)
+    return fastener_path
+
+
 def render_special_views(output: Path, parameters: DesignParameters) -> list[Path]:
     """Render identification, service, gasket, and wall-thickness views."""
     parts = {
@@ -549,7 +614,7 @@ def render_special_views(output: Path, parameters: DesignParameters) -> list[Pat
             "main_cabinet",
         }
     }
-    written = [
+    return [
         _scene(
             output / "exploded_parts_identification.png",
             exploded,
@@ -575,52 +640,8 @@ def render_special_views(output: Path, parameters: DesignParameters) -> list[Pat
             f"Nominal shell wall {parameters.wall_thickness:.2f} mm; gasket lands and bosses "
             "are checked by solid-fraction and local-wall validation gates.",
         ),
+        render_fastener_identification(output),
     ]
-    figure, axis = plt.subplots(figsize=(11.0, 5.5), dpi=180)
-    axis.set_aspect("equal")
-    axis.set_xlim(0, 78)
-    axis.set_ylim(0, 36)
-    axis.axis("off")
-    screw_specs = (
-        ("F01", 6.0, "M3 × 6 ISO 4762 socket cap"),
-        ("F02 / F06 / F08 / F09", 8.0, "M3 × 8 ISO 7380-1 button head; F09 adds washer"),
-        ("F03 / F04 / F05 / F07", 10.0, "M3 × 10 ISO 4762 socket cap"),
-    )
-    for index, (identifier, length, label) in enumerate(screw_specs):
-        y = 28.0 - index * 11.0
-        axis.add_patch(
-            Rectangle((8.0, y - 1.5), length, 3.0, facecolor="#617b96", edgecolor="#24313d")
-        )
-        axis.add_patch(Circle((8.0, y), 2.75, facecolor="#617b96", edgecolor="#24313d"))
-        axis.annotate(
-            "",
-            xy=(8.0, y - 4.0),
-            xytext=(8.0 + length, y - 4.0),
-            arrowprops={"arrowstyle": "<->", "color": "#bd3b32", "linewidth": 1.5},
-        )
-        axis.text(8.0 + length / 2.0, y - 5.8, f"{length:.0f} mm", ha="center", fontsize=9)
-        axis.text(30.0, y + 0.8, identifier, fontsize=10, weight="bold")
-        axis.text(30.0, y - 2.0, label, fontsize=9)
-    axis.text(
-        4.0,
-        34.0,
-        "Fastener identification - proportional dimensions",
-        fontsize=15,
-        weight="bold",
-    )
-    axis.text(
-        4.0,
-        1.0,
-        "All screws: M3 × 0.5, A2-70 stainless. Use a 2.0 mm hex tool. "
-        "Torque 0.35 N m target; never exceed 0.45 N m. Use stated dimensions, "
-        "not printed-page scale.",
-        fontsize=9,
-    )
-    fastener_path = output / "fastener_identification.png"
-    figure.savefig(fastener_path, bbox_inches="tight", facecolor="#f4f4f5")
-    plt.close(figure)
-    written.append(fastener_path)
-    return written
 
 
 def generate_renders(
