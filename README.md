@@ -4,7 +4,7 @@
 
 The authoritative manufactured geometry is compiled from parametric Python/CadQuery B-rep source, with exact volumetric control, airtight pressure boundaries, and an integrated industrial design shell.
 
-![Satellite1 Ultra](reports/renders/assembly_iso.png)
+![Satellite1-Ultra Exploded Isometric Assembly](reports/renders/assembly_iso_exploded.png)
 
 ---
 
@@ -20,28 +20,36 @@ The authoritative manufactured geometry is compiled from parametric Python/CadQu
 
 ## 🎯 Printing & Assembly Gateway
 
-To make your physical build as straightforward and successful as possible, follow our dedicated, step-by-step documentation pipeline:
+To make your physical build as straightforward, fail-safe, and successful as possible, follow our dedicated, step-by-step calibration and assembly pathway:
 
 ```
-[ STEP 1: Calibrate ] ➔ [ STEP 2: Compile CAD ] ➔ [ STEP 3: 3D Print ] ➔ [ STEP 4: Assemble ]
-  - docs/print-guide.md     - config/physical_compensation.yaml   - docs/print-guide.md     - docs/assembly-guide.md
-  - docs/fit-coupons.md     - run `make release`                  - exports/3mf             - docs/disassembly-guide.md
+[ STEP 1: Calibrate ] ➔ [ STEP 2: Run Wizard ] ➔ [ STEP 3: 3D Print ] ➔ [ STEP 4: Assemble ]
+  - docs/print-guide.md     - python scripts/calibrate.py         - docs/print-guide.md     - docs/assembly-guide.md
+  - docs/fit-coupons.md     - (Automatic generation!)             - exports/3mf             - docs/disassembly-guide.md
 ```
 
-1.  **🚀 Step 1: Calibrate Print Tolerances First**
-    *   Do **not** print the main cabinet first. Print the 8 fit coupons first to check your printer’s shrinkage with ASA or PETG.
-    *   Read the **[3D Printing Guide & Calibration Gateway](docs/print-guide.md)** for orientation and parameter profiles.
-    *   Follow the **[Fit-Coupon Inspection & Calibration Manual](docs/fit-coupons.md)** to measure print deviations using calipers.
-2.  **⚙️ Step 2: Compile Your Custom CAD Models**
-    *   Input your caliper-measured deviations directly into `config/physical_compensation.yaml`.
-    *   Run `make release` in your terminal to automatically regenerate and re-verify all part geometries (and exports) compensated exactly for your printer!
-3.  **🖨️ Step 3: Print the Full Part Set**
-    *   Retrieve your custom-compensated `.3mf` or `.stl` files from `exports/3mf/` and `exports/stl/`.
-    *   Follow the **[3D Printing Guide](docs/print-guide.md)** to print the cabinet, outer shell, clamps, shroud, and TPU base.
-4.  **🔧 Step 4: Assemble & Wire the Speaker**
-    *   Follow the **[Assembly Guide](docs/assembly-guide.md)** for detailed phase-by-step instructions, complete with beautiful exploded assembly renders, wiring guides, and torque specifications.
-    *   Refer to the **[Disassembly Guide](docs/disassembly-guide.md)** if you ever need to service or inspect internal parts.
-    *   Refer to the **[Maintenance Guide](docs/maintenance-guide.md)** for routine care, cleaning, and performance checkups.
+### 🚀 Step 1: Calibrate Print Tolerances First
+*   Do **not** print the main cabinet first. Print the 8 fit coupons first to check your printer’s shrinkage and tolerances with ASA or PETG.
+*   Read the **[3D Printing Guide & Calibration Gateway](docs/print-guide.md)** for orientation and parameter profiles.
+*   Follow the **[Fit-Coupon Inspection & Calibration Manual](docs/fit-coupons.md)** to inspect and test your printouts.
+
+### ⚙️ Step 2: Run the Calibration Wizard (Automatic CAD Generation)
+Instead of performing manual math or manually editing configuration files, we have provided an interactive, stupid-simple terminal wizard to automatically adapt the CAD models to your printer:
+1.  Grab your digital calipers.
+2.  In your terminal, execute the wizard:
+    ```bash
+    python scripts/calibrate.py
+    ```
+3.  The wizard will walk you through measuring your printed coupons, automatically calculate shrinkage factors and hole adjustments, save your configurations, and **compile customized print-ready CAD files configured exactly for your printer!**
+
+### 🖨️ Step 3: Print the Full Part Set
+*   Retrieve your customized, print-ready `.3mf` or `.stl` files from `exports/3mf/` and `exports/stl/`.
+*   Follow the **[3D Printing Guide](docs/print-guide.md)** to print the cabinet, outer shell, clamps, shroud, and TPU base.
+
+### 🔧 Step 4: Assemble & Wire the Speaker
+*   Follow the **[Assembly Guide](docs/assembly-guide.md)** for detailed phase-by-step instructions, complete with beautiful exploded assembly renders, wiring guides, and torque specifications.
+*   Refer to the **[Disassembly Guide](docs/disassembly-guide.md)** if you ever need to service or inspect internal parts.
+*   Refer to the **[Maintenance Guide](docs/maintenance-guide.md)** for routine care, cleaning, and performance checkups.
 
 ---
 
