@@ -1,51 +1,66 @@
-# Fit-coupon inspection sheet
+# Fit-Coupon Inspection & Calibration Manual
 
-All expected dimensions are `DERIVED_FROM_OFFICIAL_CAD` or
-`DERIVED_FROM_MANUFACTURER_DRAWING`. Pass/fail limits are
-`ENGINEERING_ESTIMATE`. Results are `REQUIRES_PHYSICAL_VALIDATION` until a
-coupon is printed and measured.
+This guide outlines how to measure your test coupons and apply physical compensations. This process adapts the CAD model to your specific 3D printer's shrinkage and extrusion profile, achieving an airtight, zero-force drop-fit before printing the final parts.
 
-## Common print setup
+All expected dimensions are `DERIVED_FROM_OFFICIAL_CAD` or `DERIVED_FROM_MANUFACTURER_DRAWING`. Pass/fail limits are `ENGINEERING_ESTIMATE`.
 
-- Material: same ASA brand/color/dry condition intended for the cabinet
-- Nozzle: 0.4 mm
-- Layer height: 0.20 mm
-- Line width: 0.45 mm
-- Walls: 5
-- Top/bottom layers: 6
-- Infill: 35% gyroid
-- Scale: 100%; do not tune slicer XY compensation between coupons
-- Orientation: exported 3MF orientation, largest flat face on the bed
-- Conditioning: cool to room temperature for at least two hours before
-  measurement
-- Measurement tool: calibrated 0.01 mm digital caliper; use pin gauges for
-  insert bores where available
+---
 
-## Inspection
+## 🔧 Inspection Preparation
 
-| Coupon | Critical checks | Expected | Pass criteria | Compensation input |
-|---|---|---:|---:|---|
-| Official interface | Four hole centers; 110.6 mm recess; official mid-plate drop fit | X ±45.0534, Y ±31.5467 mm; 110.6 mm | Hole-center error ≤0.20 mm; mid-plate seats without force and radial shake ≤0.40 mm | `xy_scale_correction_fraction`, `hole_diameter_offset` |
-| Active driver | Seat Ø, bore Ø, seat depth, clamp bolt circle, insert bores | seat Ø103.8; bore Ø88.7; seat depth 5.50; BCD 112.0 | Driver flange drops into the seat without force; the clamp ring bottoms on the coupon face while loading the flange; all four M3 screws enter freely | `hole_diameter_offset`, `xy_scale_correction_fraction`, `insert_hole_diameter_offset` |
-| Active-driver flange thickness | Measure the driver's actual flange thickness | 3.00 mm assumed | Enter the measured value in `config/components.yaml`; it sets the seat depth | `components.yaml: flange_thickness_mm` |
-| Passive radiator | Ledge Ø, seat Ø, bore Ø, seat depth, clamp bolt circle | ledge Ø140.6 x 5.00; seat Ø122.6; bore Ø102.2; seat depth 11.50; BCD 130.0 | Radiator flange drops into the seat without force; the clamp ring bottoms on the ledge while loading the flange | `hole_diameter_offset`, `xy_scale_correction_fraction` |
-| Radiator flange thickness | Measure the radiator's actual flange thickness | 4.00 mm assumed | Enter the measured value in `config/components.yaml` | `components.yaml: flange_thickness_mm` |
-| Heat-set insert | Four blind bores | Ø4.0/4.1/4.2/4.3 x 7.2 mm for a Ø4.6 M3 insert | Select the smallest bore that accepts the insert flush without cracking, then pull-test to 250 N | `insert_hole_diameter_offset` |
-| Gasket compression | 2.0 mm EPDM sample between stops | 1.50 mm assembled | 1.45–1.55 mm immediately; ≥1.40 mm after 24 h; no extrusion into opening | `gasket_groove_depth_offset` |
-| Cable passage | TPU gland in divider-thickness plate | Ø8.0 hole; Ø8.3 gland body | Gland installs without tearing; wires resist 20 N pull; leak test passes | `cable_passage_offset` |
+Before measuring:
+1.  **Cooling Time:** Let your coupons cool to room temperature for at least **2 hours** on a flat surface. Measuring warm plastic will result in incorrect shrinkage values.
+2.  **Calibrate Calipers:** Zero your digital calipers before every measurement.
+3.  **No Post-Processing:** Do not sand or scrape any coupon surfaces before inspecting them (except for installing the heat-set inserts as part of the insert test).
 
-The official threaded mid-plate and lock ring are **not** coupon-tested here.
-This design does not reproduce that interface: those parts are printed from
-the unmodified official files, so their thread fit belongs to the official
-geometry. The interface this project derives is the official four-point mount,
-which the official-interface coupon covers.
+---
 
-## Feedback procedure
+## 📐 Coupon Inspection Schedule
 
-Enter measured corrections only in `config/physical_compensation.yaml`. Positive
-hole compensation enlarges holes; positive external compensation enlarges
-outside dimensions. Regenerate all CAD and rerun geometry/export validation
-after any change. Do not compensate the official reference files themselves.
+| Coupon File | Feature to Measure | Expected Value | Acceptable Tolerances | Action / Compensation Parameter |
+|---|---|---|---|---|
+| **coupon_official_interface.3mf** | • Four mounting hole centers<br>• Recess boundary<br>• Official mid-plate drop-fit | • X: ±45.0534 mm<br>• Y: ±31.5467 mm<br>• Recess: 110.60 mm | • Center error ≤ 0.15 mm<br>• Drop fit: slide in smoothly with zero force and radial shake ≤ 0.30 mm | If tight/loose, adjust `xy_scale_correction_fraction` and `hole_diameter_offset` in `config/physical_compensation.yaml`. |
+| **coupon_active_driver.3mf** | • Speaker seat Ø<br>• Internal bore Ø<br>• Seat depth<br>• Bolt circle diameter (BCD) | • Seat Ø: 103.80 mm<br>• Bore Ø: 88.70 mm<br>• Seat depth: 5.50 mm<br>• BCD: 112.00 mm | • Seat Ø: +0.20 / -0.00 mm<br>• Depth: ±0.10 mm<br>• Flange sits perfectly flat;<br>• M3 bolts align with clamp ring | Measure your Dayton ND91-4 speaker flange thickness. If it deviates from 3.00 mm, update `flange_thickness_mm` in `config/components.yaml` to adjust the pocket depth. |
+| **coupon_passive_radiator.3mf** | • Radiator ledge Ø<br>• Seating surface Ø<br>• Internal bore Ø<br>• Seat depth | • Ledge Ø: 140.60 mm<br>• Seat Ø: 122.60 mm<br>• Bore Ø: 102.20 mm<br>• Seat depth: 11.50 mm | • Seat Ø: +0.20 / -0.00 mm<br>• Depth: ±0.10 mm<br>• Radiator sits flat;<br>• Clamp ring compresses fully | Measure your SB Acoustics SB12PACR-00 flange thickness. If it deviates from 4.00 mm, update `flange_thickness_mm` in `config/components.yaml`. |
+| **coupon_heat_set_insert.3mf** | • Smallest insert bore accepting insert smoothly | • Bores range from Ø4.0 to Ø4.3 mm | • Insert installs perfectly flush, sits square, and survives a 250 N pull test | Adjust `insert_hole_diameter_offset` to match the best-performing diameter hole. |
+| **coupon_gasket_base.3mf** & **coupon_gasket_cap.3mf** | • Assembled EPDM thickness under hard stop | • Target gasket compression height: 1.50 mm | • 1.45 to 1.55 mm height immediately after compression; no visible extrusion | Adjust `gasket_groove_depth_offset` if EPDM thickness is not tightly controlled. |
+| **coupon_cable_passage.3mf** | • TPU gland insertion and wire fit | • Gland: Ø8.3 mm<br>• Passage: Ø8.0 mm | • Gland seats without tearing;<br>• Wires resist 20 N pull;<br>• Acoustic seal is airtight | Adjust `cable_passage_offset` if gland fits loosely or is impossible to press in. |
 
-The full enclosure should not be printed until all coupons pass. A digital pass
-does not replace this gate.
+---
+
+## 🔄 Calibration & Feedback Loop
+
+Follow these steps to feed your physical measurements back into the CAD files:
+
+```
+[ Print Coupon ] ➔ [ Measure Deviation ] ➔ [ Edit config/*.yaml ] ➔ [ run `make release` ] ➔ [ Verify & Export ]
+```
+
+### 1. Identify the Deviations
+Measure the printed coupon features. For example:
+*   If the **active speaker seat Ø** is measured as `103.45 mm` instead of the expected `103.80 mm`, your printer is undersizing circles by **0.35 mm** due to material shrinkage or over-extrusion.
+
+### 2. Update Configuration Files
+Open `/config/physical_compensation.yaml` and modify the parameters.
+
+*   `xy_scale_correction_fraction`: Adjust this parameter to scale the X and Y axes globally to account for plastic shrinkage (e.g., change `1.0` to `1.0035` if your parts shrink by 0.35%).
+*   `hole_diameter_offset`: Positive values will enlarge circular cutouts. If holes are too small by `0.15 mm`, set this to `0.15`.
+*   `insert_hole_diameter_offset`: Sets the specific target diameter for heat-set brass inserts.
+*   `gasket_groove_depth_offset`: Sets the height offset for compression stop control.
+
+### 3. Regenerate the Models
+In your terminal, run:
+```bash
+make release
+```
+This triggers the full automated pipeline:
+*   Imports your modified YAML configurations.
+*   Regenerates all part designs (cabinet, clamp rings, coupons, etc.) with custom offsets.
+*   Re-runs the mechanical validation tests to ensure no collisions were introduced.
+*   Re-exports fresh STEP, STL, and 3MF files with your unique printer compensation!
+
+---
+
+## ⚠️ Important Calibration Rules
+*   **Do Not scale files in your slicer.** Slicer scaling scales the entire object uniformly, which ruins critical localized tolerances (like the wall thickness of the speaker bosses or the exact M3 screw hole clearance). Let the CAD model handle scaling and hole offsets.
+*   **Keep your filament dry.** Humid filament prints larger, rougher walls, and degrades circular tolerances. Perform all coupon tests using the exact spool of dry filament you will use for the final speaker cabinet.
