@@ -14,8 +14,10 @@ buttons, LEDs, and wake-word behavior are `REQUIRES_PHYSICAL_VALIDATION`.
 ## Builder entry point
 
 Download the generated `release/Satellite1-Ultra-RC1.zip`, open
-`START_HERE.pdf`, and complete `START_HERE_CALIBRATION_GUIDE.pdf` before any
-full-size print. The release package contains:
+`00_READ_ME_FIRST.txt`, then follow
+`BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf` from top to bottom. Print only from
+the three numbered folders under `PRINT_THESE_FILES/`. The release package
+also contains:
 
 - six task-oriented PDF guides;
 - one calibration input template and eight calibration 3MF files;

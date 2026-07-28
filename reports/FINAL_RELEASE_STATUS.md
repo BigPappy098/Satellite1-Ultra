@@ -60,6 +60,9 @@ non-geometric container metadata, so their byte hashes vary between builds.
 
 The corrected user-facing package includes the complete printable product:
 
+- `00_READ_ME_FIRST.txt` and a single plain-language beginner build guide;
+- numbered `PRINT_THESE_FILES` folders that cover calibration, the complete
+  Ultra enclosure, and all six mandatory Squircle top prints;
 - six illustrated PDF guides led by `START_HERE.pdf`;
 - `BOM.csv`, `FASTENERS.csv`, `GASKETS.csv`, and the calibration YAML template;
 - 23 authoritative STEP part files and three assembly STEP files;

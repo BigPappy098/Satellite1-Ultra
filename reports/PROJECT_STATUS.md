@@ -30,6 +30,20 @@ was a release-blocking documentation/package defect. The correction now:
 
 Regeneration and final validation are in progress on the topic branch.
 
+Builder usability was then treated as a second release blocker. The corrected
+package now adds:
+
+- `00_READ_ME_FIRST.txt`;
+- one plain-language `BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf`;
+- three numbered `PRINT_THESE_FILES` folders for calibration, Ultra enclosure,
+  and mandatory Squircle top parts;
+- friendly ordered filenames with quantities stated in the guide; and
+- an automated coverage test proving the beginner folders contain every
+  required printed part and match the validated source files byte-for-byte.
+
+Technical reports and exchange files remain available but are explicitly
+outside the normal first-time-builder path.
+
 ## Previous completed milestone
 
 The final engineering audit, corrective CAD pass, release regeneration,
