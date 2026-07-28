@@ -31,6 +31,7 @@
       "measured_solid_fraction": 1.0,
       "minimum_solid_fraction": 0.999999,
       "backing_mm": 3.0,
+      "probe_depth_mm": 2.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -54,6 +55,7 @@
       "measured_solid_fraction": 1.0,
       "minimum_solid_fraction": 0.999999,
       "backing_mm": 3.0,
+      "probe_depth_mm": 2.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
@@ -77,6 +79,7 @@
       "measured_solid_fraction": 1.0,
       "minimum_solid_fraction": 0.999999,
       "backing_mm": 3.0,
+      "probe_depth_mm": 2.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },

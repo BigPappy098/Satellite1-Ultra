@@ -1,5 +1,3 @@
 # Next Action
 
-- Regenerate the full artifact set against the final source commit (`make release`).
-- Confirm every `source_commit` field matches.
-- Evaluate the `DIGITAL_PROTOTYPE_READY` gate.
+- Await physical validation from the user. All digital gates have passed, and the project is `DIGITAL_PROTOTYPE_READY`.

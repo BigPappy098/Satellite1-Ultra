@@ -4,6 +4,10 @@ Generated from the Git history of this repository. The Codex history is preserve
 
 | Commit | Date | Change |
 |---|---|---|
+| `e3840a5` | 2026-07-27 | docs: create gemini takeover audit and status logs |
+| `ed5fffe` | 2026-07-27 | chore: preserve downloaded reference assets |
+| `b4d6798` | 2026-07-27 | purge stale exports and validate them with a second reader |
+| `56c72c2` | 2026-07-27 | complete the manufacturing package, industrial design and mutation suite |
 | `8bfb0f2` | 2026-07-27 | correct the passive-radiator alignment and derive it from the model |
 | `786de62` | 2026-07-27 | repair acoustic component mounting, sealing and official interface |
 | `1eb7f2c` | 2026-07-27 | preserve Codex Phase-5 work in progress verbatim |

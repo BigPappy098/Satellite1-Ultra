@@ -101,6 +101,34 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
+      "feature": "active-driver gasket land radial width",
+      "nominal_mm": 6.049999999999997,
+      "minimum_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "radiator gasket land radial width",
+      "nominal_mm": 8.699999999999996,
+      "minimum_mm": 3.0,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "active-driver mounting pad covers its seat",
+      "nominal_mm": 11.100000000000001,
+      "minimum_mm": 2.4,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "radiator mounting pad covers its ledge",
+      "nominal_mm": 1.7000000000000028,
+      "minimum_mm": 1.5,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
       "feature": "print radial assembly allowance",
       "nominal_mm": 0.3,
       "minimum_mm": 0.2,
