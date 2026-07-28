@@ -3,7 +3,7 @@
 ## Status
 
 - Project: Satellite1 Ultra
-- Branch: `claude/codex-takeover`
+- Branch: `gemini/takeover`
 - Release state: `IN_DEVELOPMENT`
 - Physical validation state: `NOT_PERFORMED`
 - Last updated: 2026-07-27
