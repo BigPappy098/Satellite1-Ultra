@@ -4,14 +4,14 @@
   "clearances": [
     {
       "feature": "passive-radiator outward excursion to grille guard",
-      "nominal_mm": 6.0,
+      "nominal_mm": 8.0,
       "minimum_mm": 2.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "active-driver clamp ring to grille guard",
-      "nominal_mm": 4.0,
+      "nominal_mm": 6.0,
       "minimum_mm": 2.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -32,49 +32,49 @@
     },
     {
       "feature": "driver envelope to acoustic floor",
-      "nominal_mm": 48.900000000000006,
+      "nominal_mm": 54.70000000000002,
       "minimum_mm": 8.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "radiator bore to acoustic floor",
-      "nominal_mm": 49.400000000000006,
+      "nominal_mm": 19.200000000000017,
       "minimum_mm": 4.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "radiator clamp-ring seating land inside the cabinet height (lower)",
-      "nominal_mm": 38.19999999999999,
+      "nominal_mm": 8.0,
       "minimum_mm": 3.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "radiator clamp-ring seating land inside the cabinet height (upper)",
-      "nominal_mm": 13.700000000000003,
+      "nominal_mm": 32.7,
       "minimum_mm": 3.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "driver clamp-ring seating land inside the cabinet height (lower)",
-      "nominal_mm": 49.19999999999999,
+      "nominal_mm": 55.0,
       "minimum_mm": 3.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "driver clamp-ring seating land inside the cabinet height (upper)",
-      "nominal_mm": 24.700000000000003,
+      "nominal_mm": 7.700000000000003,
       "minimum_mm": 3.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "driver clamp ring inside the cabinet face width",
-      "nominal_mm": 73.77482270814329,
+      "feature": "driver clamp ring within the flat cabinet face",
+      "nominal_mm": 1.0,
       "minimum_mm": 0.5,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -144,20 +144,26 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "official mid-plate seating plane to divider boss tops",
-      "nominal_mm": 2.000000000000001,
+      "feature": "official mid-plate seating plane to isolation bushing flange tops",
+      "nominal_mm": 8.881784197001252e-16,
       "minimum_mm": 0.0,
       "maximum_mm": 0.01,
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
-      "feature": "pressure_divider seats on official_mid_plate",
-      "nominal_mm": 0.0,
-      "minimum_mm": 0.0,
-      "maximum_mm": 0.01,
-      "note": "Face contact is the design intent for this interface.",
+      "feature": "divider boss tops standing clear below the official seating plane",
+      "nominal_mm": 2.000000000000001,
+      "minimum_mm": 1.5,
       "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pressure_divider to official_mid_plate",
+      "nominal_mm": 0.0,
+      "minimum_mm": 0.3,
+      "note": "exact OCCT minimum distance",
+      "status": "FAIL",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
@@ -218,7 +224,7 @@
     },
     {
       "feature": "shell_crown to official_mid_plate_threads",
-      "nominal_mm": 16.592527470935927,
+      "nominal_mm": 17.299999999999983,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -226,7 +232,7 @@
     },
     {
       "feature": "shell_crown to official_top_plate",
-      "nominal_mm": 12.00195586946334,
+      "nominal_mm": 14.000957123905668,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -234,7 +240,7 @@
     },
     {
       "feature": "shell_crown to official_pcb_spacer",
-      "nominal_mm": 24.695173816096016,
+      "nominal_mm": 26.598000248473,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -242,7 +248,7 @@
     },
     {
       "feature": "shell_crown to official_lock_ring",
-      "nominal_mm": 12.643236541672879,
+      "nominal_mm": 14.554428164568405,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -250,7 +256,7 @@
     },
     {
       "feature": "shell_crown to official_top_plate_snap_in_diffuser_ring",
-      "nominal_mm": 22.63686876917564,
+      "nominal_mm": 24.633775499695098,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -261,6 +267,234 @@
       "nominal_mm": 20.672197539875945,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_0 seats on official_mid_plate",
+      "nominal_mm": 0.0,
+      "minimum_mm": 0.0,
+      "maximum_mm": 0.01,
+      "note": "Face contact is the design intent for this interface.",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_0 to official_mid_plate_threads",
+      "nominal_mm": 6.5999998999999825,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_0 to official_top_plate",
+      "nominal_mm": 7.894999899999943,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_0 to official_pcb_spacer",
+      "nominal_mm": 10.8,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_0 to official_lock_ring",
+      "nominal_mm": 7.999999899999988,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_0 to official_top_plate_snap_in_diffuser_ring",
+      "nominal_mm": 18.894999999999936,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_0 to official_hat_batch1_rev4_1",
+      "nominal_mm": 10.150000095367432,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_1 seats on official_mid_plate",
+      "nominal_mm": 0.0,
+      "minimum_mm": 0.0,
+      "maximum_mm": 0.01,
+      "note": "Face contact is the design intent for this interface.",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_1 to official_mid_plate_threads",
+      "nominal_mm": 6.5999998999999825,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_1 to official_top_plate",
+      "nominal_mm": 7.894999899999943,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_1 to official_pcb_spacer",
+      "nominal_mm": 10.8,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_1 to official_lock_ring",
+      "nominal_mm": 7.999999899999988,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_1 to official_top_plate_snap_in_diffuser_ring",
+      "nominal_mm": 18.894999999999936,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_1 to official_hat_batch1_rev4_1",
+      "nominal_mm": 10.150000095367432,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_2 seats on official_mid_plate",
+      "nominal_mm": 0.0,
+      "minimum_mm": 0.0,
+      "maximum_mm": 0.01,
+      "note": "Face contact is the design intent for this interface.",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_2 to official_mid_plate_threads",
+      "nominal_mm": 6.5999998999999825,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_2 to official_top_plate",
+      "nominal_mm": 7.894999899999943,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_2 to official_pcb_spacer",
+      "nominal_mm": 10.8,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_2 to official_lock_ring",
+      "nominal_mm": 7.999999899999988,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_2 to official_top_plate_snap_in_diffuser_ring",
+      "nominal_mm": 18.894999999999936,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_2 to official_hat_batch1_rev4_1",
+      "nominal_mm": 10.150000095367432,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_3 seats on official_mid_plate",
+      "nominal_mm": 0.0,
+      "minimum_mm": 0.0,
+      "maximum_mm": 0.01,
+      "note": "Face contact is the design intent for this interface.",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_3 to official_mid_plate_threads",
+      "nominal_mm": 6.5999998999999825,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_3 to official_top_plate",
+      "nominal_mm": 7.894999899999943,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_3 to official_pcb_spacer",
+      "nominal_mm": 10.8,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_3 to official_lock_ring",
+      "nominal_mm": 7.999999899999988,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_3 to official_top_plate_snap_in_diffuser_ring",
+      "nominal_mm": 18.894999999999936,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "mic_isolation_bushing_3 to official_hat_batch1_rev4_1",
+      "nominal_mm": 10.150000095367432,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
       "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     }

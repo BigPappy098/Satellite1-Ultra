@@ -23,11 +23,11 @@
       "material": "TPU 95A",
       "print_orientation": "flat",
       "bounds_mm": [
-        180.0205269904489,
-        180.00403679908874,
+        184.02098314134776,
+        184.00412650129073,
         2.0000001999999997
       ],
-      "largest_dimension_mm": 180.0205269904489,
+      "largest_dimension_mm": 184.02098314134776,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -36,8 +36,8 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        39.979,
-        9.996,
+        35.979,
+        5.996,
         248.0
       ],
       "status": "PASS",
@@ -48,11 +48,11 @@
       "material": "ASA",
       "print_orientation": "inverted, cut face on the bed",
       "bounds_mm": [
-        184.0209831438376,
-        184.00412650129243,
-        79.40000020000026
+        188.0214393211054,
+        188.00421622375535,
+        49.200000199999934
       ],
-      "largest_dimension_mm": 184.0209831438376,
+      "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -61,9 +61,9 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        35.979,
-        5.996,
-        170.6
+        31.979,
+        1.996,
+        200.8
       ],
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -73,11 +73,11 @@
       "material": "ASA",
       "print_orientation": "upright, lower cut face on bed",
       "bounds_mm": [
-        184.02098314383733,
-        184.00412649973822,
-        146.0000001999998
+        188.0214393211054,
+        188.00421622375535,
+        182.00000019999996
       ],
-      "largest_dimension_mm": 184.02098314383733,
+      "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -86,9 +86,9 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        35.979,
-        5.996,
-        104.0
+        31.979,
+        1.996,
+        68.0
       ],
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -98,11 +98,11 @@
       "material": "ASA",
       "print_orientation": "upright, flat top uppermost",
       "bounds_mm": [
-        184.02098314383977,
-        184.00412650129675,
-        67.09000019999995
+        188.0214393211054,
+        188.00421622375535,
+        50.09000020000001
       ],
-      "largest_dimension_mm": 184.02098314383977,
+      "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -111,9 +111,9 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        35.979,
-        5.996,
-        182.91
+        31.979,
+        1.996,
+        199.91
       ],
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -123,11 +123,11 @@
       "material": "ASA",
       "print_orientation": "inverted, cut face on the bed",
       "bounds_mm": [
-        184.0209831438376,
-        184.00412650129243,
-        79.40000020000026
+        188.0214393211054,
+        188.00421622375535,
+        49.200000199999934
       ],
-      "largest_dimension_mm": 184.0209831438376,
+      "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -136,9 +136,9 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        35.979,
-        5.996,
-        170.6
+        31.979,
+        1.996,
+        200.8
       ],
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -148,11 +148,11 @@
       "material": "ASA",
       "print_orientation": "upright, lower cut face on bed",
       "bounds_mm": [
-        184.02098314383733,
-        184.00412649973822,
-        146.0000001999998
+        188.0214393211054,
+        188.00421622375535,
+        182.00000019999996
       ],
-      "largest_dimension_mm": 184.02098314383733,
+      "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -161,9 +161,9 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        35.979,
-        5.996,
-        104.0
+        31.979,
+        1.996,
+        68.0
       ],
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -173,11 +173,11 @@
       "material": "ASA",
       "print_orientation": "upright, flat top uppermost",
       "bounds_mm": [
-        184.02098314383977,
-        184.00412650129675,
-        67.09000019999995
+        188.0214393211054,
+        188.00421622375535,
+        50.09000020000001
       ],
-      "largest_dimension_mm": 184.02098314383977,
+      "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -186,9 +186,9 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        35.979,
-        5.996,
-        182.91
+        31.979,
+        1.996,
+        199.91
       ],
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -198,11 +198,11 @@
       "material": "ASA",
       "print_orientation": "upright, acoustic floor on bed",
       "bounds_mm": [
-        160.0182462437922,
-        160.00358830988688,
-        194.00000010000005
+        160.0000002,
+        160.0000002,
+        182.80000010000003
       ],
-      "largest_dimension_mm": 194.00000010000005,
+      "largest_dimension_mm": 182.80000010000003,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -211,9 +211,9 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        59.982,
-        29.996,
-        56.0
+        60.0,
+        30.0,
+        67.2
       ],
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -223,11 +223,11 @@
       "material": "ASA",
       "print_orientation": "flat, acoustic face on bed",
       "bounds_mm": [
-        160.01824623595462,
-        160.0035882880789,
-        22.700000100000008
+        160.0,
+        160.0,
+        22.700000000000003
       ],
-      "largest_dimension_mm": 160.01824623595462,
+      "largest_dimension_mm": 160.0,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -236,8 +236,8 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        59.982,
-        29.996,
+        60.0,
+        30.0,
         227.3
       ],
       "status": "PASS",
@@ -323,11 +323,11 @@
       "material": "2 mm closed-cell EPDM",
       "print_orientation": "flat",
       "bounds_mm": [
-        159.01813219822986,
-        159.00356586252838,
-        2.0000001999999997
+        159.0,
+        159.0,
+        2.0
       ],
-      "largest_dimension_mm": 159.01813219822986,
+      "largest_dimension_mm": 159.0,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -336,8 +336,8 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        60.982,
-        30.996,
+        61.0,
+        31.0,
         248.0
       ],
       "status": "PASS",
@@ -448,11 +448,11 @@
       "material": "ASA",
       "print_orientation": "service opening on bed",
       "bounds_mm": [
-        162.4000002,
-        160.00358828819242,
-        22.00000080000096
+        162.4,
+        160.0,
+        22.0
       ],
-      "largest_dimension_mm": 162.4000002,
+      "largest_dimension_mm": 162.4,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -462,7 +462,7 @@
       "height_fits": true,
       "margin_mm": [
         57.6,
-        29.996,
+        30.0,
         228.0
       ],
       "status": "PASS",
@@ -473,11 +473,11 @@
       "material": "ASA",
       "print_orientation": "exterior face on bed",
       "bounds_mm": [
-        151.4172655115221,
-        151.40339542834465,
-        4.000000200000001
+        151.4,
+        151.4,
+        4.0
       ],
-      "largest_dimension_mm": 151.4172655115221,
+      "largest_dimension_mm": 151.4,
       "build_volume_mm": [
         220.0,
         190.0,
@@ -486,8 +486,8 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        68.583,
-        38.597,
+        68.6,
+        38.6,
         246.0
       ],
       "status": "PASS",

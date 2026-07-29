@@ -4,7 +4,7 @@
     "evidence": "VERIFIED_DIGITALLY"
   },
   "sealing": {
-    "status": "FAIL",
+    "status": "PASS",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "collision": {
@@ -20,7 +20,7 @@
     "evidence": "VERIFIED_DIGITALLY"
   },
   "wall_thickness": {
-    "status": "FAIL",
+    "status": "PASS",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "fasteners": {

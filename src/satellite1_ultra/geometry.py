@@ -712,14 +712,23 @@ def bottom_plate_fastener_positions(
 def shroud_fastener_positions(
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> tuple[tuple[float, float], ...]:
-    """Four electronics-shroud fastener positions, clear of the official stack.
+    """Four skin-crown fastener positions, clear of the official stack.
 
-    They sit outboard of the official mid-plate footprint (|x|, |y| <= 55 mm)
-    and inboard of the shroud's tapered inner wall at the tab height.
+    They must sit outboard of the official mid-plate footprint, whose half-span
+    is 55 mm, by at least a boss radius. v1 used a deeper cabinet and an
+    asymmetric -26 mm inset on Y, which on the square v2 cabinet put a boss at
+    y = 54 -- inside the plate, fouling a rear feature by 184 mm^3. The inset is
+    symmetric now and the clearance is asserted rather than assumed.
     """
     p = parameters
     x = p.outer_width / 2.0 - 18.0
-    y = p.outer_depth / 2.0 - 26.0
+    y = p.outer_depth / 2.0 - 18.0
+    clear = 55.0 + p.boss_outer_diameter / 2.0
+    if min(x, y) < clear:
+        raise ValueError(
+            f"crown fastener inset leaves {min(x, y):.1f} mm; "
+            f"needs {clear:.1f} mm to clear the official mid-plate"
+        )
     return ((-x, 0.0), (x, 0.0), (0.0, -y), (0.0, y))
 
 

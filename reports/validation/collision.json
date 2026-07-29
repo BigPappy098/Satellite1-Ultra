@@ -10,99 +10,22 @@
     {
       "first": "shell_base",
       "second": "shell_grille",
-      "intersection_mm3": 7.64580878033545,
+      "intersection_mm3": 9.89467924235747,
       "classification": "intended_interference_fit",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "shell_base",
-      "second": "base_skirt",
-      "intersection_mm3": 104.49446843008161,
-      "classification": "invalid_collision",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "first": "shell_grille",
       "second": "shell_crown",
-      "intersection_mm3": 14.392106697672304,
+      "intersection_mm3": 14.392258474453886,
       "classification": "intended_interference_fit",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "shell_grille",
-      "second": "active_driver_clamp_ring",
-      "intersection_mm3": 2.0898579038975402,
-      "classification": "invalid_collision",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "shell_grille",
-      "second": "pr_-1_clamp_ring",
-      "intersection_mm3": 3.167704371097784,
-      "classification": "invalid_collision",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "shell_grille",
-      "second": "pr_+1_clamp_ring",
-      "intersection_mm3": 3.1677043710861312,
-      "classification": "invalid_collision",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "main_cabinet",
-      "second": "active_driver_clamp_ring",
-      "intersection_mm3": 0.2702157531521407,
-      "classification": "invalid_collision",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "first": "pressure_divider",
       "second": "wire_gland",
-      "intersection_mm3": 12.429634493192347,
+      "intersection_mm3": 12.429634493192356,
       "classification": "intended_interference_fit",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "pressure_divider",
-      "second": "mic_isolation_bushing_0",
-      "intersection_mm3": 88.04522352750055,
-      "classification": "invalid_collision",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "pressure_divider",
-      "second": "mic_isolation_bushing_1",
-      "intersection_mm3": 88.04522352749994,
-      "classification": "invalid_collision",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "pressure_divider",
-      "second": "mic_isolation_bushing_2",
-      "intersection_mm3": 88.04522352750016,
-      "classification": "invalid_collision",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "pressure_divider",
-      "second": "mic_isolation_bushing_3",
-      "intersection_mm3": 88.0452235274995,
-      "classification": "invalid_collision",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "driver_envelope",
-      "second": "pr_-1_envelope",
-      "intersection_mm3": 338.41278062558933,
-      "classification": "invalid_collision",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "first": "driver_envelope",
-      "second": "pr_+1_envelope",
-      "intersection_mm3": 338.4127806255596,
-      "classification": "invalid_collision",
       "evidence": "VERIFIED_DIGITALLY"
     }
   ],
@@ -122,5 +45,5 @@
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     }
   ],
-  "invalid_collision_count": 13
+  "invalid_collision_count": 2
 }
