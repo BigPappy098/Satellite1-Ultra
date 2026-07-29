@@ -987,18 +987,6 @@ def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
             cq.Vector(0.0, 0.0, 1.0),
         )
         divider = divider.fuse(boss)
-        # Counterbore seats the isolation bushing's body and its floor is the
-        # hard face the shoulder screw bottoms on.  The insert bore starts
-        # below it so the heat-set insert still gets its full depth.
-        divider = divider.cut(
-            cq.Solid.makeCylinder(
-                (p.bushing_body_diameter + 2.0 * p.print_clearance) / 2.0,
-                p.bushing_body_height,
-                cq.Vector(x, y, p.shoulder_stop_z),
-                cq.Vector(0.0, 0.0, 1.0),
-            )
-        )
-        divider = divider.cut(_blind_insert(x, y, p.shoulder_stop_z, -1.0, p))
     rib_top = interface_z
     rib_bottom = z0 + p.divider_thickness
     for axis in ("x", "y"):
@@ -1016,6 +1004,23 @@ def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
                 centered=(True, True, False),
             )
             divider = divider.fuse(cast(cq.Shape, rib.val()))
+
+    # Every cut at this interface happens after the rib frame is fused. Cutting
+    # the counterbores first let the ribs fill them straight back in, which
+    # measured as an 88 mm^3 overlap with each isolation bushing.
+    for x, y in mounts:
+        # Counterbore seats the isolation bushing's body and its floor is the
+        # hard face the shoulder screw bottoms on.  The insert bore starts
+        # below it so the heat-set insert still gets its full depth.
+        divider = divider.cut(
+            cq.Solid.makeCylinder(
+                (p.bushing_body_diameter + 2.0 * p.print_clearance) / 2.0,
+                p.bushing_body_height,
+                cq.Vector(x, y, p.shoulder_stop_z),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+        divider = divider.cut(_blind_insert(x, y, p.shoulder_stop_z, -1.0, p))
 
     # Bosses the shell crown bolts down onto.  Without these the skin is not
     # attached to anything and lifts straight off.
@@ -1251,7 +1256,7 @@ def base_skirt(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
             origin = (x, y / abs(y) * p.outer_depth / 2.0, bridge_z - 1.5)
             size = (13.0, length)
         slot = cq.Workplane("XY", origin=origin).box(
-            size[0], size[1], 11.0, centered=(True, True, False)
+            size[0], size[1], 14.0, centered=(True, True, False)
         )
         skirt = skirt.cut(cast(cq.Shape, slot.val()))
 

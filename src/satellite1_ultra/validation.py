@@ -610,19 +610,39 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
             "maximum_mm": 0.60,
         },
         {
-            "feature": "official mid-plate seating plane to divider boss tops",
-            "nominal_mm": abs(p.official_interface_z - OFFICIAL_INTERFACE_Z),
+            # The stack no longer lands on printed plastic: it lands on the
+            # isolation bushing's flange, and the divider boss tops sit exactly
+            # one flange lower. What must still be exact is where the stack ends
+            # up, so check the flange top against the official seating plane.
+            "feature": "official mid-plate seating plane to isolation bushing flange tops",
+            "nominal_mm": abs(
+                (p.official_interface_z + p.bushing_flange_thickness) - OFFICIAL_INTERFACE_Z
+            ),
             "minimum_mm": 0.0,
             "maximum_mm": 0.01,
             "evidence_override": EVIDENCE_OFFICIAL,
         },
+        {
+            # The elastomer is the whole point: the boss tops must stand clear
+            # of the official part so no rigid path bypasses the bushing.
+            "feature": "divider boss tops standing clear below the official seating plane",
+            "nominal_mm": OFFICIAL_INTERFACE_Z - p.official_interface_z,
+            "minimum_mm": 1.5,
+        },
     ]
 
-    # Measured minimum distances against the official upper stack. The divider
-    # boss tops are *designed* to seat on the official mid-plate underside, so
-    # that one pair has a zero-distance requirement instead of a gap.
-    seating_pairs = {("pressure_divider", "official_mid_plate")}
-    for printed_name in ("pressure_divider", "shell_crown"):
+    # Measured minimum distances against the official upper stack. The isolation
+    # bushing flanges are *designed* to seat on the official mid-plate underside,
+    # so those pairs carry a zero-distance requirement instead of a gap. The
+    # divider itself must now stand clear, since a rigid path from divider to
+    # mid-plate would bypass the elastomer and defeat the isolation.
+    seating_pairs = {(f"mic_isolation_bushing_{index}", "official_mid_plate") for index in range(4)}
+    probed = (
+        "pressure_divider",
+        "shell_crown",
+        *sorted(name for name in parts if name.startswith("mic_isolation_bushing")),
+    )
+    for printed_name in probed:
         shape = parts[printed_name]
         for official_name, official_shape in official.items():
             box_gap = _bounding_box_gap(shape, official_shape)
