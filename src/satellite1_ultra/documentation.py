@@ -328,9 +328,14 @@ def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[d
             {
                 "id": "B02",
                 "category": "radiator tuning",
-                "item": "M6 stainless flat washers",
-                "specification": f"identical stacks totaling {added_mass:.2f} g per radiator",
-                "quantity": "2 matched stacks",
+                "item": "self-adhesive tuning mass, lead-free strip",
+                "specification": (
+                    f"trimmed to {added_mass:.2f} g per radiator, the two sets matched "
+                    "within 0.02 g; applied centred on the radiator mass post. A single "
+                    "M6 washer is about 1.0 g, which is coarser than the whole target, "
+                    "so threaded mass cannot hit this figure"
+                ),
+                "quantity": "2 matched sets",
                 "required": "yes; final mass requires physical tuning",
                 "evidence": EVIDENCE_ESTIMATE,
                 "source": "weigh on 0.01 g scale",
@@ -436,11 +441,11 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
     {
         "number": "4",
         "title": "Mass-match and clamp both passive radiators",
-        "parts": "2 SB12PACR-00, 2 passive_radiator_gaskets, 2 clamp rings, matched M6 washer stacks",
+        "parts": "2 SB12PACR-00, 2 passive_radiator_gaskets, 2 clamp rings, matched tuning masses",
         "fasteners": "F05, 8 screws total",
         "tools": "0.01 g scale; 2.0 mm hex",
         "gasket": "G03, one per side",
-        "action": "Weigh two identical tuning stacks to the value in reports/acoustics/summary.json. Secure one to each M6 post. Install radiators on +/-X with matching orientation, then tighten each F05 crosswise to 0.35 N m; never exceed 0.45 N m.",
+        "action": "Trim and weigh two identical tuning masses to the value in reports/acoustics/summary.json, matching them within 0.02 g. Apply one centred on each radiator mass post. Install radiators on +/-X with matching orientation, then tighten each F05 crosswise to 0.35 N m; never exceed 0.45 N m.",
         "pass": "Added masses match within 0.02 g; both rings bottom evenly; surrounds move freely and do not touch the shell keep-out.",
         "warning": "Unequal mass defeats reaction-force cancellation. Do not press on either cone.",
         "image": "IMAGES/assembly_stage_04_radiators.png",
@@ -651,7 +656,7 @@ Buy every item marked required in `BOM.csv`. The essentials are:
 - Every M3 screw in `FASTENERS.csv`.
 - One 300 x 300 mm sheet of 2.0 mm closed-cell EPDM foam (G00).
 - Two mild-steel ballast plates (B01).
-- Two matched M6 washer stacks for radiator tuning (B02).
+- Two matched sets of self-adhesive tuning mass for the radiators (B02).
 - One 2-pin JST-XH speaker lead (H02).
 
 `HARDWARE_AND_MATERIALS_GUIDE.pdf` gives the full specification for each line.
@@ -834,8 +839,8 @@ Check that you have all of it:
 - Three cut foam gaskets and one printed TPU cable seal.
 - Every screw and insert in `FASTENERS.csv`.
 - Two steel ballast plates, deburred and dry.
-- Two matched radiator tuning stacks, weighed to
-  {acoustics.get("added_pr_mass_each_g", 0):.2f} g each.
+- Two matched radiator tuning masses, each weighed to
+  {acoustics.get("added_pr_mass_each_g", 0):.2f} g within 0.02 g.
 - One red/black speaker lead with the correct plug.
 
 The screws all look similar, so identify them by length before you begin:

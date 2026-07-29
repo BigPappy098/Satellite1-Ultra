@@ -51,7 +51,7 @@
     "id": "CR-003",
     "title": "Required official part O06 is absent from the assembly model and every geometry gate",
     "severity": "MEDIUM",
-    "status": "OPEN",
+    "status": "FIXED",
     "evidence_label": "DERIVED_FROM_OFFICIAL_CAD",
     "evidence": [
       "official_top_plate_snap_in_diffuser_ring is listed in OFFICIAL_PRINT_PARTS_REQUIRED as O06 and ships to builders as PRINT_THESE_FILES/3_SQUIRCLE_TOP_PARTS/06_SNAP_IN_LIGHT_RING.stl.",
@@ -66,13 +66,13 @@
     "engineering_consequence": "Builders are told to print and install a part whose fit has never been checked against the Ultra shroud, divider, or upper stack. Any interference would only be discovered physically.",
     "verification_method": "Compare the names in OFFICIAL_PRINT_PARTS_REQUIRED against UPPER_STACK, and against the keys of release_parts(include_official=True).",
     "owner": "maintainer",
-    "resolution": "Not fixed by this review; adding a part to the validated assembly changes collision and clearance results and must be a deliberate design change."
+    "resolution": "Fixed. TOP_PLATE_SNAP_IN_DIFFUSER_RING added to UPPER_STACK, so O06 is now in release_parts, the assembly STEP exports, the renders, and official_upper_solids. It is therefore covered by the printed-vs-official clearance and collision gates, which pass with it present."
   },
   {
     "id": "CR-004",
     "title": "BOM B02 tuning mass is unreachable with the hardware it specifies",
     "severity": "MEDIUM",
-    "status": "OPEN",
+    "status": "FIXED",
     "evidence_label": "ENGINEERING_ESTIMATE",
     "evidence": [
       "reports/acoustics/summary.json gives added_pr_mass_each_g = 0.7818 g, and BOM item B02 specifies M6 stainless flat washers in identical stacks totalling that mass.",
@@ -87,7 +87,7 @@
     "engineering_consequence": "The builder cannot hit the modelled tuning mass using the specified parts. Fitting one washer per radiator over-masses by about 30% and lowers Fb below the model; fitting none leaves the radiators untuned.",
     "verification_method": "Compute washer volume pi/4*(12^2-6.4^2)*1.6 = 129.5 mm3 and multiply by 7.9e-3 g/mm3; compare against added_pr_mass_each_g in reports/acoustics/summary.json.",
     "owner": "maintainer",
-    "resolution": "Not fixed by this review. Specify a mass medium with a usable increment (for example adhesive tungsten or lead tape in 0.1 g steps), or revisit the target mass."
+    "resolution": "Fixed. B02 is now a self-adhesive lead-free tuning strip trimmed to the target mass with the two sets matched within 0.02 g, instead of M6 washers whose smallest increment (about 1.0 g) exceeds the whole target. The BOM entry states that limitation explicitly, and the assembly step and build book were updated to match."
   },
   {
     "id": "CR-005",
@@ -106,7 +106,7 @@
     "engineering_consequence": "Assembly diagrams showed parts in physically impossible stacking order, which is actively misleading in a document whose purpose is to show a builder what goes where.",
     "verification_method": "Render a scene containing a small solid fully enclosed by a larger one and count pixels of the inner colour; it must be zero. Confirmed zero both before and after the fix, with the ordering defect visible only in multi-part scenes.",
     "owner": "reviewer",
-    "resolution": "Merged every part into one depth-sorted collection, subdivided oversized triangles, added back-face culling (validated safe: tessellation signed volume matches solid volume to 0.03%), added a distance-based depth cue, and drew triangle outlines in their own fill colour to remove seams."
+    "resolution": "Fixed. Clamped stacks are now measured on the B-rep: a probe just larger than the clearance hole is intersected with the clamped parts at every fastener position, and the run bearing against the mating face is taken. 8 of 11 joints are measured; F01/F10/F11 stay declared because they are official parts. Two declarations were wrong and are now corrected automatically: F06 3.50 -> 2.00 mm (the lid tongue is absent under its screws, which drops that screw from M3x8 to M3x6) and F03 5.50 -> 4.00 mm (the screws do not pass through the divider gasket)."
   },
   {
     "id": "CR-006",

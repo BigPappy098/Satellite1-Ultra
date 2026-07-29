@@ -1023,18 +1023,119 @@ def _joints(p: DesignParameters) -> list[Joint]:
 
 STANDARD_M3_LENGTHS = (6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 20.0, 25.0)
 
+#: For each printed joint: the parts the screw clamps, the screw axis, and the
+#: fastener positions.  Measuring the stack from these instead of declaring it
+#: is what catches a boss or tongue that is not actually present under a screw.
+#: joint -> (clamped parts, axis index, direction the screw advances toward its
+#: insert).  The advance direction matters: a part can present several separate
+#: runs of material along one screw axis, and only the run against the mating
+#: face is actually clamped.
+_CLAMPED_PARTS: dict[str, tuple[tuple[str, ...], int, float]] = {
+    "F01": (("official_mid_plate",), 2, -1.0),
+    "F02": (("electronics_shroud",), 2, -1.0),
+    "F03": (("pressure_divider", "divider_gasket"), 2, -1.0),
+    "F04": (("active_driver_clamp_ring",), 1, 1.0),
+    "F05": (("pr_+1_clamp_ring",), 0, -1.0),
+    "F06": (("ballast_cartridge_lid",), 2, -1.0),
+    "F07": (("base_skirt",), 2, 1.0),
+    "F08": (("bottom_service_plate",), 2, 1.0),
+    "F09": (("bottom_service_plate",), 2, 1.0),
+}
+
+
+def _measured_stack(
+    identifier: str,
+    parameters: DesignParameters,
+    positions: dict[str, tuple[tuple[float, float, float], ...]],
+    parts: dict[str, cq.Shape],
+) -> float | None:
+    """Material a screw actually passes through, measured on the B-rep.
+
+    Probes a cylinder just larger than the clearance hole at every fastener
+    position and returns the worst-case axial extent of clamped material.  A
+    declared stack cannot notice that a lid tongue or boss is absent under one
+    of its screws; this can.
+    """
+    entry = _CLAMPED_PARTS.get(identifier)
+    if entry is None or identifier not in positions:
+        return None
+    names, index, advance = entry
+    solids = [parts[name] for name in names if name in parts]
+    if not solids:
+        return None
+    body = solids[0]
+    for extra in solids[1:]:
+        body = body.fuse(extra)
+    axis = cq.Vector(*(1.0 if i == index else 0.0 for i in range(3)))
+    radius = parameters.fastener_clearance_diameter / 2.0 + 0.6
+    stacks: list[float] = []
+    for point in positions[identifier]:
+        origin = cq.Vector(point[0], point[1], point[2]) - axis * 400.0
+        probe = cq.Solid.makeCylinder(radius, 800.0, origin, axis)
+        try:
+            hit = probe.intersect(body)
+        except Exception:  # pragma: no cover - degenerate OCCT probe
+            continue
+        if hit.Volume() <= 1e-6:
+            continue
+        runs: list[tuple[float, float]] = []
+        for solid in hit.Solids():
+            box = solid.BoundingBox()
+            low = (box.xmin, box.ymin, box.zmin)[index]
+            high = (box.xmax, box.ymax, box.zmax)[index]
+            runs.append((low, high))
+        if not runs:
+            continue
+        # Keep the run whose far face lies furthest along the screw's travel:
+        # that is the one bearing against the part receiving the insert.
+        leading = max(runs, key=lambda run: advance * (run[1] if advance > 0 else run[0]))
+        stacks.append(leading[1] - leading[0])
+    if not stacks:
+        return None
+    return max(stacks)
+
+
+def _fastener_axes(
+    p: DesignParameters,
+    parts: dict[str, cq.Shape],
+) -> dict[str, tuple[tuple[float, float, float], ...]]:
+    """Fastener coordinates per joint, in master coordinates."""
+    positions: dict[str, tuple[tuple[float, float, float], ...]] = {}
+    del parts  # positions come from the parametric fastener patterns
+    z_groups = {
+        "F01": official_mount_positions(p),
+        "F02": shroud_fastener_positions(p),
+        "F03": top_fastener_positions(p),
+        "F06": ballast_lid_fastener_positions(p),
+        "F07": base_fastener_positions(p),
+        "F08": base_fastener_positions(p),
+        "F09": base_fastener_positions(p),
+    }
+    for identifier, flat in z_groups.items():
+        positions[identifier] = tuple((x, y, 0.0) for x, y in flat)
+    mounts = acoustic_mounts(p)
+    for identifier, mount_name in (("F04", "active_driver"), ("F05", "pr_+1")):
+        mount = mounts.get(mount_name)
+        if mount is not None:
+            positions[identifier] = _bolt_points(mount.face_point, mount.inward, mount.bolt_circle)
+    return positions
+
 
 def fastener_report(parameters: DesignParameters) -> dict[str, Any]:
     """Return the controlled M3 fastener schedule and engagement checks."""
     p = parameters
+    parts = placed_functional_parts(p)
+    positions = _fastener_axes(p, parts)
     schedule: list[dict[str, Any]] = []
     for joint in _joints(p):
-        target = joint.clamped_stack_mm + p.insert_depth * 0.85
+        measured = _measured_stack(joint.identifier, p, positions, parts)
+        stack = measured if measured is not None else joint.clamped_stack_mm
+        target = stack + p.insert_depth * 0.85
         length = joint.fixed_length_mm or min(
-            (value for value in STANDARD_M3_LENGTHS if value >= joint.clamped_stack_mm + 3.5),
+            (value for value in STANDARD_M3_LENGTHS if value >= stack + 3.5),
             key=lambda value: abs(value - target),
         )
-        engagement = length - joint.clamped_stack_mm
+        engagement = length - stack
         bore_depth = joint.pilot_depth_mm or p.insert_bore_depth
         bottoms = engagement > bore_depth
         status = "PASS" if engagement >= 3.0 and not bottoms else "FAIL"
@@ -1057,7 +1158,9 @@ def fastener_report(parameters: DesignParameters) -> dict[str, Any]:
                     else "none; unmodified official printed pilot"
                 ),
                 "boss_outer_diameter_mm": p.boss_outer_diameter,
-                "clamped_stack_mm": joint.clamped_stack_mm,
+                "clamped_stack_mm": stack,
+                "declared_stack_mm": joint.clamped_stack_mm,
+                "stack_source": ("measured_on_brep" if measured is not None else "declared"),
                 "engagement_mm": engagement,
                 "bore_depth_mm": bore_depth,
                 "bottoming_margin_mm": bore_depth - engagement,
