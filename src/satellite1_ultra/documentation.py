@@ -429,7 +429,7 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
         "tools": "2.0 mm hex; crimper or soldering iron; polarity tester",
         "gasket": "G02",
         "action": "Mark the red conductor positive. Connect red to the terminal marked + and black to -. Face the terminals upward. Center G02, seat the driver from the -Y/front side, fit the clamp ring, and tighten F04 in two diagonal passes to 0.35 N m; never exceed 0.45 N m.",
-        "pass": "Ring bottoms evenly; gasket is not visible in the bore; cone moves outward on a brief 1.5 V positive polarity pulse.",
+        "pass": "Ring bottoms evenly; G02 is continuous all the way round and covers all four unused driver mounting holes; cone moves outward on a brief 1.5 V positive polarity pulse.",
         "warning": "Use only a brief low-voltage polarity pulse. Never connect a loose driver to the powered HAT.",
         "image": "IMAGES/assembly_stage_03_driver.png",
     },

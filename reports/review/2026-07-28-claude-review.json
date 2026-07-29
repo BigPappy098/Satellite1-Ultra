@@ -3,7 +3,7 @@
     "id": "CR-001",
     "title": "Active-driver mounting holes bridge the gasket and vent the sealed chamber",
     "severity": "CRITICAL",
-    "status": "OPEN",
+    "status": "FIXED",
     "evidence_label": "VERIFIED_DIGITALLY",
     "evidence": [
       "Cabinet driver bore radius 44.350 mm; driver gasket annulus radius 45.850 to 51.900 mm (driver_gasket = bore + 3.0 -> seat).",
@@ -24,13 +24,13 @@
     "engineering_consequence": "The enclosure is not sealed. Roughly 50 mm2 of unintended vent area bypasses the driver gasket, which invalidates the passive-radiator alignment, the modelled 60.0 Hz Fb, the 56.9 Hz f3, and every derived output figure. The leak-test step in assembly would fail, or worse, pass at 100-250 Pa while still ruining the acoustic Q.",
     "verification_method": "Compute driver_bore_diameter/2, (driver_bore_diameter+3)/2, driver_seat_diameter/2 from load_design_parameters(); compare with (bolt_circle_mm -/+ mounting_hole_diameter_mm)/2 from selected_components(); compare hole inner radius against (driver_outer_diameter-7.2)/2. Reproduced independently of the reporting agent.",
     "owner": "maintainer",
-    "resolution": "Not fixed by this review. Requires a design decision: enlarge the gasket inboard (gasket ID must sit inboard of 44.650 while retaining a sealing land), move to a gasket that covers the bolt circle, or specify sealed plugs/screws in the four unused driver holes and add that step to the assembly guide."
+    "resolution": "Fixed. driver_gasket now spans the whole flange underside (inner diameter at the driver cutout, outer at the flange rim) instead of bore+3.0 to seat, so all four unused mounting holes are covered from below and no open gap is left inboard of the gasket. The gasket also no longer overhangs the flange edge, so the whole band is compressed. Note the residual: the ND91-4 leaves only 0.4 mm of flange between its mounting hole and the cutout, so the inboard sealing land is inherently short. Confirm the seal with the 100-250 Pa leak screen and treat a failure as a driver-data problem to re-verify against the physical part. A new sealing gate now models the component flange; verified to FAIL on the previous annulus."
   },
   {
     "id": "CR-002",
     "title": "Ballast lid bosses are almost entirely unattached to the tray body",
     "severity": "HIGH",
-    "status": "OPEN",
+    "status": "FIXED",
     "evidence_label": "VERIFIED_DIGITALLY",
     "evidence": [
       "ballast_lid_fastener_positions returns (+/-60.2, +/-66.2); the tray outer extent is 120.0 x 132.0 mm, so half-extents are 60.0 and 66.0. Every boss centre lies outside the tray body, at a rounded corner.",
@@ -39,11 +39,13 @@
       "Root cause: the offset in ballast_lid_fastener_positions is measured from the steel PLATE edge (plate_width/2 + boss_outer_diameter/2 + 0.5) instead of the tray wall, and a 9.4 mm boss cannot fit inside a 4 mm tray wall in any case.",
       "These four bosses carry the heat-set inserts retaining the steel stack; reports/validation/center_of_gravity.json records a 155 N design load."
     ],
-    "affected_files": ["src/satellite1_ultra/geometry.py"],
+    "affected_files": [
+      "src/satellite1_ultra/geometry.py"
+    ],
     "engineering_consequence": "The bosses are expected to shear off during heat-set insert installation or on first tightening. Ballast retention of roughly 1 kg of steel above the user is unverified, and the lid may not be securable at all.",
     "verification_method": "Rebuild the bare tray as ballast_cartridge does (rounded_prism(120,132,14,0,10).cut(rounded_prism(112,124,12,2,6))), construct one boss cylinder at a fastener position, and take the boolean intersection volume. Reproduced independently of the reporting agent.",
     "owner": "maintainer",
-    "resolution": "Not fixed by this review. The lid fastener pattern needs to be derived from the tray wall midline rather than the plate edge, with a boss diameter the wall can actually carry."
+    "resolution": "Fixed. ballast_lid_fastener_positions is now derived from the tray wall (mid-side of each wall face) rather than the steel plate edge. Bonded cross-section per boss measured at 32.359 mm2, up from 0.484 mm2, a 67x improvement, and identical on all four bosses. Screw axes sit 5.0 mm clear of the steel plate footprint."
   },
   {
     "id": "CR-003",
@@ -77,7 +79,11 @@
       "One M6 DIN 125A washer (12.0 OD, 6.4 ID, 1.6 thick, 7900 kg/m3) computes to 1.02 g, which already exceeds the whole target by 30%.",
       "The smallest achievable increment with the specified hardware is therefore larger than the specified total."
     ],
-    "affected_files": ["src/satellite1_ultra/documentation.py", "docs/BOM.csv", "reports/acoustics/summary.json"],
+    "affected_files": [
+      "src/satellite1_ultra/documentation.py",
+      "docs/BOM.csv",
+      "reports/acoustics/summary.json"
+    ],
     "engineering_consequence": "The builder cannot hit the modelled tuning mass using the specified parts. Fitting one washer per radiator over-masses by about 30% and lowers Fb below the model; fitting none leaves the radiators untuned.",
     "verification_method": "Compute washer volume pi/4*(12^2-6.4^2)*1.6 = 129.5 mm3 and multiply by 7.9e-3 g/mm3; compare against added_pr_mass_each_g in reports/acoustics/summary.json.",
     "owner": "maintainer",
@@ -94,7 +100,9 @@
       "Planar walls also tessellate into a small number of very large triangles, and a painter's-algorithm sort ranks each by one depth value, which is wrong for a triangle spanning most of the model.",
       "Antialiased triangle edges at linewidth 0 left pale seams, which made solid surfaces read as wireframe."
     ],
-    "affected_files": ["src/satellite1_ultra/renders.py"],
+    "affected_files": [
+      "src/satellite1_ultra/renders.py"
+    ],
     "engineering_consequence": "Assembly diagrams showed parts in physically impossible stacking order, which is actively misleading in a document whose purpose is to show a builder what goes where.",
     "verification_method": "Render a scene containing a small solid fully enclosed by a larger one and count pixels of the inner colour; it must be zero. Confirmed zero both before and after the fix, with the ordering defect visible only in multi-part scenes.",
     "owner": "reviewer",
@@ -111,7 +119,9 @@
       "The former BEGINNER_BUILD_GUIDE listed the gaskets only in a pre-assembly checklist, and no guide contained a step to cut them or to print the templates at 100% scale.",
       "The assembly steps assume the gaskets already exist."
     ],
-    "affected_files": ["src/satellite1_ultra/documentation.py"],
+    "affected_files": [
+      "src/satellite1_ultra/documentation.py"
+    ],
     "engineering_consequence": "A first-time builder reaches assembly step 3 with no gaskets and no instruction to produce them, and may improvise a seal, which directly compromises the acoustic boundary.",
     "verification_method": "Search the generated guides for a cutting instruction referencing GASKET_TEMPLATES; previously absent from the builder path.",
     "owner": "reviewer",
@@ -149,7 +159,9 @@
       "GENERATED_DOCS in cli.py was a hand-maintained list that omitted BEGINNER_BUILD_GUIDE.md and BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf.",
       "Those two files therefore survived make clean and could be served from a stale build indefinitely."
     ],
-    "affected_files": ["src/satellite1_ultra/cli.py"],
+    "affected_files": [
+      "src/satellite1_ultra/cli.py"
+    ],
     "engineering_consequence": "A renamed or retired guide can persist on disk and be shipped, presenting instructions that no longer match the source.",
     "verification_method": "Compare GENERATED_DOCS against USER_GUIDES and PDF_GUIDES.",
     "owner": "reviewer",
@@ -165,10 +177,32 @@
       "EXPORT_SOURCE_PATHS includes the whole of src/satellite1_ultra, so editing renders.py or documentation.py marks every STEP, STL and 3MF export stale.",
       "Observed directly: a renders.py edit made tests/test_mutation.py::test_changed_export_source_is_caught fail with 'stale export' until the full geometry pipeline was rerun."
     ],
-    "affected_files": ["src/satellite1_ultra/exporting.py"],
+    "affected_files": [
+      "src/satellite1_ultra/exporting.py"
+    ],
     "engineering_consequence": "Conservative and fail-safe, so it never ships mismatched CAD, but it forces a full multi-hour geometry regeneration for a documentation typo, which discourages small documentation fixes.",
     "verification_method": "Edit a documentation-only module and run validate_documentation().",
     "owner": "maintainer",
     "resolution": "Left as is. Narrowing this set trades a real safety property for build speed and should be a deliberate decision."
+  },
+  {
+    "id": "CR-010",
+    "title": "No sealing gate modelled purchased component flanges",
+    "severity": "MEDIUM",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": [
+      "Every sealing check in sealing_report measured continuity of cabinet material only.",
+      "CR-001 vented the chamber through a purchased component's own bolt holes while all eleven gates reported PASS.",
+      "Independent mutation testing also found the fastener gate detected none of seven injected defects, because it is a hand-entered table rather than a geometry query."
+    ],
+    "affected_files": [
+      "src/satellite1_ultra/validation.py",
+      "src/satellite1_ultra/geometry.py"
+    ],
+    "engineering_consequence": "A whole class of sealing defect originating at the component interface was invisible to the validation suite.",
+    "verification_method": "Added _flange_hole_seal_checks, which compares each component mounting-hole footprint against the gasket annulus from the shared component_gasket_annulus definition. Proven by restoring the pre-fix annulus in memory: the gate reports FAIL, and PASS once restored.",
+    "owner": "reviewer",
+    "resolution": "Gate added and mutation-tested. The fastener schedule remains a hand-entered table and is still tracked as CR-005."
   }
 ]

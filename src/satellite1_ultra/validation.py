@@ -19,7 +19,12 @@ from typing import Any, cast
 import cadquery as cq
 import networkx as nx  # type: ignore[import-untyped]
 
-from satellite1_ultra.configuration import ROOT, load_configuration, load_design_parameters
+from satellite1_ultra.configuration import (
+    ROOT,
+    load_configuration,
+    load_design_parameters,
+    selected_components,
+)
 from satellite1_ultra.geometry import (
     DesignParameters,
     MountSpec,
@@ -29,6 +34,7 @@ from satellite1_ultra.geometry import (
     ballast_lid_fastener_positions,
     ballast_plate_extent,
     base_fastener_positions,
+    component_gasket_annulus,
     main_cabinet,
     official_mount_positions,
     placed_functional_parts,
@@ -247,6 +253,40 @@ def _mount_seal_checks(
     return checks
 
 
+def _flange_hole_seal_checks(parameters: DesignParameters) -> list[dict[str, Any]]:
+    """Every unused component mounting hole must be covered by its gasket.
+
+    The other sealing gates measure continuity of *cabinet* material only, so
+    a purchased component whose own bolt holes straddle the gasket edge vents
+    the chamber while every gate still reports PASS.  This models the
+    component flange itself.
+    """
+    components = selected_components()
+    sealed = {
+        "active_driver": components[0],
+        "pr_-1": components[1],
+        "pr_+1": components[1],
+    }
+    checks: list[dict[str, Any]] = []
+    for name, component in sealed.items():
+        bolt_circle = float(component["bolt_circle_mm"])
+        hole = float(component["mounting_hole_diameter_mm"])
+        inner_d, outer_d = component_gasket_annulus(name, parameters)
+        hole_inner = (bolt_circle - hole) / 2.0
+        hole_outer = (bolt_circle + hole) / 2.0
+        covered = inner_d / 2.0 <= hole_inner and hole_outer <= outer_d / 2.0
+        checks.append(
+            {
+                "feature": f"{name} unused mounting holes are covered by the gasket",
+                "gasket_annulus_radius_mm": [inner_d / 2.0, outer_d / 2.0],
+                "mounting_hole_footprint_radius_mm": [hole_inner, hole_outer],
+                "status": "PASS" if covered else "FAIL",
+                "evidence": EVIDENCE_DIGITAL,
+            }
+        )
+    return checks
+
+
 def sealing_report(parameters: DesignParameters) -> dict[str, Any]:
     """Explicit acoustic pressure boundary and its digital leak-path proof."""
     p = parameters
@@ -254,6 +294,7 @@ def sealing_report(parameters: DesignParameters) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     for name, mount in acoustic_mounts(p).items():
         checks.extend(_mount_seal_checks(cabinet, mount, p, name))
+    checks.extend(_flange_hole_seal_checks(p))
 
     # Divider gasket land continuity on the acoustic top rim.
     land = rounded_prism(

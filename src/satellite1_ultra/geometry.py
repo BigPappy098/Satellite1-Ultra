@@ -1003,22 +1003,41 @@ def circular_gasket(
     )
 
 
-def driver_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+def component_gasket_annulus(
+    component: str,
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> tuple[float, float]:
+    """Inner and outer diameter of the gasket sealing one component flange.
+
+    Single source of truth so the cut template, the solid, and the sealing
+    gate can never describe different annuli.
+    """
     p = parameters
-    return circular_gasket(
-        p.driver_seat_diameter,
-        p.driver_bore_diameter + 3.0,
-        p.gasket_thickness,
-    )
+    if component == "active_driver":
+        return (p.driver_cutout_diameter, p.driver_outer_diameter)
+    if component.startswith("pr"):
+        return (p.pr_bore_diameter + 3.0, p.pr_seat_diameter)
+    raise ValueError(f"unknown sealed component: {component}")
+
+
+def driver_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """Seals the full active-driver flange, including its unused bolt circle.
+
+    The ND91-4 carries four Ø4.0 mounting holes on a Ø93.3 circle that this
+    design does not use, and they sit only 0.4 mm outboard of the cutout edge.
+    An inset gasket leaves those holes opening into the gap under the flange,
+    which vents the chamber straight to atmosphere through the clamp-ring
+    bore.  The gasket therefore spans the whole flange underside: inner edge
+    at the cutout so no gap is left, outer edge at the flange rim so the
+    entire band is compressed.
+    """
+    inner, outer = component_gasket_annulus("active_driver", parameters)
+    return circular_gasket(outer, inner, parameters.gasket_thickness)
 
 
 def passive_radiator_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    p = parameters
-    return circular_gasket(
-        p.pr_seat_diameter,
-        p.pr_bore_diameter + 3.0,
-        p.gasket_thickness,
-    )
+    inner, outer = component_gasket_annulus("pr", parameters)
+    return circular_gasket(outer, inner, parameters.gasket_thickness)
 
 
 def cable_gland(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
@@ -1201,15 +1220,19 @@ def ballast_plate_extent(
 def ballast_lid_fastener_positions(
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> tuple[tuple[float, float], ...]:
-    """Four lid screws outside the steel stack and tied into the tray walls."""
-    p = parameters
-    plate_width, plate_depth, _ = ballast_plate_extent(p)
-    offset = p.boss_outer_diameter / 2.0 + 0.5
+    """Four lid screws carried by the tray walls, clear of the steel stack.
+
+    Each boss straddles the middle of a wall face, so its full diameter is
+    bonded to wall material.  Measuring the offset from the steel plate edge
+    instead placed the bosses diagonally outside the tray body, where a
+    rounded corner left them attached by a sliver.
+    """
+    width, depth = ballast_tray_extent(parameters)
     return (
-        (-plate_width / 2.0 - offset, -plate_depth / 2.0 - offset),
-        (-plate_width / 2.0 - offset, plate_depth / 2.0 + offset),
-        (plate_width / 2.0 + offset, -plate_depth / 2.0 - offset),
-        (plate_width / 2.0 + offset, plate_depth / 2.0 + offset),
+        (-width / 2.0, 0.0),
+        (width / 2.0, 0.0),
+        (0.0, -depth / 2.0),
+        (0.0, depth / 2.0),
     )
 
 
