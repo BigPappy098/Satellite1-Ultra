@@ -123,7 +123,7 @@ class DesignParameters:
     brace_rib_width: float = 5.0
     brace_rib_depth: float = 8.0
     board_revision: str = "public_batch_1"
-    ballast_mass_g: float = 1054.0
+    ballast_mass_g: float = 879.0
 
     # ------------------------------------------------------------------ #
     # Derived quantities

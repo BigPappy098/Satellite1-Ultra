@@ -2,30 +2,30 @@
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
   "method": "B-rep volume x material density, plus catalogued component masses",
-  "total_mass_g": 3525.9433458852045,
+  "total_mass_g": 3351.1884979171864,
   "center_of_gravity_mm": {
-    "x": 0.0016091302927650178,
-    "y": -5.342679385153982,
-    "z": -138.64421862406954
+    "x": 0.0016930418124680444,
+    "y": -5.62128475882208,
+    "z": -135.05499812618507
   },
-  "cg_height_above_support_mm": 79.35578137593046,
+  "cg_height_above_support_mm": 82.94500187381493,
   "support_polygon_mm": {
     "x_half": 94.0,
     "y_half": 104.0
   },
   "static_tipping_angles_deg": {
-    "+X": 49.82811001145894,
-    "-X": 49.82907692495163,
-    "+Y": 54.029617572587185,
-    "-Y": 51.18827039374401
+    "+X": 48.5745114170557,
+    "-X": 48.57553535117185,
+    "+Y": 52.887010003973685,
+    "-Y": 49.865112895200895
   },
-  "minimum_tipping_angle_deg": 49.82811001145894,
+  "minimum_tipping_angle_deg": 48.5745114170557,
   "ballast": {
-    "material": "two removable 110 x 122 x 5 mm mild-steel plates",
-    "mass_g": 1053.4699999999998,
-    "three_g_retention_load_n": 30.993034726499992,
+    "material": "two removable 100 x 112 x 5 mm mild-steel plates",
+    "mass_g": 879.1999999999999,
+    "three_g_retention_load_n": 25.866020040000002,
     "design_factor_of_safety": 5.0,
-    "retainer_design_load_n": 154.96517363249995,
+    "retainer_design_load_n": 129.3301002,
     "retention_fasteners": 4,
     "moisture_containment": "dry plate stack in a closed printed cartridge; no wet casting"
   },
@@ -40,18 +40,18 @@
     },
     {
       "name": "ballast_cartridge",
-      "mass_g": 59.547551527739785,
-      "x_mm": -8.349004458066126e-15,
-      "y_mm": 8.416322551924915e-15,
+      "mass_g": 59.5475515277392,
+      "x_mm": -1.2582748460841403e-14,
+      "y_mm": 2.268223662624145e-14,
       "z_mm": -207.980381236787,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "ballast_cartridge_lid",
-      "mass_g": 55.94130479482545,
-      "x_mm": 2.2610892827594573e-14,
-      "y_mm": -1.4090823603733868e-15,
-      "z_mm": -197.68847471748902,
+      "mass_g": 55.45645682680795,
+      "x_mm": 3.027504880589722e-15,
+      "y_mm": -2.7024181769524234e-15,
+      "z_mm": -197.68793481596302,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
@@ -168,7 +168,7 @@
     },
     {
       "name": "steel ballast",
-      "mass_g": 1053.4699999999998,
+      "mass_g": 879.1999999999999,
       "x_mm": 0,
       "y_mm": 0,
       "z_mm": -207.5,

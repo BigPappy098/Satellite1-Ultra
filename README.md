@@ -133,10 +133,12 @@ source.
 
 ### Coordinate system
 
-Origin is the centre of the official mid-plate interface plane, measured from
-the preserved B-rep. **+Z** points at the microphones, **−Y** is the
-active-driver front, and **±X** are the opposed passive radiators. Units are
-millimetres everywhere.
+- origin: center of the official mid-plate interface plane, as measured from
+  the preserved B-rep.
+- +Z: toward the microphones.
+- -Y: active-driver front.
+- +/-X: opposed passive radiators.
+- Units: millimetres everywhere.
 
 STEP is the authoritative exchange format; STL and 3MF are derived meshes.
 Source geometry never uses mesh booleans, voxels, SDFs, or marching cubes.
