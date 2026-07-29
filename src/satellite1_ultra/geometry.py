@@ -1212,9 +1212,13 @@ def ballast_tray_extent(
 def ballast_plate_extent(
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> tuple[float, float, float]:
-    """Steel plate stack that the tray accepts: width, depth, total thickness."""
+    """Steel plate stack that the tray accepts: width, depth, total thickness.
+
+    Inset 10 mm per side rather than 5, so the four lid bosses have room to sit
+    in the tray walls without touching either the steel or the outer shell.
+    """
     width, depth = ballast_tray_extent(parameters)
-    return (width - 10.0, depth - 10.0, 10.0)
+    return (width - 20.0, depth - 20.0, 10.0)
 
 
 def ballast_lid_fastener_positions(
@@ -1222,17 +1226,19 @@ def ballast_lid_fastener_positions(
 ) -> tuple[tuple[float, float], ...]:
     """Four lid screws carried by the tray walls, clear of the steel stack.
 
-    Each boss straddles the middle of a wall face, so its full diameter is
-    bonded to wall material.  Measuring the offset from the steel plate edge
-    instead placed the bosses diagonally outside the tray body, where a
-    rounded corner left them attached by a sliver.
+    One boss sits at the middle of each wall face, just outboard of the steel
+    and just inboard of the shell, so its full diameter is bonded to wall
+    material.  Placing them diagonally at the corners instead, offset from the
+    plate edge, left every boss attached to a rounded corner by a sliver.
     """
-    width, depth = ballast_tray_extent(parameters)
+    p = parameters
+    plate_width, plate_depth, _ = ballast_plate_extent(p)
+    clear = p.boss_outer_diameter / 2.0 + 1.3
     return (
-        (-width / 2.0, 0.0),
-        (width / 2.0, 0.0),
-        (0.0, -depth / 2.0),
-        (0.0, depth / 2.0),
+        (-(plate_width / 2.0 + clear), 0.0),
+        (plate_width / 2.0 + clear, 0.0),
+        (0.0, -(plate_depth / 2.0 + clear)),
+        (0.0, plate_depth / 2.0 + clear),
     )
 
 

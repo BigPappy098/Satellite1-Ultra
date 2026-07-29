@@ -465,7 +465,7 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
         "tools": "2.0 mm hex; scale",
         "gasket": "none",
         "action": "Attach the base skirt with F07. Place both deburred dry plates flat in the cartridge; there must be no rocking. Install the lid with F06, insert the cartridge from below, and capture it with the bottom service plate using F08.",
-        "pass": "Cartridge mass is approximately 1054 g; no plate moves when shaken gently; all four lid screws engage at least 3 mm.",
+        "pass": "Cartridge mass matches the steel stack listed in BOM.csv; no plate moves when shaken gently; all four lid screws engage at least 3 mm.",
         "warning": "The steel stack is heavy. Keep fingers clear and do not operate the unit without the retained lid and service plate.",
         "image": "IMAGES/assembly_stage_06_ballast.png",
     },

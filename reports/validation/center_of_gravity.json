@@ -2,24 +2,24 @@
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
   "method": "B-rep volume x material density, plus catalogued component masses",
-  "total_mass_g": 3527.804052974747,
+  "total_mass_g": 3525.9433458852045,
   "center_of_gravity_mm": {
-    "x": 0.0016082815721163008,
-    "y": -5.337929367042597,
-    "z": -138.68054054008073
+    "x": 0.0016091302927650178,
+    "y": -5.342679385153982,
+    "z": -138.64421862406954
   },
-  "cg_height_above_support_mm": 79.31945945991927,
+  "cg_height_above_support_mm": 79.35578137593046,
   "support_polygon_mm": {
     "x_half": 94.0,
     "y_half": 104.0
   },
   "static_tipping_angles_deg": {
-    "+X": 49.84103936993571,
-    "-X": 49.84200569912394,
-    "+Y": 54.0409029306917,
-    "-Y": 51.20242745765632
+    "+X": 49.82811001145894,
+    "-X": 49.82907692495163,
+    "+Y": 54.029617572587185,
+    "-Y": 51.18827039374401
   },
-  "minimum_tipping_angle_deg": 49.84103936993571,
+  "minimum_tipping_angle_deg": 49.82811001145894,
   "ballast": {
     "material": "two removable 110 x 122 x 5 mm mild-steel plates",
     "mass_g": 1053.4699999999998,
@@ -40,18 +40,18 @@
     },
     {
       "name": "ballast_cartridge",
-      "mass_g": 61.18464521560394,
-      "x_mm": 2.324160036006271e-15,
-      "y_mm": -1.08633108954134e-14,
-      "z_mm": -207.8738797285234,
+      "mass_g": 59.547551527739785,
+      "x_mm": -8.349004458066126e-15,
+      "y_mm": 8.416322551924915e-15,
+      "z_mm": -207.980381236787,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
       "name": "ballast_cartridge_lid",
-      "mass_g": 56.244870944139315,
-      "x_mm": 4.758101698952692e-16,
-      "y_mm": 2.3254121074561015e-15,
-      "z_mm": -197.68509139474548,
+      "mass_g": 55.94130479482545,
+      "x_mm": 2.2610892827594573e-14,
+      "y_mm": -1.4090823603733868e-15,
+      "z_mm": -197.68847471748902,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
@@ -120,10 +120,10 @@
     },
     {
       "name": "active_driver_gasket",
-      "mass_g": 0.4180271907205872,
-      "x_mm": -9.033436306503937e-13,
-      "y_mm": -85.24999999999999,
-      "z_mm": -96.00000000000003,
+      "mass_g": 0.49797993835628473,
+      "x_mm": -6.714642525771481e-13,
+      "y_mm": -85.25000000000001,
+      "z_mm": -95.99999999999999,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {

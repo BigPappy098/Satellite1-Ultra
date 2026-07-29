@@ -84,6 +84,45 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
+      "feature": "active_driver unused mounting holes are covered by the gasket",
+      "gasket_annulus_radius_mm": [
+        44.25,
+        51.6
+      ],
+      "mounting_hole_footprint_radius_mm": [
+        44.65,
+        48.65
+      ],
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr_-1 unused mounting holes are covered by the gasket",
+      "gasket_annulus_radius_mm": [
+        52.6,
+        61.3
+      ],
+      "mounting_hole_footprint_radius_mm": [
+        53.6,
+        57.9
+      ],
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr_+1 unused mounting holes are covered by the gasket",
+      "gasket_annulus_radius_mm": [
+        52.6,
+        61.3
+      ],
+      "mounting_hole_footprint_radius_mm": [
+        53.6,
+        57.9
+      ],
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
       "feature": "divider gasket land is a continuous closed rim",
       "measured_solid_fraction": 0.99999999999999,
       "minimum_solid_fraction": 0.999999,

@@ -30,6 +30,7 @@ from satellite1_ultra.configuration import ROOT
 from satellite1_ultra.geometry import (
     DEFAULT_PARAMETERS,
     DesignParameters,
+    ballast_plate_extent,
 )
 
 TESSELLATION_TOLERANCE = 0.35
@@ -954,7 +955,7 @@ def render_assembly_stages(
                 "ballast_cartridge_lid",
                 "bottom_service_plate",
             ),
-            "Two 110 × 122 × 5 steel plates are enclosed by the four-screw lid.",
+            "Two steel plates from BOM item B01 are enclosed by the four-screw lid.",
             ("steel_plate_lower", "steel_plate_upper", "ballast_cartridge_lid"),
         ),
         (
@@ -997,8 +998,7 @@ def render_assembly_stages(
         if not parts:
             raise ValueError(f"assembly-stage render {index} resolved no CAD parts")
         if index == 6:
-            plate_width = 110.0
-            plate_depth = 122.0
+            plate_width, plate_depth, _ = ballast_plate_extent(parameters)
             plate_z = parameters.base_bottom_z + parameters.bottom_plate_thickness + 2.0
             steel = cast(
                 cq.Shape,

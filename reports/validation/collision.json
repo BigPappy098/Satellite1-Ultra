@@ -1,5 +1,5 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "method": "exact OCCT boolean intersection volume for every pair",
   "part_count": 20,
@@ -7,6 +7,13 @@
   "official_pair_count": 102,
   "official_reference_note": "The HAT is represented by a conservative convex-band envelope built from its official STL; the remaining official parts are exact B-reps.",
   "positive_volume_contacts": [
+    {
+      "first": "outer_shell",
+      "second": "ballast_cartridge",
+      "intersection_mm3": 322.1013613773396,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
     {
       "first": "pressure_divider",
       "second": "wire_gland",
@@ -21,5 +28,5 @@
       "status": "PASS"
     }
   ],
-  "invalid_collision_count": 0
+  "invalid_collision_count": 1
 }

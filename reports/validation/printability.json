@@ -130,11 +130,11 @@
       "material": "2 mm closed-cell EPDM",
       "print_orientation": "flat",
       "bounds_mm": [
-        103.8,
-        103.8,
+        103.2,
+        103.2,
         2.0
       ],
-      "largest_dimension_mm": 103.8,
+      "largest_dimension_mm": 103.2,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -214,11 +214,11 @@
       "material": "ASA",
       "print_orientation": "tray floor on bed",
       "bounds_mm": [
-        129.8,
-        141.8,
+        129.4,
+        141.4,
         14.0
       ],
-      "largest_dimension_mm": 141.8,
+      "largest_dimension_mm": 141.4,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -228,11 +228,11 @@
       "material": "ASA",
       "print_orientation": "tongue face on bed",
       "bounds_mm": [
-        129.8,
-        141.8,
+        129.4,
+        141.4,
         3.5
       ],
-      "largest_dimension_mm": 141.8,
+      "largest_dimension_mm": 141.4,
       "build_envelope_mm": 256.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

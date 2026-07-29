@@ -8,7 +8,7 @@
     "evidence": "VERIFIED_DIGITALLY"
   },
   "collision": {
-    "status": "PASS",
+    "status": "FAIL",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "clearance": {

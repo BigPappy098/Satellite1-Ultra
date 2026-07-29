@@ -75,7 +75,7 @@ acoustics:
   amplifier_peak_current_a: 6.0
 
 ballast:
-  target_mass_g: 1054
+  target_mass_g: 879
   maximum_mass_g: 1250
   cartridge_material: steel_plate_stack
 
