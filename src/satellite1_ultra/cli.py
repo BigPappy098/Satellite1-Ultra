@@ -155,6 +155,15 @@ def docs_check() -> None:
     )
 
 
+@main.command("site")
+def site_command() -> None:
+    """Generate the illustrated builder website."""
+    from satellite1_ultra.site import generate_site
+
+    written = generate_site()
+    click.echo(f"  site: {len(written)} files")
+
+
 @main.command("package")
 def package_command() -> None:
     """Create the clean user-facing RC1 directory and zip archive."""
@@ -192,6 +201,7 @@ def run_all(context: click.Context) -> None:
         docs,
         manual_command,
         docs_check,
+        site_command,
         package_command,
     ):
         click.echo(f"== {step.name}")

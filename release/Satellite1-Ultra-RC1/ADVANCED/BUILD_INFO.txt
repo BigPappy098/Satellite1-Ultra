@@ -1,0 +1,9 @@
+Satellite1 Ultra RC1
+Generated from source commit b59edacd4ed097bdf22620df0254b79bbeca01d2
+
+Status: DIGITAL_PROTOTYPE_READY. No physical unit has been built and measured.
+Fit, sealing, acoustic performance, thermal margin, Wi-Fi, microphones, LEDs,
+buttons and wake-word performance are all REQUIRES_PHYSICAL_VALIDATION.
+
+Supported hardware: FutureProofHomes Satellite1 Batch 1, Core rev4.1 with
+HAT rev4.1 / R2024.12.06. Satellite1.1 / Batch 2 is not supported.

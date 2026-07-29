@@ -7,6 +7,8 @@ on:
     branches: [main]
     paths:
       - "wizard/**"
+      - "src/satellite1_ultra/site.py"
+      - "reports/renders/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -27,9 +29,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install Gmsh runtime library
+        run: sudo apt-get update && sudo apt-get install --yes libglu1-mesa
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --require-hashes -r requirements.lock
+      - run: python -m pip install --no-deps -e .
+      # Assembles the pages and copies in the current renders.
+      - run: python -m satellite1_ultra site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: wizard
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4

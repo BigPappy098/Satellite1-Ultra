@@ -48,116 +48,114 @@ def package_release(
         shutil.rmtree(output)
     output.mkdir(parents=True)
 
+    # One loose file at the top, then numbered folders in the order they are
+    # used.  Everything a builder does not need on day one lives under ADVANCED.
     for name in PDF_GUIDES:
-        _copy(root / "docs" / name, output / name)
+        _copy(root / "docs" / name, output / "GUIDES" / name)
     for name in ("BOM.csv", "FASTENERS.csv", "GASKETS.csv"):
-        _copy(root / "docs" / name, output / name)
+        _copy(root / "docs" / name, output / "SHOPPING_LIST" / name)
     _copy(
         root / "config" / "physical_calibration.yaml",
-        output / "CALIBRATION_INPUT_TEMPLATE.yaml",
+        output / "ADVANCED" / "CALIBRATION_INPUT_TEMPLATE.yaml",
     )
 
     for part_name in PARTS:
         if part_name not in CALIBRATION_NAMES:
             _copy(
                 root / "exports" / "step" / f"{part_name}.step",
-                output / "STEP" / f"{part_name}.step",
+                output / "ADVANCED" / "STEP" / f"{part_name}.step",
             )
         if part_name not in CALIBRATION_NAMES | GASKET_SOLIDS:
             for folder, suffix in (("STL", ".stl"), ("3MF", ".3mf")):
                 _copy(
                     root / "exports" / folder.lower() / f"{part_name}{suffix}",
-                    output / folder / f"{part_name}{suffix}",
+                    output / "ADVANCED" / folder / f"{part_name}{suffix}",
                 )
     for name in sorted(CALIBRATION_NAMES):
         _copy(
             root / "exports" / "3mf" / f"{name}.3mf",
-            output / "CALIBRATION_PARTS" / f"{name}.3mf",
+            output / "ADVANCED" / "CALIBRATION_PARTS" / f"{name}.3mf",
         )
     for path in sorted((root / "exports" / "assembly").glob("*.step")):
-        _copy(path, output / "STEP" / "ASSEMBLIES" / path.name)
+        _copy(path, output / "ADVANCED" / "STEP" / "ASSEMBLIES" / path.name)
     for path in sorted((root / "exports" / "gasket_templates").glob("*.dxf")):
         _copy(path, output / "GASKET_TEMPLATES" / path.name)
     for path in sorted((root / "reports" / "renders").glob("*.png")):
-        _copy(path, output / "IMAGES" / path.name)
+        _copy(path, output / "ADVANCED" / "IMAGES" / path.name)
     for source_name, friendly_name, _quantity in CALIBRATION_PRINT_ORDER:
         _copy(
             root / "exports" / "3mf" / f"{source_name}.3mf",
-            output / "PRINT_THESE_FILES" / "1_CALIBRATION_FIRST" / friendly_name,
+            output / "1_PRINT_THESE_FIRST" / friendly_name,
         )
     for source_name, friendly_name, _quantity in ULTRA_PRINT_ORDER:
         _copy(
             root / "exports" / "3mf" / f"{source_name}.3mf",
-            output / "PRINT_THESE_FILES" / "2_ULTRA_ENCLOSURE_PARTS" / friendly_name,
+            output / "2_ENCLOSURE_PARTS" / friendly_name,
         )
     official_by_name = {part.name: part for part in OFFICIAL_PRINT_PARTS_REQUIRED}
     for part in OFFICIAL_PRINT_PARTS_REQUIRED:
         _copy(
             part.stl_path,
-            output / "OFFICIAL_PARTS" / "REQUIRED_SINGLE_MATERIAL" / part.filename,
+            output / "ADVANCED" / "OFFICIAL_PARTS" / "REQUIRED_SINGLE_MATERIAL" / part.filename,
         )
     for source_name, friendly_name, _quantity in OFFICIAL_TOP_PRINT_ORDER:
         _copy(
             official_by_name[source_name].stl_path,
-            output / "PRINT_THESE_FILES" / "3_SQUIRCLE_TOP_PARTS" / friendly_name,
+            output / "3_SATELLITE_TOP_PARTS" / friendly_name,
         )
     for part in OFFICIAL_PRINT_PARTS_OPTIONAL_MM:
         _copy(
             part.stl_path,
-            output / "OFFICIAL_PARTS" / "OPTIONAL_MULTI_MATERIAL" / part.filename,
+            output / "ADVANCED" / "OFFICIAL_PARTS" / "OPTIONAL_MULTI_MATERIAL" / part.filename,
         )
 
-    read_first = """SATELLITE1 ULTRA - READ THIS FIRST
+    read_first = """SATELLITE1 ULTRA
 
-Open SATELLITE1_ULTRA_BUILD_BOOK.pdf and follow it from front to back.
-That one document takes you through the whole build. Everything else in this
-folder is reference material it points you to when you need it.
+START HERE:  https://bigpappy098.github.io/Satellite1-Ultra/
 
-The short version:
+That website walks you through the whole build, one step at a time, with a
+picture for each step. It is much easier to follow than these folders.
 
-1. Do not print the large enclosure parts yet.
-2. Print everything in PRINT_THESE_FILES/1_CALIBRATION_FIRST.
-3. Measure those pieces and correct the files, as the build book describes.
-4. Then print every file in PRINT_THESE_FILES/2_ULTRA_ENCLOSURE_PARTS and
-   PRINT_THESE_FILES/3_SQUIRCLE_TOP_PARTS, using the quantity shown in the
-   build book.
-5. Cut the three foam gaskets from GASKET_TEMPLATES at 100% scale.
-6. Assemble, then complete the tests before normal use.
+If you would rather work offline, open GUIDES/SATELLITE1_ULTRA_BUILD_BOOK.pdf
+and follow it from front to back.
 
-You can ignore STEP, STL, 3MF, IMAGES, and report folders unless the build
-book specifically sends you there.
+WHAT IS IN HERE
+---------------
+1_PRINT_THESE_FIRST   Eight small test pieces. Print these before anything else.
+2_ENCLOSURE_PARTS     The enclosure. Print every file, after the test pieces pass.
+3_SATELLITE_TOP_PARTS The original Satellite1 top. Print all six.
+GASKET_TEMPLATES      Print at 100% scale and cut three foam seals from them.
+GUIDES                The full manuals as PDFs.
+SHOPPING_LIST         What to buy: parts, screws, and seals.
+ADVANCED              Source CAD, images, checksums. Ignore unless you need them.
 
-Do not print the old official Squircle speaker chamber, speaker plate, or
-anti-slip ring. The Ultra files replace them.
+THE ONE RULE
+------------
+Do not print the big parts until the eight test pieces pass. That check is what
+makes everything else fit, and skipping it wastes days of filament.
+
+Do not print the old Satellite1 speaker chamber, speaker plate, or rubber ring.
+The Ultra parts replace all three.
+
+Nothing here has been physically built and measured yet, so keep checking as
+you go.
 """
-    (output / "00_READ_ME_FIRST.txt").write_text(read_first, encoding="utf-8")
+    (output / "START_HERE.txt").write_text(read_first, encoding="utf-8")
 
-    notes = f"""# Satellite1 Ultra RC1
+    # Provenance stays with the package, just out of the builder's way.
+    (output / "ADVANCED" / "BUILD_INFO.txt").write_text(
+        f"""Satellite1 Ultra RC1
+Generated from source commit {source_commit()}
 
-Status: `DIGITAL_PROTOTYPE_READY`.
+Status: DIGITAL_PROTOTYPE_READY. No physical unit has been built and measured.
+Fit, sealing, acoustic performance, thermal margin, Wi-Fi, microphones, LEDs,
+buttons and wake-word performance are all REQUIRES_PHYSICAL_VALIDATION.
 
-This package is generated from source commit `{source_commit()}`.
-
-**DO NOT PRINT THE FULL ENCLOSURE YET. PRINT AND COMPLETE THE CALIBRATION
-PARTS FIRST.**
-
-Supported hardware: FutureProofHomes Satellite1 Batch 1, Core rev4.1 plus
-HAT rev4.1 / R2024.12.06. Satellite1.1 / Batch 2 is unsupported.
-
-This package includes every required printable: the custom Ultra parts plus
-the six unmodified official Squircle upper-stack STL files under
-`OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/`. Do not print the official original
-speaker chamber, speaker plate, or anti-slip ring; the Ultra parts replace them.
-
-First-time builders should ignore the advanced CAD folders, open
-`SATELLITE1_ULTRA_BUILD_BOOK.pdf`, and print only from the numbered
-folders under `PRINT_THESE_FILES/`.
-
-No physical unit has been validated. Fit, sealing, acoustic performance,
-thermal margin, Wi-Fi, microphones, LEDs, buttons, and wake-word performance
-remain `REQUIRES_PHYSICAL_VALIDATION`.
-"""
-    (output / "RELEASE_NOTES.md").write_text(notes, encoding="utf-8")
+Supported hardware: FutureProofHomes Satellite1 Batch 1, Core rev4.1 with
+HAT rev4.1 / R2024.12.06. Satellite1.1 / Batch 2 is not supported.
+""",
+        encoding="utf-8",
+    )
 
     files = sorted(path for path in output.rglob("*") if path.is_file())
     checksum_path = output / "SOURCE_CHECKSUMS.txt"
