@@ -7,9 +7,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-import cadquery as cq  # noqa: E402
+import cadquery as cq
 
-from satellite1_ultra import renders  # noqa: E402
+from satellite1_ultra import renders
 
 renders.TESSELLATION_TOLERANCE = 0.05
 renders.ANGULAR_TOLERANCE = 0.10

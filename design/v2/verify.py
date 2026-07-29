@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import sys
+from itertools import pairwise
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from parts import (  # noqa: E402
+from parts import (
     BODY_BOTTOM_Z,
     BUSHING_BODY_H,
     BUSHING_FLANGE_T,
@@ -21,7 +22,7 @@ from parts import (  # noqa: E402
     pressure_divider,
     shell_segments,
 )
-from v2_silhouette import BODY_HALF, TOP_Z  # noqa: E402
+from v2_silhouette import BODY_HALF, TOP_Z
 
 BED_X, BED_Y = 220.0, 200.0
 
@@ -50,7 +51,6 @@ def main() -> int:
         )
 
     print("\nLap fit (analytic)")
-    mid = BODY_HALF - SEAM_WALL / 2.0
     corner = LAP_CLEARANCE * 1.202  # superellipse scaling at 45 degrees
     failures += not check(
         "radial clearance in range",
@@ -58,7 +58,8 @@ def main() -> int:
         f"{LAP_CLEARANCE:.2f} mm at the face, {corner:.2f} mm at the corner",
     )
     failures += not check(
-        "engagement >= 3x wall", LAP_DEPTH >= 3.0 * SEAM_WALL / 2.0,
+        "engagement >= 3x wall",
+        LAP_DEPTH >= 3.0 * SEAM_WALL / 2.0,
         f"{LAP_DEPTH:.0f} mm lap on a {SEAM_WALL / 2.0:.1f} mm tongue",
     )
     failures += not check(
@@ -69,11 +70,9 @@ def main() -> int:
 
     print("\nSolid interference between adjacent segments")
     names = list(segments)
-    for lower, upper in zip(names, names[1:]):
+    for lower, upper in pairwise(names):
         overlap = segments[lower].intersect(segments[upper]).Volume() / 1.0e3
-        failures += not check(
-            f"{lower} vs {upper}", overlap < 0.05, f"{overlap:.4f} cm3 overlap"
-        )
+        failures += not check(f"{lower} vs {upper}", overlap < 0.05, f"{overlap:.4f} cm3 overlap")
 
     print("\nOfficial interface isolation")
     divider = pressure_divider()
@@ -95,11 +94,14 @@ def main() -> int:
     cab = main_cabinet()
     box = cab.BoundingBox()
     failures += not check(
-        "cabinet fits bed", box.xlen <= BED_X and box.ylen <= BED_Y,
+        "cabinet fits bed",
+        box.xlen <= BED_X and box.ylen <= BED_Y,
         f"{box.xlen:.1f} x {box.ylen:.1f} x {box.zlen:.1f}",
     )
-    print(f"  product envelope: {2 * BODY_HALF:.0f} x {2 * BODY_HALF:.0f} x "
-          f"{TOP_Z - BODY_BOTTOM_Z:.1f} mm")
+    print(
+        f"  product envelope: {2 * BODY_HALF:.0f} x {2 * BODY_HALF:.0f} x "
+        f"{TOP_Z - BODY_BOTTOM_Z:.1f} mm"
+    )
     print(f"\n{'ALL CHECKS PASSED' if failures == 0 else f'{failures} CHECK(S) FAILED'}")
     return 1 if failures else 0
 

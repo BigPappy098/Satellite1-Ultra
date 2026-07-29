@@ -11,23 +11,24 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, replace
+from typing import cast
 
 import cadquery as cq
 
 # Superellipse exponent measured from the official lock ring (fit error 0.38 mm).
 OFFICIAL_N = 4.13
-OFFICIAL_HALF = 55.0          # official squircle is 110 mm across
-OFFICIAL_TOP_Z = 17.09        # official top plate's top face — a true plane
-OFFICIAL_FULL_Z = -7.0        # lowest z at which the official part is still 110 sq
+OFFICIAL_HALF = 55.0  # official squircle is 110 mm across
+OFFICIAL_TOP_Z = 17.09  # official top plate's top face — a true plane
+OFFICIAL_FULL_Z = -7.0  # lowest z at which the official part is still 110 sq
 
-BODY_HALF = 92.0              # 184 mm square body
-TOP_Z = OFFICIAL_TOP_Z        # the product's flat top is the official top
-TOP_ROLL = 22.0               # radius rolling the body into the flat top
-BOTTOM_ROLL = 6.0             # quarter-round softening the ground edge
-POCKET_CLEARANCE = 0.4        # hairline shadow gap around the official part
+BODY_HALF = 92.0  # 184 mm square body
+TOP_Z = OFFICIAL_TOP_Z  # the product's flat top is the official top
+TOP_ROLL = 22.0  # radius rolling the body into the flat top
+BOTTOM_ROLL = 6.0  # quarter-round softening the ground edge
+POCKET_CLEARANCE = 0.4  # hairline shadow gap around the official part
 
 SHELL_WALL = 3.0
-SHELL_GAP = 9.0               # shell inner face to cabinet outer face
+SHELL_GAP = 9.0  # shell inner face to cabinet outer face
 CABINET_WALL = 4.0
 CABINET_OFFSET = SHELL_WALL + SHELL_GAP
 INNER_OFFSET = CABINET_OFFSET + CABINET_WALL
@@ -65,9 +66,9 @@ def superellipse_area(a: float, n: float = OFFICIAL_N) -> float:
     return 4.0 * a * a * math.gamma(1.0 + 1.0 / n) ** 2 / math.gamma(1.0 + 2.0 / n)
 
 
-def _prism(a: float, z0: float, z1: float) -> cq.Solid:
+def _prism(a: float, z0: float, z1: float) -> cq.Shape:
     face = cq.Face.makeFromWires(superellipse_wire(a, z0))
-    return cq.Solid.extrudeLinear(face, cq.Vector(0.0, 0.0, z1 - z0))
+    return cast(cq.Shape, cq.Solid.extrudeLinear(face, cq.Vector(0.0, 0.0, z1 - z0)))
 
 
 def _roll(offset: float, z0: float, z1: float, z_bottom: float, steps: int = 14) -> cq.Solid:
@@ -91,9 +92,9 @@ def outer_body(z_bottom: float, offset: float = 0.0) -> cq.Shape:
 
 @dataclass(frozen=True)
 class Layout:
-    z_bottom: float           # underside of the product
-    cavity_floor: float       # inside face of the acoustic floor
-    cavity_top: float         # underside of the pressure divider
+    z_bottom: float  # underside of the product
+    cavity_floor: float  # inside face of the acoustic floor
+    cavity_top: float  # underside of the pressure divider
     driver_axis: float
     pr_axis: float
 
@@ -140,14 +141,19 @@ def report(layout: Layout) -> None:
     total = TOP_Z - layout.z_bottom
     print(f"overall height     {total:8.1f} mm")
     print(f"aspect             {total / (2 * BODY_HALF):8.2f} : 1")
-    print(f"flat top ring      {2 * (BODY_HALF - TOP_ROLL):8.1f} mm across "
-          f"({BODY_HALF - TOP_ROLL - OFFICIAL_HALF:.1f} mm of flat around the Sat1)")
+    print(
+        f"flat top ring      {2 * (BODY_HALF - TOP_ROLL):8.1f} mm across "
+        f"({BODY_HALF - TOP_ROLL - OFFICIAL_HALF:.1f} mm of flat around the Sat1)"
+    )
 
 
 def solved_layout() -> Layout:
     base = Layout(
-        z_bottom=-250.0, cavity_floor=-220.0, cavity_top=-34.0,
-        driver_axis=-150.0, pr_axis=-165.0,
+        z_bottom=-250.0,
+        cavity_floor=-220.0,
+        cavity_top=-34.0,
+        driver_axis=-150.0,
+        pr_axis=-165.0,
     )
     solved = solve_floor(base, 3.9664)
     # acoustic floor 8, ballast + base skirt 22, bottom plate 4

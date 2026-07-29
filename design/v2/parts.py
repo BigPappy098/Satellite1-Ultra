@@ -21,18 +21,6 @@ from functools import lru_cache
 from typing import cast
 
 import cadquery as cq
-
-from satellite1_ultra.geometry import (
-    DEFAULT_PARAMETERS,
-    DesignParameters,
-    _apply_mount,
-    _blind_insert,
-    _compression_stop,
-    acoustic_mounts,
-    base_fastener_positions,
-    official_mount_positions,
-    top_fastener_positions,
-)
 from v2_silhouette import (
     BODY_HALF,
     BOTTOM_ROLL,
@@ -44,9 +32,18 @@ from v2_silhouette import (
     TOP_ROLL,
     TOP_Z,
     _prism,
-    body_half,
     outer_body,
-    superellipse_wire,
+)
+
+from satellite1_ultra.geometry import (
+    DEFAULT_PARAMETERS,
+    _apply_mount,
+    _blind_insert,
+    _compression_stop,
+    acoustic_mounts,
+    base_fastener_positions,
+    official_mount_positions,
+    top_fastener_positions,
 )
 
 # --------------------------------------------------------------------- #
@@ -74,7 +71,7 @@ V2 = replace(
 
 BODY_BOTTOM_Z = V2.base_bottom_z - 4.0
 
-WINDOW_DIAMETER = 124.0        # grille field over each acoustic component
+WINDOW_DIAMETER = 124.0  # grille field over each acoustic component
 SLOT_WIDTH = 3.4
 SLOT_PITCH = 7.0
 FABRIC_GROOVE_W = 2.2
@@ -87,11 +84,11 @@ FABRIC_GROOVE_D = 1.5
 # no seam grazes a window edge and leaves a fragile sliver.  That puts the
 # whole grille field in one segment, and every segment inside the bed.
 SEAM_Z = (-184.0, -50.0)
-LAP_DEPTH = 12.0               # rabbet engagement
-LAP_CLEARANCE = 0.25           # per-side sliding fit on the lap
-SEAM_WALL = 5.0                # wall thickened inward across the joint
-SEAM_RUNOUT = 4.0              # reinforcement below the seam plane
-SHADOW_DEPTH = 0.3             # deliberate relief at the visible butt line
+LAP_DEPTH = 12.0  # rabbet engagement
+LAP_CLEARANCE = 0.25  # per-side sliding fit on the lap
+SEAM_WALL = 5.0  # wall thickened inward across the joint
+SEAM_RUNOUT = 4.0  # reinforcement below the seam plane
+SHADOW_DEPTH = 0.3  # deliberate relief at the visible butt line
 SHADOW_HEIGHT = 0.6
 
 
@@ -105,8 +102,9 @@ def main_cabinet() -> cq.Shape:
     """Sealed acoustic cabinet on the square superellipse section."""
     p = V2
     envelope = cabinet_envelope()
-    cavity = _prism(BODY_HALF - CABINET_OFFSET - p.wall_thickness, p.cavity_bottom_z,
-                    p.acoustic_top_z + 1.0)
+    cavity = _prism(
+        BODY_HALF - CABINET_OFFSET - p.wall_thickness, p.cavity_bottom_z, p.acoustic_top_z + 1.0
+    )
     cabinet = envelope.cut(cavity)
 
     # Vertical wall ribs, clear of every component envelope.
@@ -134,8 +132,10 @@ def main_cabinet() -> cq.Shape:
     boss_h = 10.0
     for x, y in top_fastener_positions(p):
         boss = cq.Solid.makeCylinder(
-            p.boss_outer_diameter / 2.0, boss_h,
-            cq.Vector(x, y, p.acoustic_top_z - boss_h), cq.Vector(0.0, 0.0, 1.0),
+            p.boss_outer_diameter / 2.0,
+            boss_h,
+            cq.Vector(x, y, p.acoustic_top_z - boss_h),
+            cq.Vector(0.0, 0.0, 1.0),
         )
         if abs(y) > abs(x):
             wall_y = (half + p.wall_thickness) * (1.0 if y > 0 else -1.0)
@@ -168,30 +168,38 @@ def pressure_divider() -> cq.Shape:
     divider = _prism(BODY_HALF - CABINET_OFFSET, z0, z0 + p.divider_thickness)
     divider = divider.cut(
         cq.Solid.makeCylinder(
-            p.cable_passage_diameter / 2.0, p.divider_thickness,
-            cq.Vector(p.cable_passage_x, p.cable_passage_y, z0), cq.Vector(0.0, 0.0, 1.0),
+            p.cable_passage_diameter / 2.0,
+            p.divider_thickness,
+            cq.Vector(p.cable_passage_x, p.cable_passage_y, z0),
+            cq.Vector(0.0, 0.0, 1.0),
         )
     )
     for x, y in top_fastener_positions(p):
         divider = divider.cut(
             cq.Solid.makeCylinder(
-                p.fastener_clearance_diameter / 2.0, p.divider_thickness,
-                cq.Vector(x, y, z0), cq.Vector(0.0, 0.0, 1.0),
+                p.fastener_clearance_diameter / 2.0,
+                p.divider_thickness,
+                cq.Vector(x, y, z0),
+                cq.Vector(0.0, 0.0, 1.0),
             )
         )
     interface_z = p.official_interface_z
     for x, y in official_mount_positions(p):
         boss = cq.Solid.makeCylinder(
-            BUSHING_FLANGE_D / 2.0 + 1.6, interface_z - z0,
-            cq.Vector(x, y, z0), cq.Vector(0.0, 0.0, 1.0),
+            BUSHING_FLANGE_D / 2.0 + 1.6,
+            interface_z - z0,
+            cq.Vector(x, y, z0),
+            cq.Vector(0.0, 0.0, 1.0),
         )
         divider = divider.fuse(boss)
         # Counterbore seats the isolation bushing's body; the insert bore starts
         # below it so the heat-set insert still gets its full depth.
         divider = divider.cut(
             cq.Solid.makeCylinder(
-                (BUSHING_BODY_D + 2.0 * p.print_clearance) / 2.0, BUSHING_BODY_H,
-                cq.Vector(x, y, interface_z - BUSHING_BODY_H), cq.Vector(0.0, 0.0, 1.0),
+                (BUSHING_BODY_D + 2.0 * p.print_clearance) / 2.0,
+                BUSHING_BODY_H,
+                cq.Vector(x, y, interface_z - BUSHING_BODY_H),
+                cq.Vector(0.0, 0.0, 1.0),
             )
         )
         divider = divider.cut(_blind_insert(x, y, interface_z - BUSHING_BODY_H, -1.0, p))
@@ -199,11 +207,15 @@ def pressure_divider() -> cq.Shape:
     for axis in ("x", "y"):
         for sign in (-1.0, 1.0):
             if axis == "x":
-                origin, size = (0.0, sign * p.official_mount_y, rib_bottom), (
-                    2.0 * p.official_mount_x, 5.0)
+                origin, size = (
+                    (0.0, sign * p.official_mount_y, rib_bottom),
+                    (2.0 * p.official_mount_x, 5.0),
+                )
             else:
-                origin, size = (sign * p.official_mount_x, 0.0, rib_bottom), (
-                    5.0, 2.0 * p.official_mount_y)
+                origin, size = (
+                    (sign * p.official_mount_x, 0.0, rib_bottom),
+                    (5.0, 2.0 * p.official_mount_y),
+                )
             rib = cq.Workplane("XY", origin=origin).box(
                 size[0], size[1], interface_z - rib_bottom, centered=(True, True, False)
             )
@@ -359,7 +371,7 @@ BUSHING_FLANGE_T = 2.0
 BUSHING_FLANGE_D = 13.0
 BUSHING_BODY_D = 8.6
 BUSHING_BODY_H = 4.0
-BUSHING_BORE_D = 4.2           # radial slack so the M3 never touches TPU-free metal
+BUSHING_BORE_D = 4.2  # radial slack so the M3 never touches TPU-free metal
 
 
 def mic_isolation_bushing() -> cq.Shape:
@@ -373,12 +385,16 @@ def mic_isolation_bushing() -> cq.Shape:
         BUSHING_FLANGE_D / 2.0, BUSHING_FLANGE_T, cq.Vector(0, 0, 0), cq.Vector(0, 0, 1)
     )
     body = cq.Solid.makeCylinder(
-        BUSHING_BODY_D / 2.0, BUSHING_BODY_H,
-        cq.Vector(0, 0, -BUSHING_BODY_H), cq.Vector(0, 0, 1),
+        BUSHING_BODY_D / 2.0,
+        BUSHING_BODY_H,
+        cq.Vector(0, 0, -BUSHING_BODY_H),
+        cq.Vector(0, 0, 1),
     )
     bore = cq.Solid.makeCylinder(
-        BUSHING_BORE_D / 2.0, BUSHING_FLANGE_T + BUSHING_BODY_H + 2.0,
-        cq.Vector(0, 0, -BUSHING_BODY_H - 1.0), cq.Vector(0, 0, 1),
+        BUSHING_BORE_D / 2.0,
+        BUSHING_FLANGE_T + BUSHING_BODY_H + 2.0,
+        cq.Vector(0, 0, -BUSHING_BODY_H - 1.0),
+        cq.Vector(0, 0, 1),
     )
     return flange.fuse(body).cut(bore)
 
@@ -414,8 +430,12 @@ if __name__ == "__main__":
     print(f"body                 {2 * BODY_HALF:.0f} sq x {TOP_Z - BODY_BOTTOM_Z:.1f} tall")
     cab = main_cabinet()
     print(f"cabinet volume       {cab.Volume() / 1.0e6:8.3f} L of material")
-    print(f"cabinet bbox         {cab.BoundingBox().xlen:.1f} x {cab.BoundingBox().ylen:.1f}"
-          f" x {cab.BoundingBox().zlen:.1f}")
+    print(
+        f"cabinet bbox         {cab.BoundingBox().xlen:.1f} x {cab.BoundingBox().ylen:.1f}"
+        f" x {cab.BoundingBox().zlen:.1f}"
+    )
     sh = outer_shell()
-    print(f"shell bbox           {sh.BoundingBox().xlen:.1f} x {sh.BoundingBox().ylen:.1f}"
-          f" x {sh.BoundingBox().zlen:.1f}")
+    print(
+        f"shell bbox           {sh.BoundingBox().xlen:.1f} x {sh.BoundingBox().ylen:.1f}"
+        f" x {sh.BoundingBox().zlen:.1f}"
+    )

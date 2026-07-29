@@ -7,13 +7,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-import cadquery as cq  # noqa: E402
+import cadquery as cq
 
-from satellite1_ultra import renders  # noqa: E402
+from satellite1_ultra import renders
 
 # The stock tessellation is tuned for speed; a form review needs it smooth.
 renders.TESSELLATION_TOLERANCE = 0.04
 renders.ANGULAR_TOLERANCE = 0.08
+
+from v2_silhouette import report, solid_form, solved_layout  # noqa: E402
 
 from satellite1_ultra.geometry import (  # noqa: E402
     DEFAULT_PARAMETERS,
@@ -21,7 +23,6 @@ from satellite1_ultra.geometry import (  # noqa: E402
     outer_shell,
 )
 from satellite1_ultra.official import official_upper_solids  # noqa: E402
-from v2_silhouette import report, solid_form, solved_layout  # noqa: E402
 
 OUT = Path(__file__).parent
 HIDE = ("official_hat_batch1_rev4_1", "official_pcb_spacer")
@@ -54,8 +55,7 @@ def main() -> None:
             OUT / f"v2_{view.name}.png",
             v2,
             f"v2 flat-top monolith — {view.name}",
-            "superellipse body, rolled top edge, Sat1 flush in the top plane; "
-            "184 sq x 270 tall",
+            "superellipse body, rolled top edge, Sat1 flush in the top plane; 184 sq x 270 tall",
             view=view,
             colors=grey(v2),
         )
