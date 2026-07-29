@@ -437,6 +437,113 @@ def _spread(
     return [(point[0], point[1]) for point in placed]
 
 
+@dataclass(frozen=True)
+class Annotation:
+    """One instruction drawn onto a scene at real model coordinates.
+
+    ``span`` draws a dimension line between two points on the part.  ``point``
+    labels one feature.  ``push`` shows which way something is pressed or
+    dropped in.  All coordinates are millimetres in the rendered part's frame,
+    so the arrow always lands on the feature it describes.
+    """
+
+    kind: str
+    text: str
+    start: tuple[float, float, float]
+    end: tuple[float, float, float] | None = None
+    label_offset: tuple[float, float] = (0.0, 0.06)
+
+
+def _project(
+    figure: Figure,
+    axis: object,
+    point: tuple[float, float, float],
+) -> tuple[float, float]:
+    flat_x, flat_y, _ = proj3d.proj_transform(point[0], point[1], point[2], axis.get_proj())  # type: ignore[attr-defined]
+    display = axis.transData.transform((flat_x, flat_y))  # type: ignore[attr-defined]
+    return cast(tuple[float, float], tuple(figure.transFigure.inverted().transform(display)))
+
+
+def _clamp_label(anchor: tuple[float, float], characters: int) -> tuple[float, float]:
+    """Keep a centred label box fully on the page."""
+    half = min(0.42, 0.0043 * characters + 0.012)
+    x = min(max(anchor[0], half + 0.015), 1.0 - half - 0.015)
+    y = min(max(anchor[1], 0.06), 0.88)
+    return (x, y)
+
+
+def _draw_annotations(
+    figure: Figure,
+    axis: object,
+    annotations: tuple[Annotation, ...],
+) -> None:
+    """Draw measurement and action arrows onto the features they refer to."""
+    figure.canvas.draw()
+    overlay = figure.add_axes((0.0, 0.0, 1.0, 1.0), frameon=False, zorder=8)
+    overlay.set_axis_off()
+    overlay.set_xlim(0.0, 1.0)
+    overlay.set_ylim(0.0, 1.0)
+    red = "#c2281e"
+    for item in annotations:
+        start = _project(figure, axis, item.start)
+        if item.kind == "span" and item.end is not None:
+            end = _project(figure, axis, item.end)
+            overlay.annotate(
+                "",
+                xy=end,
+                xytext=start,
+                arrowprops={
+                    "arrowstyle": "<|-|>",
+                    "color": red,
+                    "linewidth": 2.0,
+                    "shrinkA": 0.0,
+                    "shrinkB": 0.0,
+                    "mutation_scale": 16,
+                },
+            )
+            mid = ((start[0] + end[0]) / 2.0, (start[1] + end[1]) / 2.0)
+            anchor = _clamp_label(
+                (mid[0] + item.label_offset[0], mid[1] + item.label_offset[1]),
+                len(item.text),
+            )
+            overlay.annotate(
+                "",
+                xy=mid,
+                xytext=anchor,
+                arrowprops={"arrowstyle": "-", "color": red, "linewidth": 1.0},
+            )
+        else:
+            anchor = _clamp_label(
+                (start[0] + item.label_offset[0], start[1] + item.label_offset[1]),
+                len(item.text),
+            )
+            style = "-|>" if item.kind == "push" else "->"
+            overlay.annotate(
+                "",
+                xy=start,
+                xytext=anchor,
+                arrowprops={
+                    "arrowstyle": style,
+                    "color": red,
+                    "linewidth": 2.0,
+                    "shrinkB": 2.0,
+                    "mutation_scale": 15,
+                },
+            )
+        overlay.text(
+            anchor[0],
+            anchor[1],
+            item.text,
+            ha="center",
+            va="bottom" if item.label_offset[1] >= 0 else "top",
+            fontsize=10.5,
+            weight="bold",
+            color=red,
+            zorder=9,
+            bbox={"boxstyle": "round,pad=0.28", "facecolor": "white", "edgecolor": red},
+        )
+
+
 def _draw_callouts(
     figure: Figure,
     axis: object,
@@ -678,7 +785,8 @@ def _scene(
     note: str,
     view: View = VIEWS[0],
     colors: dict[str, tuple[float, float, float]] | None = None,
-    measurement: str | None = None,
+    annotations: tuple[Annotation, ...] = (),
+    zoom: float | None = None,
     callouts: bool = False,
     step_badge: str | None = None,
 ) -> Path:
@@ -693,7 +801,7 @@ def _scene(
     drawing_right = 0.640 if callouts else 0.985
     axis = figure.add_subplot(111, projection="3d")
     low, high = _draw(axis, parts, colors or _colors(parts), view)
-    _finish(figure, axis, low, high, view, zoom=1.30 if callouts else 1.18)
+    _finish(figure, axis, low, high, view, zoom=zoom or (1.30 if callouts else 1.18))
     axis.set_position((0.005, 0.035, drawing_right - 0.005, 0.860))
     figure.patch.set_facecolor("#ffffff")
 
@@ -735,27 +843,8 @@ def _scene(
     )
     if callouts:
         _draw_callouts(figure, axis, parts, legend_left)
-    if measurement:
-        overlay = figure.add_axes((0.0, 0.0, 1.0, 1.0), frameon=False, zorder=3)
-        overlay.set_axis_off()
-        overlay.annotate(
-            "",
-            xy=(0.60, 0.50),
-            xytext=(0.08, 0.50),
-            xycoords="axes fraction",
-            arrowprops={"arrowstyle": "<->", "color": "#c23b32", "linewidth": 2.2},
-        )
-        overlay.text(
-            0.34,
-            0.525,
-            measurement,
-            ha="center",
-            va="bottom",
-            color="#a52f28",
-            fontsize=10.5,
-            weight="bold",
-            transform=overlay.transAxes,
-        )
+    if annotations:
+        _draw_annotations(figure, axis, annotations)
     path.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(path, facecolor=figure.get_facecolor())
     plt.close(figure)
@@ -811,70 +900,206 @@ def render_calibration_diagrams(
     output: Path,
     parameters: DesignParameters,
 ) -> list[Path]:
-    """Render the actual calibration B-reps with unambiguous measurement notes."""
+    """Render each calibration piece with arrows on the features being measured.
+
+    Every arrow is placed from real model coordinates, so it points at the
+    actual recess, bore, or seat the builder must touch.
+    """
     from satellite1_ultra.coupons import COUPONS
     from satellite1_ultra.exporting import print_oriented
     from satellite1_ultra.geometry import cable_gland
 
-    diagrams: tuple[tuple[str, tuple[str, ...], str, str], ...] = (
-        (
-            "calibration_official_interface",
-            ("coupon_official_interface",),
-            "Inside jaws: engraved 110.60 mm XY span. Outside jaws: four clean 3.00 mm edges.",
-            "CALIPER JAWS: 110.60 mm SPAN",
-        ),
-        (
-            "calibration_fasteners",
-            ("coupon_heat_set_insert",),
-            "Functional gauges: M3 screw in 3.4/3.5/3.6 holes; insert in 4.0–4.3 blind bores.",
-            "USE SCREW / INSERT AS GAUGES",
-        ),
-        (
-            "calibration_driver",
-            ("coupon_active_driver",),
-            "Seat the purchased ND91-4 by hand. Measure its flange thickness at four quadrants.",
-            "SEAT DRIVER BY HAND",
-        ),
-        (
-            "calibration_radiator",
-            ("coupon_passive_radiator",),
-            "Seat one SB12PACR-00 by hand. Measure its flange thickness at four quadrants.",
-            "SEAT RADIATOR BY HAND",
-        ),
-        (
-            "calibration_gasket",
-            ("coupon_gasket_base", "coupon_gasket_cap"),
-            "Measure sheet thickness; tighten until both hard stops touch; inspect the closed light path.",
-            "GASKET BETWEEN BASE AND CAP",
-        ),
-        (
-            "calibration_cable",
-            ("coupon_cable_passage", "cable_gland"),
-            "Fit the two actual 22 AWG conductors. The gland must seat by hand and resist rotation.",
-            "INSERT GLAND WITH TWO WIRES",
-        ),
-    )
-    written: list[Path] = []
-    for stem, names, note, measurement in diagrams:
+    def build(names: tuple[str, ...]) -> tuple[dict[str, cq.Shape], dict[str, float]]:
+        """Lay the pieces out side by side and report where each one landed."""
         parts: dict[str, cq.Shape] = {}
-        x_offset = 0.0
+        offsets: dict[str, float] = {}
+        cursor = 0.0
         for name in names:
             shape = cable_gland(parameters) if name == "cable_gland" else COUPONS[name](parameters)
             shape = print_oriented(shape)
             box = shape.BoundingBox()
-            parts[name] = shape.translate(cq.Vector(x_offset - box.xmin, 0.0, 0.0))
-            x_offset += box.xlen + 12.0
+            shift = cursor - box.xmin
+            parts[name] = shape.translate(cq.Vector(shift, 0.0, 0.0))
+            offsets[name] = shift
+            cursor += box.xlen + 14.0
+        return parts, offsets
+
+    def top_of(parts: dict[str, cq.Shape], name: str) -> float:
+        return parts[name].BoundingBox().zmax
+
+    written: list[Path] = []
+
+    # 1. The official-interface coupon: one span across the engraved recess and
+    #    one pointer at a clean outside edge.
+    parts, offsets = build(("coupon_official_interface",))
+    dx = offsets["coupon_official_interface"]
+    written.append(
+        _scene(
+            output / "calibration_official_interface.png",
+            parts,
+            "Measure the marked slot, and the flat edge",
+            "Inside jaws across the recess. Outside jaws on any clean 3.00 mm edge.",
+            View("calibration", 62.0, -90.0),
+            {name: (0.33, 0.48, 0.66) for name in parts},
+            zoom=1.55,
+            annotations=(
+                Annotation(
+                    "span",
+                    "110.60 mm  —  inside jaws",
+                    (dx - 55.3, -6.0, 2.0),
+                    (dx + 55.3, -6.0, 2.0),
+                    (0.0, -0.10),
+                ),
+                Annotation(
+                    "point",
+                    "3.00 mm  —  outside jaws on this edge",
+                    (dx + 60.0, 20.0, 1.5),
+                    None,
+                    (0.16, 0.10),
+                ),
+            ),
+        )
+    )
+
+    # 2. The fastener coupon: two pointers, one per row of holes.
+    parts, offsets = build(("coupon_heat_set_insert",))
+    dx = offsets["coupon_heat_set_insert"]
+    written.append(
+        _scene(
+            output / "calibration_fasteners.png",
+            parts,
+            "Use the screw and the insert as gauges",
+            "Do not measure these holes with caliper tips. The hardware is the gauge.",
+            View("calibration", 62.0, -90.0),
+            {name: (0.33, 0.48, 0.66) for name in parts},
+            zoom=1.55,
+            annotations=(
+                Annotation(
+                    "point",
+                    "Melt an insert into each of these four",
+                    (dx - 30.0, 0.0, 10.0),
+                    None,
+                    (-0.10, 0.13),
+                ),
+                Annotation(
+                    "point",
+                    "Try your M3 screw in these three",
+                    (dx + 35.0, 0.0, 10.0),
+                    None,
+                    (0.10, 0.13),
+                ),
+            ),
+        )
+    )
+
+    # 3 and 4. Component seats: one arrow showing the part dropping in.
+    for stem, coupon, title, note, what in (
+        (
+            "calibration_driver",
+            "coupon_active_driver",
+            "Check your speaker drops in",
+            "It must drop in by hand and sit flat. Never force it.",
+            "speaker",
+        ),
+        (
+            "calibration_radiator",
+            "coupon_passive_radiator",
+            "Check your radiator drops in",
+            "It must drop in by hand and sit flat. Never force it.",
+            "radiator",
+        ),
+    ):
+        parts, offsets = build((coupon,))
+        dx = offsets[coupon]
         written.append(
             _scene(
                 output / f"{stem}.png",
                 parts,
-                stem.replace("_", " ").title(),
+                title,
                 note,
-                View("calibration", 68.0, -90.0),
+                View("calibration", 58.0, -90.0),
                 {name: (0.33, 0.48, 0.66) for name in parts},
-                measurement,
+                zoom=1.5,
+                annotations=(
+                    Annotation(
+                        "push",
+                        f"Drop the {what} in here",
+                        (dx, 0.0, top_of(parts, coupon)),
+                        None,
+                        (0.0, 0.16),
+                    ),
+                    Annotation(
+                        "point",
+                        "Measure the rim thickness at four points",
+                        (dx, 0.0, top_of(parts, coupon)),
+                        None,
+                        (-0.22, -0.13),
+                    ),
+                ),
             )
         )
+
+    # 5. Gasket stack: foam location, and the direction the cap is tightened.
+    parts, offsets = build(("coupon_gasket_base", "coupon_gasket_cap"))
+    base_dx, cap_dx = offsets["coupon_gasket_base"], offsets["coupon_gasket_cap"]
+    written.append(
+        _scene(
+            output / "calibration_gasket.png",
+            parts,
+            "Squash a strip of your foam between these two",
+            "Tighten until the two hard stops touch, then measure the gap that is left.",
+            View("calibration", 52.0, -90.0),
+            {name: (0.33, 0.48, 0.66) for name in parts},
+            zoom=1.5,
+            annotations=(
+                Annotation(
+                    "point",
+                    "Your foam strip goes across here",
+                    (base_dx, 0.0, top_of(parts, "coupon_gasket_base")),
+                    None,
+                    (-0.04, 0.15),
+                ),
+                Annotation(
+                    "push",
+                    "This cap goes on top and is tightened down",
+                    (cap_dx, 0.0, top_of(parts, "coupon_gasket_cap")),
+                    None,
+                    (0.06, 0.15),
+                ),
+            ),
+        )
+    )
+
+    # 6. Cable passage: the direction the seal and both wires are pushed.
+    parts, offsets = build(("coupon_cable_passage", "cable_gland"))
+    plate_dx, gland_dx = offsets["coupon_cable_passage"], offsets["cable_gland"]
+    written.append(
+        _scene(
+            output / "calibration_cable.png",
+            parts,
+            "Push the seal and both wires through the hole",
+            "It should take firm finger pressure, then stay put and refuse to twist.",
+            View("calibration", 52.0, -90.0),
+            {name: (0.33, 0.48, 0.66) for name in parts},
+            zoom=1.5,
+            annotations=(
+                Annotation(
+                    "push",
+                    "Push the seal into this hole",
+                    (plate_dx, 0.0, top_of(parts, "coupon_cable_passage")),
+                    None,
+                    (-0.02, 0.15),
+                ),
+                Annotation(
+                    "point",
+                    "Both real speaker wires go through the seal",
+                    (gland_dx, 0.0, top_of(parts, "cable_gland")),
+                    None,
+                    (0.10, 0.14),
+                ),
+            ),
+        )
+    )
     return written
 
 
