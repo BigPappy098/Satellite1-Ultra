@@ -67,6 +67,9 @@ V2 = replace(
     # read as a single band around the body, centred on the visible silhouette.
     driver_axis_z=-117.0,
     pr_axis_z=-117.0,
+    # Divider boss tops drop by the isolation bushing's flange thickness so the
+    # official stack still seats at -6.8 and the flat top stays flush.
+    official_interface_z=-8.8,
 )
 
 BODY_BOTTOM_Z = V2.base_bottom_z - 4.0
@@ -76,6 +79,20 @@ SLOT_WIDTH = 3.4
 SLOT_PITCH = 7.0
 FABRIC_GROOVE_W = 2.2
 FABRIC_GROOVE_D = 1.5
+
+# --------------------------------------------------------------------- #
+# Shell split
+# --------------------------------------------------------------------- #
+# Seams sit 5 mm clear of the grille windows (which span z -179 to -55), so
+# no seam grazes a window edge and leaves a fragile sliver.  That puts the
+# whole grille field in one segment, and every segment inside the bed.
+SEAM_Z = (-184.0, -50.0)
+LAP_DEPTH = 12.0               # rabbet engagement
+LAP_CLEARANCE = 0.25           # per-side sliding fit on the lap
+SEAM_WALL = 5.0                # wall thickened inward across the joint
+SEAM_RUNOUT = 4.0              # reinforcement below the seam plane
+SHADOW_DEPTH = 0.3             # deliberate relief at the visible butt line
+SHADOW_HEIGHT = 0.6
 
 
 def cabinet_envelope() -> cq.Shape:
@@ -165,11 +182,19 @@ def pressure_divider() -> cq.Shape:
     interface_z = p.official_interface_z
     for x, y in official_mount_positions(p):
         boss = cq.Solid.makeCylinder(
-            p.boss_outer_diameter / 2.0, interface_z - z0,
+            BUSHING_FLANGE_D / 2.0 + 1.6, interface_z - z0,
             cq.Vector(x, y, z0), cq.Vector(0.0, 0.0, 1.0),
         )
         divider = divider.fuse(boss)
-        divider = divider.cut(_blind_insert(x, y, interface_z, -1.0, p))
+        # Counterbore seats the isolation bushing's body; the insert bore starts
+        # below it so the heat-set insert still gets its full depth.
+        divider = divider.cut(
+            cq.Solid.makeCylinder(
+                (BUSHING_BODY_D + 2.0 * p.print_clearance) / 2.0, BUSHING_BODY_H,
+                cq.Vector(x, y, interface_z - BUSHING_BODY_H), cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+        divider = divider.cut(_blind_insert(x, y, interface_z - BUSHING_BODY_H, -1.0, p))
     rib_bottom = z0 + p.divider_thickness
     for axis in ("x", "y"):
         for sign in (-1.0, 1.0):
@@ -252,6 +277,110 @@ def outer_shell(with_windows: bool = True, fabric_grooves: bool = False) -> cq.S
             )
             shell = shell.cut(groove)
     return shell
+
+
+def _seam_reinforcement() -> cq.Shape:
+    """Local inward wall thickening across every seam, for lap material."""
+    bands: list[cq.Shape] = []
+    for zs in SEAM_Z:
+        z0, z1 = zs - SEAM_RUNOUT, zs + LAP_DEPTH + 2.0
+        band = _prism(BODY_HALF - SHELL_WALL, z0, z1).cut(
+            _prism(BODY_HALF - SEAM_WALL, z0 - 1.0, z1 + 1.0)
+        )
+        bands.append(band)
+    result = bands[0]
+    for band in bands[1:]:
+        result = result.fuse(band)
+    return result
+
+
+@lru_cache(maxsize=4)
+def _shell_blank() -> cq.Shape:
+    """The one-piece shell plus the seam reinforcement, before splitting."""
+    return outer_shell().fuse(_seam_reinforcement())
+
+
+def shell_segments() -> dict[str, cq.Shape]:
+    """Split the skin into three printable segments joined by lapped rabbets.
+
+    The outer surface is continuous across every joint; the only visible mark
+    is a deliberate 0.3 x 0.6 mm relief.  A designed shadow line reads as
+    intentional, where a bare butt joint would show FDM layer mismatch as a
+    ragged and obviously accidental step.
+
+    There is no hardware at the seams: the radial gap to the cabinet is only
+    9 mm at the faces and 10.8 mm at the corners, too little for an M3 boss.
+    The laps carry shear and alignment, the top segment bolts to the pressure
+    divider and the bottom segment to the base skirt, and the middle segment
+    -- the one carrying the entire visible grille -- is clamped between them
+    with no fasteners of its own.
+    """
+    blank = _shell_blank()
+    mid_half = BODY_HALF - SEAM_WALL / 2.0
+    top_z, bottom_z = TOP_Z + 5.0, BODY_BOTTOM_Z - 5.0
+
+    def slab(z0: float, z1: float) -> cq.Shape:
+        return _prism(BODY_HALF + 5.0, z0, z1)
+
+    bounds = [bottom_z, *SEAM_Z, top_z]
+    names = ("shell_base", "shell_grille", "shell_crown")
+    segments: dict[str, cq.Shape] = {}
+    for index, name in enumerate(names):
+        piece = blank.intersect(slab(bounds[index], bounds[index + 1]))
+        # Grow a tongue up into the segment above.
+        if index + 1 < len(SEAM_Z) + 1 and bounds[index + 1] in SEAM_Z:
+            zs = bounds[index + 1]
+            tongue = blank.intersect(_prism(mid_half, zs, zs + LAP_DEPTH))
+            piece = piece.fuse(tongue)
+        # Hollow a matching socket for the tongue arriving from below.
+        if bounds[index] in SEAM_Z:
+            zs = bounds[index]
+            socket = _prism(mid_half + LAP_CLEARANCE, zs - 1.0, zs + LAP_DEPTH + LAP_CLEARANCE)
+            piece = piece.cut(socket)
+        segments[name] = piece
+
+    # Deliberate shadow line, cut equally from both sides of each seam.
+    for zs in SEAM_Z:
+        relief = _prism(BODY_HALF + 2.0, zs - SHADOW_HEIGHT / 2.0, zs + SHADOW_HEIGHT / 2.0).cut(
+            _prism(BODY_HALF - SHADOW_DEPTH, zs - SHADOW_HEIGHT, zs + SHADOW_HEIGHT)
+        )
+        for name, piece in segments.items():
+            segments[name] = piece.cut(relief)
+    return segments
+
+
+# --------------------------------------------------------------------- #
+# Microphone isolation
+# --------------------------------------------------------------------- #
+# The mic array rides on the official stack.  Today that stack bolts to the
+# divider, which bolts to the cabinet the driver is mounted in -- a direct
+# mechanical path from the woofer to the microphones.
+BUSHING_FLANGE_T = 2.0
+BUSHING_FLANGE_D = 13.0
+BUSHING_BODY_D = 8.6
+BUSHING_BODY_H = 4.0
+BUSHING_BORE_D = 4.2           # radial slack so the M3 never touches TPU-free metal
+
+
+def mic_isolation_bushing() -> cq.Shape:
+    """TPU 95A top-hat isolating the official stack from the divider.
+
+    Printed in the TPU already used for the anti-slip ring and gaskets.  The
+    screw passes through with radial clearance, so the only path from cabinet
+    to microphone array is through the elastomer.
+    """
+    flange = cq.Solid.makeCylinder(
+        BUSHING_FLANGE_D / 2.0, BUSHING_FLANGE_T, cq.Vector(0, 0, 0), cq.Vector(0, 0, 1)
+    )
+    body = cq.Solid.makeCylinder(
+        BUSHING_BODY_D / 2.0, BUSHING_BODY_H,
+        cq.Vector(0, 0, -BUSHING_BODY_H), cq.Vector(0, 0, 1),
+    )
+    bore = cq.Solid.makeCylinder(
+        BUSHING_BORE_D / 2.0, BUSHING_FLANGE_T + BUSHING_BODY_H + 2.0,
+        cq.Vector(0, 0, -BUSHING_BODY_H - 1.0), cq.Vector(0, 0, 1),
+    )
+    return flange.fuse(body).cut(bore)
 
 
 def visible_assembly() -> dict[str, cq.Shape]:
