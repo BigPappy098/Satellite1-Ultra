@@ -172,11 +172,11 @@ class DesignParameters:
     brace_rib_depth: float = 8.0
     board_revision: str = "public_batch_1"
     ballast_mass_g: float = 879.0
-    # Usable build volume, per axis.  Sized for the reference machine (a
-    # modified Ender 5, X measured at 220 mm, Y at least 190 mm, generous Z)
-    # with real margin rather than a scalar diagonal.
+    # Usable build volume, per axis, measured on the reference machine (a
+    # modified Ender 5: X 220 mm, Y 200 mm, generous Z). The 188 mm body prints
+    # with 6 mm of margin per side, comfortably clearing a 3 mm brim.
     build_volume_x: float = 220.0
-    build_volume_y: float = 190.0
+    build_volume_y: float = 200.0
     build_volume_z: float = 250.0
 
     # ------------------------------------------------------------------ #

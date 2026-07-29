@@ -99,5 +99,5 @@ printing:
   # `maximum_build_dimension` was dead configuration; see
   # reports/review/2026-07-29-claude-v2-review.json PRINT-002.
   build_volume_x: 220.0
-  build_volume_y: 190.0
+  build_volume_y: 200.0
   build_volume_z: 250.0
