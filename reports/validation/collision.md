@@ -1,6 +1,6 @@
 # Collision
 
-- Overall status: `PASS`
+- Overall status: `FAIL`
 - Evidence: `VERIFIED_DIGITALLY`
 - Method: exact OCCT boolean intersection volume for every pair
 

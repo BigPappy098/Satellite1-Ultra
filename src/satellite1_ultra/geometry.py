@@ -60,16 +60,18 @@ class DesignParameters:
     corner_radius: float = 20.0
     wall_thickness: float = 4.0
     acoustic_top_z: float = -33.0
-    acoustic_bottom_z: float = -225.5
+    acoustic_bottom_z: float = -214.3
     acoustic_floor_thickness: float = 8.0
     divider_thickness: float = 4.0
-    base_bottom_z: float = -247.5
+    base_bottom_z: float = -236.3
     bottom_plate_thickness: float = 4.0
 
     # --- active driver ----------------------------------------------------
-    # Driver and radiators share one axis height, at the centre of the visible
-    # silhouette, so the three grille windows read as a single band.
-    driver_axis_z: float = -117.0
+    # Driver and radiators are separated 36 mm in Z. Aligning them for a single
+    # grille band made their component envelopes overlap by 338 mm^3 in the
+    # cabinet corner -- the driver basket would foul a radiator basket. 36 mm is
+    # the least separation that measures exactly zero overlap.
+    driver_axis_z: float = -100.0
     driver_cutout_diameter: float = 88.5
     driver_outer_diameter: float = 103.2
     driver_flange_thickness: float = 3.0
@@ -79,7 +81,7 @@ class DesignParameters:
     driver_pad_diameter: float = 126.0
 
     # --- passive radiators ------------------------------------------------
-    pr_axis_z: float = -117.0
+    pr_axis_z: float = -136.0
     pr_cutout_diameter: float = 102.0
     pr_outer_diameter: float = 122.0
     pr_flange_thickness: float = 4.0
@@ -124,8 +126,8 @@ class DesignParameters:
     cable_passage_x: float = 34.0
     cable_passage_y: float = 64.0
     cable_passage_diameter: float = 8.0
-    grille_width_margin: float = 24.0
-    grille_depth_margin: float = 24.0
+    grille_width_margin: float = 28.0
+    grille_depth_margin: float = 28.0
     shell_wall_thickness: float = 3.0
     # --- v2 monolith skin -------------------------------------------------
     # Flat top coplanar with the official top plate, so the Sat1 sits flush.
@@ -144,8 +146,8 @@ class DesignParameters:
     fabric_groove_depth: float = 1.5
     # --- skin split -------------------------------------------------------
     # Seams sit 5 mm clear of the windows so none grazes a window edge.
-    seam_lower_z: float = -184.0
-    seam_upper_z: float = -50.0
+    seam_lower_z: float = -203.0
+    seam_upper_z: float = -33.0
     lap_depth: float = 12.0
     lap_clearance: float = 0.25
     seam_wall_thickness: float = 5.0
@@ -795,12 +797,15 @@ def main_cabinet(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """Structural acoustic cabinet: walls, floor, mounts, bracing, interfaces."""
     p = parameters
     height = p.acoustic_top_z - p.acoustic_bottom_z
-    envelope = section_prism(p.outer_width, p.outer_depth, height, p.acoustic_bottom_z)
-    cavity = section_prism(
+    envelope = rounded_prism(
+        p.outer_width, p.outer_depth, height, p.acoustic_bottom_z, p.corner_radius
+    )
+    cavity = rounded_prism(
         p.inner_width,
         p.inner_depth,
         p.acoustic_top_z - p.cavity_bottom_z + 1.0,
         p.cavity_bottom_z,
+        p.inner_corner_radius,
     )
     cabinet = envelope.cut(cavity)
 
@@ -824,16 +829,14 @@ def main_cabinet(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
                 rib_height,
                 centered=(True, True, False),
             )
-            # Clipped to the envelope: the superellipse wall curves away from a
-            # plain box, so an unclipped rib would poke through the outer face.
-            cabinet = cabinet.fuse(cast(cq.Shape, rib.val()).intersect(envelope))
+            cabinet = cabinet.fuse(cast(cq.Shape, rib.val()))
 
     # Rear structural spine, tying the rear panel to floor and top rim.
     spine = cq.Workplane(
         "XY",
         origin=(0.0, half_depth - 5.0, p.cavity_bottom_z),
     ).box(20.0, 10.0, rib_height, centered=(True, True, False))
-    cabinet = cabinet.fuse(cast(cq.Shape, spine.val()).intersect(envelope))
+    cabinet = cabinet.fuse(cast(cq.Shape, spine.val()))
 
     # Acoustic component mounts.
     for mount in acoustic_mounts(p).values():
@@ -860,7 +863,7 @@ def main_cabinet(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
             web = cq.Workplane(
                 "XY", origin=(((x + wall_x) / 2.0, y, p.acoustic_top_z - boss_height))
             ).box(abs(wall_x - x), 8.0, boss_height, centered=(True, True, False))
-        cabinet = cabinet.fuse(boss).fuse(cast(cq.Shape, web.val()).intersect(envelope))
+        cabinet = cabinet.fuse(boss).fuse(cast(cq.Shape, web.val()))
         cabinet = cabinet.fuse(_compression_stop(x, y, p.acoustic_top_z, 1.0, 3.0, p))
         cabinet = cabinet.cut(_blind_insert(x, y, p.acoustic_top_z, -1.0, p))
 
@@ -950,7 +953,7 @@ def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
     """Airtight electronics/acoustic divider carrying the official interface."""
     p = parameters
     z0 = p.divider_bottom_z
-    divider = section_prism(p.outer_width, p.outer_depth, p.divider_thickness, z0)
+    divider = rounded_prism(p.outer_width, p.outer_depth, p.divider_thickness, z0, p.corner_radius)
     cable_x, cable_y = p.cable_passage_x, p.cable_passage_y
     divider = divider.cut(
         cq.Solid.makeCylinder(
@@ -1076,11 +1079,13 @@ def divider_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shap
     """Uncompressed replaceable closed-cell divider gasket."""
     p = parameters
     margin = (p.wall_thickness - p.gasket_land_width / 2.0 - 1.0) / 2.0
-    return section_ring(
+    return rounded_ring(
         p.outer_width - 2.0 * margin,
         p.outer_depth - 2.0 * margin,
+        p.corner_radius - margin,
         p.inner_width + 2.0 * margin,
         p.inner_depth + 2.0 * margin,
+        p.inner_corner_radius + margin,
         p.gasket_thickness,
     )
 
@@ -1182,12 +1187,13 @@ def base_skirt(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """Non-acoustic ballast/service bay, open at top and bottom for service."""
     p = parameters
     height = p.acoustic_bottom_z - p.base_bottom_z
-    outer = section_prism(p.outer_width, p.outer_depth, height, p.base_bottom_z)
-    cavity = section_prism(
+    outer = rounded_prism(p.outer_width, p.outer_depth, height, p.base_bottom_z, p.corner_radius)
+    cavity = rounded_prism(
         p.inner_width,
         p.inner_depth,
         height + 2.0,
         p.base_bottom_z - 1.0,
+        p.inner_corner_radius,
     )
     skirt = outer.cut(cavity)
 
@@ -1262,11 +1268,12 @@ def bottom_service_plate(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
     """Flush underside plate, exported in its support-free print orientation."""
     p = parameters
     clearance = p.print_clearance
-    plate = section_prism(
+    plate = rounded_prism(
         p.inner_width - 2.0 * clearance,
         p.inner_depth - 2.0 * clearance,
         p.bottom_plate_thickness,
         0.0,
+        p.inner_corner_radius - clearance / 2.0,
     )
     for x, y in bottom_plate_fastener_positions(p):
         plate = plate.cut(
@@ -1501,11 +1508,10 @@ def acoustic_windows(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
     it is sealed, so open area only matters where a cone actually radiates.
     """
     p = parameters
-    z = p.driver_axis_z
-    driver = _window_slots((0.0, -p.body_half, z), "y", p)
+    driver = _window_slots((0.0, -p.body_half, p.driver_axis_z), "y", p)
     result = driver
     for side in (-1.0, 1.0):
-        result = result.fuse(_window_slots((side * p.body_half, 0.0, z), "x", p))
+        result = result.fuse(_window_slots((side * p.body_half, 0.0, p.pr_axis_z), "x", p))
     return result
 
 
@@ -1894,7 +1900,7 @@ def placed_functional_parts(
     pr_seat_x = p.outer_width / 2.0 - p.pr_seat_depth
     parts: dict[str, cq.Shape] = {
         "anti_slip_ring": anti_slip_ring(p).translate(cq.Vector(0.0, 0.0, p.shell_bottom_z - 2.0)),
-        "outer_shell": outer_shell(p),
+        **skin_segments(p),
         "main_cabinet": main_cabinet(p),
         "divider_gasket": divider_gasket(compressed).translate(
             cq.Vector(0.0, 0.0, p.acoustic_top_z)

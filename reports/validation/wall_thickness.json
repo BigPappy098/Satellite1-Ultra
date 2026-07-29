@@ -1,5 +1,5 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "method": "parameter audit plus measured B-rep sections",
   "checks": [
@@ -133,54 +133,54 @@
   "measured_sections": [
     {
       "feature": "front wall above the driver mount",
-      "measured_mm": 4.0,
+      "measured_mm": 3.9991186794076126,
       "minimum_mm": 3.2,
-      "margin_mm": 0.7999999999999998,
+      "margin_mm": 0.7991186794076124,
       "method": "solid-fraction probe on the built B-rep",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "side wall clear of the radiator mount",
-      "measured_mm": 3.687470023770787,
+      "measured_mm": 0.5180705759744112,
       "minimum_mm": 3.2,
-      "margin_mm": 0.48747002377078674,
+      "margin_mm": -2.681929424025589,
       "method": "solid-fraction probe on the built B-rep",
-      "status": "PASS",
+      "status": "FAIL",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "front wall below the driver mount",
-      "measured_mm": 4.0,
+      "measured_mm": 3.999118679408231,
       "minimum_mm": 3.2,
-      "margin_mm": 0.7999999999999998,
+      "margin_mm": 0.799118679408231,
       "method": "solid-fraction probe on the built B-rep",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "rear wall beside the spine",
-      "measured_mm": 4.0,
+      "measured_mm": 3.227685219216623,
       "minimum_mm": 3.2,
-      "margin_mm": 0.7999999999999998,
+      "margin_mm": 0.027685219216623036,
       "method": "solid-fraction probe on the built B-rep",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "acoustic floor under a base-fastener boss",
-      "measured_mm": 5.2291152795338,
+      "measured_mm": 4.809672519925743,
       "minimum_mm": 5.0,
-      "margin_mm": 0.22911527953379984,
+      "margin_mm": -0.1903274800742567,
       "method": "solid-fraction probe on the built B-rep",
-      "status": "PASS",
+      "status": "FAIL",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "rear wall at the structural spine",
-      "measured_mm": 14.0,
+      "measured_mm": 13.998990364636404,
       "minimum_mm": 10.0,
-      "margin_mm": 4.0,
+      "margin_mm": 3.998990364636404,
       "method": "solid-fraction probe on the built B-rep",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

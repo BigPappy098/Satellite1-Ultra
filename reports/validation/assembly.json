@@ -12,20 +12,24 @@
     "route the speaker pair through the divider and fit the TPU gland",
     "fit the divider gasket and bolt the pressure divider to the cabinet",
     "bolt the base skirt up into the acoustic floor",
-    "lower the outer shell over the cabinet",
+    "slide the bottom skin segment up over the cabinet",
     "seat the ballast cartridge and close the bottom service plate",
-    "connect the boards and bolt the electronics shroud to the divider",
-    "invert and bolt the outer shell to the bottom service plate",
-    "seat the official mid-plate and upper stack on the divider bosses",
+    "bolt the bottom skin segment to the bottom service plate",
+    "press the grille skin segment onto the bottom segment's lap",
+    "press the crown skin segment on and bolt it to the divider",
+    "fit the four TPU isolation bushings into the divider counterbores",
+    "connect the boards, then seat the official upper stack on the bushings",
     "stretch the TPU anti-slip ring onto the base"
   ],
   "disassembly_order": [
     "stretch the TPU anti-slip ring onto the base",
-    "seat the official mid-plate and upper stack on the divider bosses",
-    "invert and bolt the outer shell to the bottom service plate",
-    "connect the boards and bolt the electronics shroud to the divider",
+    "connect the boards, then seat the official upper stack on the bushings",
+    "fit the four TPU isolation bushings into the divider counterbores",
+    "press the crown skin segment on and bolt it to the divider",
+    "press the grille skin segment onto the bottom segment's lap",
+    "bolt the bottom skin segment to the bottom service plate",
     "seat the ballast cartridge and close the bottom service plate",
-    "lower the outer shell over the cabinet",
+    "slide the bottom skin segment up over the cabinet",
     "bolt the base skirt up into the acoustic floor",
     "fit the divider gasket and bolt the pressure divider to the cabinet",
     "route the speaker pair through the divider and fit the TPU gland",
@@ -100,7 +104,15 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "step": "connect the boards and bolt the electronics shroud to the divider",
+      "step": "slide the bottom skin segment up over the cabinet",
+      "insertion_direction": "+Z",
+      "removal_direction": "reverse of +Z",
+      "tool": "hand",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "bolt the bottom skin segment to the bottom service plate",
       "insertion_direction": "+Z",
       "removal_direction": "reverse of +Z",
       "tool": "2.0 mm hex key",
@@ -108,15 +120,7 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "step": "seat the official mid-plate and upper stack on the divider bosses",
-      "insertion_direction": "+Z",
-      "removal_direction": "reverse of +Z",
-      "tool": "2.0 mm hex key",
-      "status": "PASS",
-      "evidence": "VERIFIED_DIGITALLY"
-    },
-    {
-      "step": "lower the outer shell over the cabinet",
+      "step": "press the grille skin segment onto the bottom segment's lap",
       "insertion_direction": "-Z",
       "removal_direction": "reverse of -Z",
       "tool": "hand",
@@ -124,7 +128,23 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "step": "invert and bolt the outer shell to the bottom service plate",
+      "step": "press the crown skin segment on and bolt it to the divider",
+      "insertion_direction": "-Z",
+      "removal_direction": "reverse of -Z",
+      "tool": "2.0 mm hex key",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "fit the four TPU isolation bushings into the divider counterbores",
+      "insertion_direction": "-Z",
+      "removal_direction": "reverse of -Z",
+      "tool": "hand",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "step": "connect the boards, then seat the official upper stack on the bushings",
       "insertion_direction": "+Z",
       "removal_direction": "reverse of +Z",
       "tool": "2.0 mm hex key",
@@ -146,7 +166,9 @@
       "remove": [
         "anti_slip_ring",
         "bottom_service_plate",
-        "outer_shell",
+        "shell_crown",
+        "shell_grille",
+        "shell_base",
         "active_driver_clamp_ring"
       ],
       "tool": "2.0 mm hex key",
@@ -160,7 +182,9 @@
       "remove": [
         "anti_slip_ring",
         "bottom_service_plate",
-        "outer_shell",
+        "shell_crown",
+        "shell_grille",
+        "shell_base",
         "passive_radiator_clamp_ring"
       ],
       "tool": "2.0 mm hex key",
@@ -172,8 +196,7 @@
     {
       "task": "replace the boards",
       "remove": [
-        "official upper stack",
-        "electronics_shroud"
+        "official upper stack"
       ],
       "tool": "2.0 mm hex key",
       "opens_pressure_boundary": false,
@@ -198,7 +221,9 @@
       "remove": [
         "anti_slip_ring",
         "bottom_service_plate",
-        "outer_shell",
+        "shell_crown",
+        "shell_grille",
+        "shell_base",
         "clamp ring or pressure divider"
       ],
       "tool": "2.0 mm hex key",

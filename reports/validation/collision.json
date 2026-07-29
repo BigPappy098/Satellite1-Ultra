@@ -1,25 +1,126 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "method": "exact OCCT boolean intersection volume for every pair",
-  "part_count": 20,
-  "pair_count": 190,
-  "official_pair_count": 119,
+  "part_count": 25,
+  "pair_count": 300,
+  "official_pair_count": 154,
   "official_reference_note": "The HAT is represented by a conservative convex-band envelope built from its official STL; the remaining official parts are exact B-reps.",
   "positive_volume_contacts": [
     {
+      "first": "shell_base",
+      "second": "shell_grille",
+      "intersection_mm3": 7.64580878033545,
+      "classification": "intended_interference_fit",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "shell_base",
+      "second": "base_skirt",
+      "intersection_mm3": 104.49446843008161,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "shell_grille",
+      "second": "shell_crown",
+      "intersection_mm3": 14.392106697672304,
+      "classification": "intended_interference_fit",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "shell_grille",
+      "second": "active_driver_clamp_ring",
+      "intersection_mm3": 2.0898579038975402,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "shell_grille",
+      "second": "pr_-1_clamp_ring",
+      "intersection_mm3": 3.167704371097784,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "shell_grille",
+      "second": "pr_+1_clamp_ring",
+      "intersection_mm3": 3.1677043710861312,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "main_cabinet",
+      "second": "active_driver_clamp_ring",
+      "intersection_mm3": 0.2702157531521407,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
       "first": "pressure_divider",
       "second": "wire_gland",
-      "intersection_mm3": 12.42963449319236,
+      "intersection_mm3": 12.429634493192347,
       "classification": "intended_interference_fit",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "pressure_divider",
+      "second": "mic_isolation_bushing_0",
+      "intersection_mm3": 88.04522352750055,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "pressure_divider",
+      "second": "mic_isolation_bushing_1",
+      "intersection_mm3": 88.04522352749994,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "pressure_divider",
+      "second": "mic_isolation_bushing_2",
+      "intersection_mm3": 88.04522352750016,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "pressure_divider",
+      "second": "mic_isolation_bushing_3",
+      "intersection_mm3": 88.0452235274995,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "driver_envelope",
+      "second": "pr_-1_envelope",
+      "intersection_mm3": 338.41278062558933,
+      "classification": "invalid_collision",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "first": "driver_envelope",
+      "second": "pr_+1_envelope",
+      "intersection_mm3": 338.4127806255596,
+      "classification": "invalid_collision",
       "evidence": "VERIFIED_DIGITALLY"
     }
   ],
   "official_clearance_checks": [
     {
-      "summary": "all printed/official pairs clear",
-      "status": "PASS"
+      "printed": "shell_crown",
+      "official": "official_mid_plate",
+      "intersection_mm3": 104.22988922914125,
+      "status": "FAIL",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "printed": "pressure_divider",
+      "official": "official_mid_plate",
+      "intersection_mm3": 184.15936756553316,
+      "status": "FAIL",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     }
   ],
-  "invalid_collision_count": 0
+  "invalid_collision_count": 13
 }

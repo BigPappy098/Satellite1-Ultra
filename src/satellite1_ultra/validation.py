@@ -26,7 +26,6 @@ from satellite1_ultra.configuration import (
     selected_components,
 )
 from satellite1_ultra.geometry import (
-    SECTION_EXPONENT,
     DesignParameters,
     MountSpec,
     _bolt_points,
@@ -39,7 +38,7 @@ from satellite1_ultra.geometry import (
     main_cabinet,
     official_mount_positions,
     placed_functional_parts,
-    section_prism,
+    rounded_prism,
     shroud_fastener_positions,
     support_polygon,
     top_fastener_positions,
@@ -65,6 +64,14 @@ TPU_DENSITY_G_CM3 = 1.20
 #: Contacts that are design intent rather than defects.
 INTENDED_CONTACTS: dict[frozenset[str], str] = {
     frozenset(("pressure_divider", "wire_gland")): "intended_interference_fit",
+    # Each lap closes on 0.15 mm of crush-rib interference by design, so the
+    # skin cannot rattle. A clearance fit here would be the defect.
+    frozenset(("shell_base", "shell_grille")): "intended_interference_fit",
+    frozenset(("shell_grille", "shell_crown")): "intended_interference_fit",
+    # The crown is bolted down onto the divider's bosses.
+    frozenset(("shell_crown", "pressure_divider")): "intended_bolted_joint",
+    # The base segment is bolted into the bottom service plate.
+    frozenset(("shell_base", "bottom_service_plate")): "intended_bolted_joint",
 }
 
 
@@ -102,11 +109,12 @@ def _minimum_section(shape: cq.Shape, probe: cq.Shape, span_mm: float) -> float:
 def acoustic_air_shape(parameters: DesignParameters) -> cq.Shape:
     """Return the connected air domain after exact printed-cabinet intrusions."""
     p = parameters
-    air = section_prism(
+    air = rounded_prism(
         p.inner_width,
         p.inner_depth,
         p.acoustic_top_z - p.cavity_bottom_z,
         p.cavity_bottom_z,
+        p.inner_corner_radius,
     )
     for mount in acoustic_mounts(p).values():
         air = air.fuse(
@@ -129,11 +137,12 @@ def acoustic_volume_report(
 ) -> dict[str, Any]:
     """Calculate gross, intrusion, component, and usable net acoustic volume."""
     p = parameters
-    gross = section_prism(
+    gross = rounded_prism(
         p.inner_width,
         p.inner_depth,
         p.acoustic_top_z - p.cavity_bottom_z,
         p.cavity_bottom_z,
+        p.inner_corner_radius,
     ).Volume()
     structural_air = acoustic_air_shape(p).Volume()
     component_displacement = (driver_displacement_l + 2.0 * radiator_displacement_l_each) * 1e6
@@ -296,12 +305,15 @@ def sealing_report(parameters: DesignParameters) -> dict[str, Any]:
     checks.extend(_flange_hole_seal_checks(p))
 
     # Divider gasket land continuity on the acoustic top rim.
-    land = section_prism(p.outer_width, p.outer_depth, 0.6, p.acoustic_top_z - 0.6).cut(
-        section_prism(
+    land = rounded_prism(
+        p.outer_width, p.outer_depth, 0.6, p.acoustic_top_z - 0.6, p.corner_radius
+    ).cut(
+        rounded_prism(
             p.inner_width,
             p.inner_depth,
             0.6,
             p.acoustic_top_z - 0.6,
+            p.inner_corner_radius,
         )
     )
     for x, y in top_fastener_positions(p):
@@ -476,18 +488,6 @@ def collision_report(parameters: DesignParameters) -> dict[str, Any]:
 # ---------------------------------------------------------------------- #
 # Clearance
 # ---------------------------------------------------------------------- #
-def _section_half_at(half: float, offset: float) -> float:
-    """Remaining material from a chord *offset* out to the superellipse edge.
-
-    Replaces the rounded-rectangle notion of a "flat face": a superellipse has
-    no flat, so the honest check is how much section is still left beside the
-    widest chord the clamp ring occupies.
-    """
-    if offset >= half:
-        return -1.0
-    return float(half * (1.0 - (offset / half) ** SECTION_EXPONENT) ** (1.0 / SECTION_EXPONENT))
-
-
 def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
     """Report critical nominal clearances and their acceptance thresholds."""
     p = parameters
@@ -555,8 +555,9 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
             "minimum_mm": 3.0,
         },
         {
-            "feature": "driver clamp ring inside the cabinet face width",
-            "nominal_mm": _section_half_at(p.outer_width / 2.0, p.driver_clamp_ring_diameter / 2.0),
+            "feature": "driver clamp ring within the flat cabinet face",
+            "nominal_mm": (p.outer_width / 2.0 - p.corner_radius)
+            - p.driver_clamp_ring_diameter / 2.0,
             "minimum_mm": 0.5,
         },
         {
@@ -1316,7 +1317,7 @@ def tolerance_report(parameters: DesignParameters) -> dict[str, Any]:
 ASSEMBLY_STEPS: tuple[dict[str, Any], ...] = (
     {
         "step": "install all heat-set inserts",
-        "part": "main_cabinet, base_skirt, pressure_divider, outer_shell",
+        "part": "main_cabinet, base_skirt, pressure_divider, shell_base",
         "direction": "per-feature, see fastener schedule",
         "tool": "temperature-controlled M3 insert tip",
         "requires": (),
@@ -1474,7 +1475,9 @@ SERVICE_TASKS: tuple[dict[str, Any], ...] = (
         "remove": (
             "anti_slip_ring",
             "bottom_service_plate",
-            "outer_shell",
+            "shell_crown",
+            "shell_grille",
+            "shell_base",
             "clamp ring or pressure divider",
         ),
         "tool": "2.0 mm hex key",
@@ -1648,7 +1651,9 @@ def stability_report(parameters: DesignParameters) -> dict[str, Any]:
     p = parameters
     parts = placed_functional_parts(p)
     asa_names = {
-        "outer_shell",
+        "shell_base",
+        "shell_grille",
+        "shell_crown",
         "main_cabinet",
         "pressure_divider",
         "active_driver_clamp_ring",

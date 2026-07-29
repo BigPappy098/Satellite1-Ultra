@@ -1,5 +1,5 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "method": "solid-fraction probes on the authoritative B-rep",
   "pressure_boundary": [
@@ -13,7 +13,7 @@
   "checks": [
     {
       "feature": "active_driver: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 0.9999999999999993,
+      "measured_solid_fraction": 0.9999999999999988,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
@@ -21,9 +21,9 @@
     },
     {
       "feature": "active_driver: seat sidewall is solid over the full seat depth",
-      "measured_solid_fraction": 1.0,
+      "measured_solid_fraction": 0.7661284457868616,
       "minimum_solid_fraction": 0.999999,
-      "status": "PASS",
+      "status": "FAIL",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
@@ -45,9 +45,9 @@
     },
     {
       "feature": "pr_-1: seat sidewall is solid over the full seat depth",
-      "measured_solid_fraction": 1.0,
+      "measured_solid_fraction": 0.9316436644467505,
       "minimum_solid_fraction": 0.999999,
-      "status": "PASS",
+      "status": "FAIL",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
@@ -69,9 +69,9 @@
     },
     {
       "feature": "pr_+1: seat sidewall is solid over the full seat depth",
-      "measured_solid_fraction": 1.0000000000000115,
+      "measured_solid_fraction": 0.9316436640723313,
       "minimum_solid_fraction": 0.999999,
-      "status": "PASS",
+      "status": "FAIL",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
@@ -124,9 +124,9 @@
     },
     {
       "feature": "divider gasket land is a continuous closed rim",
-      "measured_solid_fraction": 0.99999999999999,
+      "measured_solid_fraction": 0.9958212913773831,
       "minimum_solid_fraction": 0.999999,
-      "status": "PASS",
+      "status": "FAIL",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {

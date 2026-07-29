@@ -1,6 +1,6 @@
 # Wall Thickness
 
-- Overall status: `PASS`
+- Overall status: `FAIL`
 - Evidence: `VERIFIED_DIGITALLY`
 - Method: parameter audit plus measured B-rep sections
 - Physical gate (`REQUIRES_PHYSICAL_VALIDATION`): Section one sacrificial print and compare walls to slicer and caliper values.

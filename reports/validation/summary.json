@@ -4,15 +4,15 @@
     "evidence": "VERIFIED_DIGITALLY"
   },
   "sealing": {
-    "status": "PASS",
+    "status": "FAIL",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "collision": {
-    "status": "PASS",
+    "status": "FAIL",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "clearance": {
-    "status": "PASS",
+    "status": "FAIL",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "core_fit": {
@@ -20,7 +20,7 @@
     "evidence": "VERIFIED_DIGITALLY"
   },
   "wall_thickness": {
-    "status": "PASS",
+    "status": "FAIL",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "fasteners": {
