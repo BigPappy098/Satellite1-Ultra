@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Satellite1 Ultra — Calibration Wizard</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #15181c;
+    --muted: #5a6169;
+    --line: #d9dde2;
+    --brand: #12395c;
+    --accent: #c2410c;
+    --ok: #1c7a4a;
+    --bad: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171a;
+      --card: #1c2024;
+      --ink: #eef1f4;
+      --muted: #a3abb4;
+      --line: #333941;
+      --brand: #7fb3dd;
+      --accent: #f97316;
+      --ok: #4ade80;
+      --bad: #f87171;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    background: var(--brand);
+    color: #fff;
+    padding: 28px 20px;
+  }
+  header .inner, main { max-width: 860px; margin: 0 auto; }
+  header h1 { margin: 0 0 6px; font-size: 1.6rem; }
+  header p { margin: 0; opacity: .9; font-size: .95rem; }
+  main { padding: 20px 20px 80px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 18px 0;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 1.15rem; }
+  .card .hint { margin: 0 0 16px; color: var(--muted); font-size: .9rem; }
+  .field { margin: 14px 0; }
+  label { display: block; font-weight: 600; margin-bottom: 3px; font-size: .95rem; }
+  .sub { color: var(--muted); font-size: .85rem; margin-bottom: 6px; }
+  input[type=number], select {
+    width: 100%;
+    padding: 9px 11px;
+    font-size: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  input:focus, select:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+  .verdict { font-size: .85rem; margin-top: 5px; min-height: 1.2em; }
+  .verdict.ok { color: var(--ok); }
+  .verdict.bad { color: var(--bad); }
+  .banner {
+    border-left: 4px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    padding: 12px 14px;
+    border-radius: 6px;
+    margin: 0 0 18px;
+    font-size: .93rem;
+  }
+  pre {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    overflow-x: auto;
+    font-size: .82rem;
+    line-height: 1.45;
+  }
+  button {
+    font: inherit;
+    font-weight: 600;
+    padding: 11px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--brand);
+    background: var(--brand);
+    color: #fff;
+    cursor: pointer;
+    margin: 4px 6px 4px 0;
+  }
+  button.secondary { background: transparent; color: var(--brand); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  ol.steps { padding-left: 20px; }
+  ol.steps li { margin: 8px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+  th, td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+  th { background: color-mix(in srgb, var(--brand) 10%, transparent); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; }
+  footer { color: var(--muted); font-size: .85rem; text-align: center; padding: 0 20px 40px; }
+  #summary.blocked { border-color: var(--bad); }
+</style>
+</head>
+<body>
+<header>
+  <div class="inner">
+    <h1>Satellite1 Ultra — Calibration Wizard</h1>
+    <p>Turn what you measured on the printed test pieces into a corrected set of build files. Nothing to install.</p>
+  </div>
+</header>
+
+<main>
+  <div class="banner">
+    <strong>Do this before you print the big parts.</strong>
+    Print the eight pieces in <code>PRINT_THESE_FILES/1_CALIBRATION_FIRST</code> first,
+    measure them as the Build Book describes, then fill this in.
+  </div>
+
+  <div class="card">
+    <h2>1 · Printer scale</h2>
+    <p class="hint">Measure the calibration piece, not the CAD. Use the same settings you will use for the enclosure.</p>
+
+    <div class="field">
+      <label for="xy">Measured width of the engraved <code>MEASURE XY 110.60</code> recess (mm)</label>
+      <div class="sub">Inside caliper jaws, taken at three different heights. Nominal is 110.60 mm.</div>
+      <input type="number" id="xy" step="0.01" value="110.60">
+      <div class="verdict" id="xy_v"></div>
+    </div>
+
+    <div class="field">
+      <label for="z">Measured thickness of the 3.00 mm coupon edge (mm)</label>
+      <div class="sub">Outside jaws, at four corners, on a clean edge. Nominal is 3.00 mm.</div>
+      <input type="number" id="z" step="0.01" value="3.00">
+      <div class="verdict" id="z_v"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2 · Screws and inserts</h2>
+    <p class="hint">The screw and the insert are the gauges. Do not measure these holes with caliper tips.</p>
+
+    <div class="field">
+      <label for="clear">Smallest labelled hole an M3 screw passes through freely</label>
+      <div class="sub">By hand, with no force.</div>
+      <select id="clear">
+        <option value="3.4" selected>3.4 mm</option>
+        <option value="3.5">3.5 mm</option>
+        <option value="3.6">3.6 mm</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="bore">Blind bore where the heat-set insert seated square, flush and tight</label>
+      <div class="sub">No crack in the boss, no spinning.</div>
+      <select id="bore">
+        <option value="4.0">4.0 mm</option>
+        <option value="4.1">4.1 mm</option>
+        <option value="4.2" selected>4.2 mm</option>
+        <option value="4.3">4.3 mm</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3 · Component fit</h2>
+    <p class="hint">Use your actual purchased speaker and radiators. Positive numbers make the opening bigger.</p>
+
+    <div class="field">
+      <label for="dcut">Speaker cutout correction (mm)</label>
+      <div class="sub">Leave at 0 if the ND91-4 dropped in by hand and sat flat.</div>
+      <input type="number" id="dcut" step="0.05" value="0">
+      <div class="verdict" id="dcut_v"></div>
+    </div>
+
+    <div class="field">
+      <label for="pcut">Radiator cutout correction (mm)</label>
+      <div class="sub">Leave at 0 if the SB12PACR-00 dropped in by hand and sat flat.</div>
+      <input type="number" id="pcut" step="0.05" value="0">
+      <div class="verdict" id="pcut_v"></div>
+    </div>
+
+    <div class="field">
+      <label for="dflange">Measured Dayton ND91-4 flange thickness (mm)</label>
+      <div class="sub">Average of four quadrants. This sets the clamp hard stop.</div>
+      <input type="number" id="dflange" step="0.01" value="3.00">
+      <div class="verdict" id="dflange_v"></div>
+    </div>
+
+    <div class="field">
+      <label for="pflange">Measured SB12PACR-00 flange thickness (mm)</label>
+      <div class="sub">Average of four quadrants, on one radiator.</div>
+      <input type="number" id="pflange" step="0.01" value="4.00">
+      <div class="verdict" id="pflange_v"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>4 · Gasket and cable seal</h2>
+
+    <div class="field">
+      <label for="sheet">Measured uncompressed thickness of your foam sheet (mm)</label>
+      <div class="sub">Measure your actual EPDM stock, lightly, without squashing it.</div>
+      <input type="number" id="sheet" step="0.01" value="2.00">
+      <div class="verdict" id="sheet_v"></div>
+    </div>
+
+    <div class="field">
+      <label for="gap">Measured gap with the gasket coupon fully tightened (mm)</label>
+      <div class="sub">Tighten until both hard stops touch, then measure the remaining gap.</div>
+      <input type="number" id="gap" step="0.01" value="1.50">
+      <div class="verdict" id="gap_v"></div>
+    </div>
+
+    <div class="field">
+      <label for="cable">Cable passage correction (mm)</label>
+      <div class="sub">Leave at 0 if the seal and both real conductors fitted with moderate finger force.</div>
+      <input type="number" id="cable" step="0.05" value="0">
+      <div class="verdict" id="cable_v"></div>
+    </div>
+  </div>
+
+  <div class="card" id="summary">
+    <h2>Your calibration file</h2>
+    <p class="hint" id="status"></p>
+    <pre id="yaml"></pre>
+    <button id="download">Download physical_calibration.yaml</button>
+    <button id="copy" class="secondary">Copy to clipboard</button>
+  </div>
+
+  <div class="card">
+    <h2>What to do with it</h2>
+    <ol class="steps">
+      <li><strong>Rebuild in your browser.</strong> Open the repository's Actions tab, choose
+        <em>Calibrated build</em>, click <em>Run workflow</em>, paste the file contents into the box,
+        and run it. When it finishes, download the <code>calibrated-release</code> artifact. That zip is
+        your corrected build package.</li>
+      <li><strong>Or rebuild on your own machine.</strong> Save the file to
+        <code>config/physical_calibration.yaml</code> in a clone of the repository and run
+        <code>make calibrated-release</code>.</li>
+    </ol>
+    <p class="hint" style="margin-top:14px">
+      Either way: reprint every calibration piece affected by a correction you entered and re-check it.
+      Only print the full enclosure once all eight checks pass on corrected pieces.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Reference — accepted ranges</h2>
+    <p class="hint">These are the same safe limits the build system enforces. A value outside them is rejected.</p>
+    <table>
+      <tr><th>Value</th><th>Accepted range</th></tr>
+      <tr><td>XY scale correction</td><td>-3% to +3%</td></tr>
+      <tr><td>Z scale correction</td><td>-3% to +3%</td></tr>
+      <tr><td>Screw clearance offset</td><td>-0.8 to +0.8 mm</td></tr>
+      <tr><td>Insert bore offset</td><td>-0.5 to +0.5 mm</td></tr>
+      <tr><td>Speaker cutout offset</td><td>-1.0 to +1.0 mm</td></tr>
+      <tr><td>Radiator cutout offset</td><td>-1.0 to +1.0 mm</td></tr>
+      <tr><td>Cable passage offset</td><td>-0.8 to +0.8 mm</td></tr>
+      <tr><td>Gasket sheet thickness</td><td>1.5 to 2.5 mm</td></tr>
+      <tr><td>Gasket compressed offset</td><td>-0.25 to +0.25 mm</td></tr>
+      <tr><td>Gasket compression achieved</td><td>15% to 45%</td></tr>
+      <tr><td>Speaker flange thickness</td><td>2.0 to 5.0 mm</td></tr>
+      <tr><td>Radiator flange thickness</td><td>2.0 to 6.0 mm</td></tr>
+    </table>
+  </div>
+</main>
+
+<footer>
+  Runs entirely in your browser. Nothing you type is uploaded anywhere.<br>
+  No physical unit of this design has been validated; your measurements are part of the build.
+</footer>
+
+<script>
+"use strict";
+
+// Mirrors CALIBRATION_LIMITS in src/satellite1_ultra/configuration.py. The
+// build system re-validates every value, so this only gives earlier feedback.
+const LIMITS = {
+  xy_scale_correction_fraction: [-0.03, 0.03],
+  z_scale_correction_fraction: [-0.03, 0.03],
+  fastener_clearance_diameter_offset_mm: [-0.8, 0.8],
+  insert_bore_diameter_offset_mm: [-0.5, 0.5],
+  driver_cutout_diameter_offset_mm: [-1.0, 1.0],
+  passive_radiator_cutout_diameter_offset_mm: [-1.0, 1.0],
+  cable_passage_diameter_offset_mm: [-0.8, 0.8],
+  gasket_sheet_thickness_mm: [1.5, 2.5],
+  gasket_compressed_thickness_offset_mm: [-0.25, 0.25],
+  active_driver_flange_thickness_mm: [2.0, 5.0],
+  passive_radiator_flange_thickness_mm: [2.0, 6.0],
+};
+
+const KEY_ORDER = Object.keys(LIMITS);
+const el = (id) => document.getElementById(id);
+const num = (id) => parseFloat(el(id).value);
+const round = (value, places) => {
+  const factor = 10 ** places;
+  return Math.round(value * factor) / factor;
+};
+
+function say(id, text, good) {
+  const node = el(id + "_v");
+  if (!node) return;
+  node.textContent = text;
+  node.className = "verdict " + (text ? (good ? "ok" : "bad") : "");
+}
+
+function compute() {
+  const problems = [];
+  const xyMeasured = num("xy");
+  const zMeasured = num("z");
+  const sheet = num("sheet");
+  const gap = num("gap");
+  const driverFlange = num("dflange");
+  const passiveFlange = num("pflange");
+
+  if (!Number.isFinite(xyMeasured) || xyMeasured <= 0) {
+    problems.push("Enter the measured XY recess width.");
+    say("xy", "Enter a measurement.", false);
+  } else {
+    const pct = (110.60 / xyMeasured - 1) * 100;
+    say("xy", `Correction ${pct >= 0 ? "+" : ""}${pct.toFixed(3)}%`, Math.abs(pct) <= 3);
+  }
+  if (!Number.isFinite(zMeasured) || zMeasured <= 0) {
+    problems.push("Enter the measured Z coupon thickness.");
+    say("z", "Enter a measurement.", false);
+  } else {
+    const pct = (3.0 / zMeasured - 1) * 100;
+    say("z", `Correction ${pct >= 0 ? "+" : ""}${pct.toFixed(3)}%`, Math.abs(pct) <= 3);
+  }
+
+  const values = {
+    xy_scale_correction_fraction: round(110.60 / xyMeasured - 1, 7),
+    z_scale_correction_fraction: round(3.0 / zMeasured - 1, 7),
+    fastener_clearance_diameter_offset_mm: round(parseFloat(el("clear").value) - 3.4, 3),
+    insert_bore_diameter_offset_mm: round(parseFloat(el("bore").value) - 4.2, 3),
+    driver_cutout_diameter_offset_mm: round(num("dcut"), 3),
+    passive_radiator_cutout_diameter_offset_mm: round(num("pcut"), 3),
+    cable_passage_diameter_offset_mm: round(num("cable"), 3),
+    gasket_sheet_thickness_mm: round(sheet, 3),
+    gasket_compressed_thickness_offset_mm: round(gap - 0.75 * sheet, 3),
+    active_driver_flange_thickness_mm: round(driverFlange, 3),
+    passive_radiator_flange_thickness_mm: round(passiveFlange, 3),
+  };
+
+  // Same derived check the Python validator applies: the coupon has to show a
+  // real, survivable squeeze on the actual foam.
+  const compression = Number.isFinite(sheet) && sheet > 0 ? 1 - gap / sheet : NaN;
+  if (!Number.isFinite(compression)) {
+    problems.push("Enter both gasket measurements.");
+    say("gap", "Enter a measurement.", false);
+  } else {
+    const pct = compression * 100;
+    const good = pct >= 15 && pct <= 45;
+    say("gap", `Compression ${pct.toFixed(1)}% — ${good ? "in range" : "must be 15%–45%"}`, good);
+    if (!good) {
+      problems.push(`Gasket compression is ${pct.toFixed(1)}%; it must be between 15% and 45%.`);
+    }
+  }
+
+  const labels = {
+    xy_scale_correction_fraction: "XY scale correction",
+    z_scale_correction_fraction: "Z scale correction",
+    driver_cutout_diameter_offset_mm: "dcut",
+    passive_radiator_cutout_diameter_offset_mm: "pcut",
+    cable_passage_diameter_offset_mm: "cable",
+    gasket_sheet_thickness_mm: "sheet",
+    active_driver_flange_thickness_mm: "dflange",
+    passive_radiator_flange_thickness_mm: "pflange",
+  };
+  const inlineFields = {
+    driver_cutout_diameter_offset_mm: "dcut",
+    passive_radiator_cutout_diameter_offset_mm: "pcut",
+    cable_passage_diameter_offset_mm: "cable",
+    gasket_sheet_thickness_mm: "sheet",
+    active_driver_flange_thickness_mm: "dflange",
+    passive_radiator_flange_thickness_mm: "pflange",
+  };
+
+  for (const key of KEY_ORDER) {
+    const [low, high] = LIMITS[key];
+    const value = values[key];
+    const field = inlineFields[key];
+    if (!Number.isFinite(value)) {
+      problems.push(`${labels[key] || key} is not a number.`);
+      if (field) say(field, "Enter a number.", false);
+      continue;
+    }
+    if (value < low || value > high) {
+      problems.push(`${labels[key] || key} = ${value} is outside the safe range ${low} to ${high}.`);
+      if (field) say(field, `Outside safe range ${low} to ${high}.`, false);
+    } else if (field && field !== "sheet") {
+      say(field, "In range.", true);
+    } else if (field === "sheet") {
+      say(field, "In range.", true);
+    }
+  }
+
+  return { values, problems };
+}
+
+function toYaml(values) {
+  const lines = [
+    "# Satellite1 Ultra physical calibration input",
+    "# Generated by the browser calibration wizard. Units are millimetres;",
+    "# scale corrections are fractions (0.001 = +0.1%).",
+    "",
+  ];
+  for (const key of KEY_ORDER) {
+    lines.push(`${key}: ${values[key]}`);
+  }
+  return lines.join("\n") + "\n";
+}
+
+let currentYaml = "";
+
+function refresh() {
+  const { values, problems } = compute();
+  const ok = problems.length === 0;
+  currentYaml = ok ? toYaml(values) : "";
+  el("yaml").textContent = ok
+    ? currentYaml
+    : "Fix the following before this file can be used:\n\n  - " + problems.join("\n  - ");
+  el("status").textContent = ok
+    ? "Every value is inside its safe range. Download or copy this file."
+    : `${problems.length} value${problems.length === 1 ? "" : "s"} still need attention.`;
+  el("summary").classList.toggle("blocked", !ok);
+  el("download").disabled = !ok;
+  el("copy").disabled = !ok;
+}
+
+document.querySelectorAll("input, select").forEach((node) => {
+  node.addEventListener("input", refresh);
+  node.addEventListener("change", refresh);
+});
+
+el("download").addEventListener("click", () => {
+  const blob = new Blob([currentYaml], { type: "text/yaml" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "physical_calibration.yaml";
+  link.click();
+  URL.revokeObjectURL(url);
+});
+
+el("copy").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(currentYaml);
+    el("copy").textContent = "Copied";
+    setTimeout(() => { el("copy").textContent = "Copy to clipboard"; }, 1600);
+  } catch {
+    el("copy").textContent = "Copy failed — select the text above";
+  }
+});
+
+refresh();
+</script>
+</body>
+</html>

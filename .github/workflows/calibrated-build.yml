@@ -1,0 +1,60 @@
+name: Calibrated build
+
+# Lets a builder regenerate a corrected release entirely in the browser:
+# paste the YAML produced by the calibration wizard, run, download the artifact.
+on:
+  workflow_dispatch:
+    inputs:
+      calibration_yaml:
+        description: "Paste the contents of physical_calibration.yaml from the wizard"
+        required: true
+        type: string
+
+jobs:
+  calibrated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Write the supplied calibration input
+        env:
+          CALIBRATION_YAML: ${{ inputs.calibration_yaml }}
+        run: printf '%s\n' "$CALIBRATION_YAML" > config/physical_calibration.yaml
+
+      - name: Show what will be built
+        run: cat config/physical_calibration.yaml
+
+      - name: Install Gmsh runtime library
+        run: sudo apt-get update && sudo apt-get install --yes libglu1-mesa
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: python -m pip install --require-hashes -r requirements.lock
+      - run: python -m pip install --no-deps -e .
+
+      # Reject an implausible or malformed input before spending an hour on CAD.
+      - name: Validate the calibration input
+        run: python scripts/calibrate.py --check
+
+      - run: make release PYTHON=python PIP=pip
+
+      - name: Publish the corrected package
+        uses: actions/upload-artifact@v4
+        with:
+          name: calibrated-release
+          path: release/Satellite1-Ultra-RC1.zip
+          if-no-files-found: error
+
+      - name: Publish the validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calibrated-validation-reports
+          path: reports/validation/
+          if-no-files-found: warn

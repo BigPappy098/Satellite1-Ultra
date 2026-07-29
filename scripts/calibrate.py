@@ -69,7 +69,7 @@ def _write(values: dict[str, Any]) -> None:
 
 def _run_wizard() -> dict[str, Any]:
     print("Satellite1 Ultra calibration")
-    print("Use the printed labels and diagrams in START_HERE_CALIBRATION_GUIDE.pdf.")
+    print("Use the printed labels and diagrams in CALIBRATION_GUIDE.pdf.")
     print("Press Enter to accept a nominal value. No full-size part is built yet.\n")
 
     xy_measured = _number("Measured XY 110.60 recess width (mm)", 110.60, 107.0, 114.0)

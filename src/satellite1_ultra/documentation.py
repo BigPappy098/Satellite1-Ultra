@@ -508,230 +508,451 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
 )
 
 
-def _start_here() -> str:
-    return """# Start Here - Satellite1 Ultra
-
-> **DO NOT PRINT THE FULL ENCLOSURE YET.**
-> **PRINT AND COMPLETE THE CALIBRATION PARTS FIRST.**
-
-For the simplest instructions, open
-`BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf` and follow it from top to bottom.
-It tells you which folder to open, which file to print, how many copies to
-make, and what to do next. The other manuals provide extra detail when that
-guide sends you to them.
-
-Satellite1 Ultra is a serviceable passive-radiator enclosure for the
-FutureProofHomes Satellite1 **Batch 1** development kit: Core rev4.1 and HAT
-rev4.1 / R2024.12.06. Satellite1.1 / Batch 2 is not supported.
-
-Status: `DIGITAL_PROTOTYPE_READY` only after every digital gate passes.
-No physical specimen has been validated. Fit, sealing, acoustics, thermals,
-Wi-Fi, microphones, buttons, LEDs, and wake-word performance are
-`REQUIRES_PHYSICAL_VALIDATION`.
-
-## You need
-
-- An enclosed printer with at least **212 x 192 x 189 mm of genuinely usable
-  travel** (X/Y may be swapped). A 220 x 220 x 200 mm printer is the practical
-  minimum; the 192 x 212 x 189 mm outer shell is the limiting part.
-- 0.4 mm nozzle, dry ASA, TPU 95A, and a documented PETG alternative.
-- Digital calipers (0.01 mm display), 0.01 g scale, 2.0 mm hex driver, M3
-  insert tip, wire tools, ESD protection, and basic acoustic test equipment.
-- Everything in `BOM.csv`, `FASTENERS.csv`, and `GASKETS.csv`.
-
-## Exact order
-
-1. Read `START_HERE_CALIBRATION_GUIDE.pdf`.
-2. Print seven coupon files plus `cable_gland.3mf`.
-3. Measure, edit `CALIBRATION_INPUT_TEMPLATE.yaml`, and run
-   `make calibrated-release`.
-4. Reprint affected coupons and pass every calibration check.
-5. Print **both** groups in `PRINTING_GUIDE.pdf`: every required custom Ultra
-   3MF and all six official Squircle STL files.
-6. Follow `ASSEMBLY_GUIDE.pdf`.
-7. Complete `TESTING_AND_COMMISSIONING_GUIDE.pdf` before normal use.
-
-The project is advanced: expected builder difficulty is 4/5. Allow several
-days for printing plus calibration and test time.
-
-![Exploded Satellite1 Ultra](IMAGES/exploded_parts_identification.png)
-"""
+def _phase_table() -> str:
+    """The whole build on one page, so a builder always knows where they are."""
+    return _markdown_table(
+        ["Phase", "What you do", "Roughly how long"],
+        [
+            ["1", "Check your printer and buy the parts", "ordering time"],
+            ["2", "Print 8 small calibration pieces", "4-6 hours"],
+            ["3", "Measure them and correct the files", "1 hour"],
+            ["4", "Print 12 Ultra parts and 6 Satellite top parts", "3-5 days"],
+            ["5", "Cut 3 foam gaskets from the templates", "30 minutes"],
+            ["6", "Lay out and check every part", "30 minutes"],
+            ["7", "Assemble, in 9 numbered steps", "3-4 hours"],
+            ["8", "Test before you use it normally", "2 hours"],
+        ],
+    )
 
 
-def _beginner_guide() -> str:
+def _build_book(parameters: DesignParameters, root: Path) -> str:
+    """The single front-to-back builder document.
+
+    Everything a builder needs, in the order they need it.  The specialist
+    guides stay as reference; this book never says "look it up elsewhere" for a
+    step you must actually perform.
+    """
+    acoustics = _acoustics(root)
     calibration_rows = [
         [filename, str(quantity), "ASA" if source != "cable_gland" else "TPU 95A"]
         for source, filename, quantity in CALIBRATION_PRINT_ORDER
     ]
     ultra_rows = [
-        [
-            filename,
-            str(quantity),
-            "TPU 95A" if source == "anti_slip_ring" else "ASA",
-        ]
+        [filename, str(quantity), "TPU 95A" if source == "anti_slip_ring" else "ASA"]
         for source, filename, quantity in ULTRA_PRINT_ORDER
     ]
     official_rows = [
         [filename, str(quantity), "ASA"] for _source, filename, quantity in OFFICIAL_TOP_PRINT_ORDER
     ]
-    return f"""# Build Satellite1 Ultra: Beginner Guide
+    gasket_rows = [
+        [
+            row["id"],
+            row["name"],
+            row["quantity"],
+            row["material"],
+            row["cutting"].split(" from ")[-1],
+        ]
+        for row in GASKETS
+        if row["id"] != "G04"
+    ]
+    assembly_lines: list[str] = []
+    for step in ASSEMBLY_STEPS:
+        assembly_lines.extend(
+            [
+                f"### Step {step['number']} of 9 — {step['title']}",
+                "",
+                f"![Build step {step['number']}: {step['title']}]({step['image']})",
+                "",
+                f"**You need:** {step['parts']}",
+                "",
+                f"**Screws:** {step['fasteners']}   **Seal:** {step['gasket']}   "
+                f"**Tools:** {step['tools']}",
+                "",
+                f"**Do this:** {step['action']}",
+                "",
+                f"**It is right when:** {step['pass']}",
+                "",
+                f"> Careful: {step['warning']}",
+                "",
+            ]
+        )
+    assembly_block = "\n".join(assembly_lines)
+    return f"""# The Satellite1 Ultra Build Book
 
-This is the normal build path. Start here and work from top to bottom. You do
-not need to open the source code, STEP files, reports, or engineering appendix.
+> **DO NOT PRINT THE FULL ENCLOSURE YET.**
+> **PRINT AND MEASURE THE 8 SMALL CALIBRATION PIECES FIRST.**
 
-> **STOP: DO NOT PRINT THE BIG PARTS YET.**
-> **PRINT THE SMALL CALIBRATION PARTS FIRST.**
+This is the only document you need to follow from start to finish. Work through
+the phases in order. Every other guide in this package is reference material
+that this book points you to at the moment you need it.
 
-## Before you spend money
+You are building a serviceable passive-radiator speaker enclosure around the
+FutureProofHomes Satellite1 **Batch 1** development kit: Core rev4.1 and HAT
+rev4.1 / R2024.12.06. Satellite1.1 / Batch 2 does not fit and is not supported.
 
-- Electronics: FutureProofHomes Satellite1 **Batch 1**, Core rev4.1 and HAT
-  rev4.1 / R2024.12.06. Satellite1.1 / Batch 2 does not fit this release.
-- Printer: at least 212 x 192 x 189 mm of truly usable movement. A fully usable
-  220 x 220 x 200 mm printer works one part at a time.
-- Material: ASA for rigid parts and TPU 95A for the two flexible parts. PETG
-  may replace ASA. PLA+ is only for a display mock-up, not the finished unit.
-- Basic tools: digital calipers, 0.01 g scale, 2 mm hex key, soldering/crimping
-  tools, and an M3 heat-set-insert tip.
-- Buy every item marked required in `BOM.csv`.
+Expected difficulty is 4 out of 5. Nothing here is glued; every joint is a
+screw into a brass insert, so you can open the unit again later.
 
-If any line above is not true, stop and fix it before printing.
+![The finished Satellite1 Ultra, assembled](IMAGES/assembly_iso.png)
 
-## The only folders you need for printing
+## The whole build at a glance
 
-Open `PRINT_THESE_FILES`. Ignore the advanced STEP/STL/3MF folders.
+{_phase_table()}
 
-1. `1_CALIBRATION_FIRST` — print now.
-2. `2_ULTRA_ENCLOSURE_PARTS` — print only after calibration passes.
-3. `3_SQUIRCLE_TOP_PARTS` — print all six after calibration passes.
+## Status you should know before you start
 
-## Step 1 — Print the small test pieces
+Every gate in this repository is a **digital** check: geometry, clearances,
+volumes, exports, and documents. No physical unit has been built and measured.
+Fit, sealing, acoustic output, thermals, Wi-Fi, microphones, buttons, LEDs, and
+wake-word behaviour are all `REQUIRES_PHYSICAL_VALIDATION`. Your calibration,
+leak, and commissioning checks in phases 3 and 8 are part of the build, not
+optional extras.
 
-Print these one at a time with the same printer settings you will use later:
+---
+
+# Phase 1 — Check your printer and buy the parts
+
+## Your printer must actually fit the shell
+
+The outer shell is the limiting part at **192 x 212 x 189 mm**, printed
+upright. You therefore need **212 x 192 x 189 mm of genuinely usable travel**
+(X and Y may be swapped).
+
+- A 220 x 220 x 200 mm printer works only if the whole bed is usable. That
+  leaves about 4 mm per long-side edge and limits the shell brim to 3 mm.
+- Purge lines, bed clips, and firmware exclusion zones all steal usable travel.
+  Measure what your machine really reaches before you commit.
+- Rotating the shell in-plane does not make it fit a 210 x 210 mm bed, and
+  printing it on its side is not supported.
+
+You also need an enclosed printer, a 0.4 mm nozzle, and dry filament.
+
+## Materials
+
+- **ASA** for every rigid part. **PETG** is a documented alternative.
+- **TPU 95A** for the two flexible parts: the cable seal and the bottom grip.
+- **PLA+** is only acceptable for a display mock-up, never a finished unit.
+
+## Tools
+
+Digital calipers reading 0.01 mm, a scale reading 0.01 g, a 2.0 mm hex driver,
+a temperature-controlled soldering iron with an M3 heat-set-insert tip,
+wire strippers and a crimper or soldering iron, ESD protection, a hand bulb
+with a 0-500 Pa gauge, and leak-detection solution.
+
+## What to buy
+
+Buy every item marked required in `BOM.csv`. The essentials are:
+
+- One FutureProofHomes Satellite1 Batch 1 kit (E01).
+- One Dayton Audio ND91-4 speaker (A01).
+- Two SB Acoustics SB12PACR-00 passive radiators (A02).
+- M3 heat-set inserts, with four spares (H01).
+- Every M3 screw in `FASTENERS.csv`.
+- One 300 x 300 mm sheet of 2.0 mm closed-cell EPDM foam (G00).
+- Two mild-steel ballast plates (B01).
+- Two matched M6 washer stacks for radiator tuning (B02).
+- One 2-pin JST-XH speaker lead (H02).
+
+`HARDWARE_AND_MATERIALS_GUIDE.pdf` gives the full specification for each line.
+
+> Do not print the official original speaker chamber, speaker plate, or
+> anti-slip ring. The Ultra parts replace all three.
+
+---
+
+# Phase 2 — Print the 8 calibration pieces
+
+These are small. They exist so you discover your printer's real dimensional
+behaviour before you spend days of filament on the big parts.
+
+Open `PRINT_THESE_FILES/1_CALIBRATION_FIRST` and print every file, one at a
+time, using the exact settings you will use for the enclosure:
 
 {_markdown_table(["File", "Print this many", "Material"], calibration_rows)}
 
-Use a 0.4 mm nozzle, 0.20 mm layers, five walls, six top/bottom layers, and 35%
-gyroid infill. No supports. Use a 5 mm brim on the rigid test pieces.
+Baseline settings: 0.4 mm nozzle, 0.20 mm layers, five walls, six top and six
+bottom layers, 35% gyroid infill, no supports, 5 mm brim on the rigid pieces.
+ASA runs 250-260 C nozzle and 100-110 C bed with the enclosure closed. PETG
+runs 235-250 C nozzle and 75-85 C bed.
 
-![What to measure on the Satellite top test](IMAGES/calibration_official_interface.png)
+---
 
-## Step 2 — Check the test pieces
+# Phase 3 — Measure the pieces and correct the files
 
-Open `START_HERE_CALIBRATION_GUIDE.pdf`. It shows exactly where the calipers go.
-The simple rule is:
+This is the step that makes the big parts fit. `CALIBRATION_GUIDE.pdf` shows
+exactly where each caliper jaw goes; the images below name each check.
 
-- The Satellite top test must sit flat without force.
-- An M3 screw must pass through its chosen hole by hand.
-- A heat-set insert must finish straight, flush, and tight.
-- The real speaker and both radiators must drop into their test rings by hand.
-- The gasket test must squeeze the foam without cutting it or leaving a gap.
-- The two real speaker wires must fit the flexible cable seal snugly.
+![Where to measure the Satellite top fit piece](IMAGES/calibration_official_interface.png)
 
-If a test fails, do not sand the final fit and do not print the big parts.
-Enter the measured correction in `CALIBRATION_INPUT_TEMPLATE.yaml`, run
-`make calibrated-release`, and reprint the failed test. Continue only when
-every test passes.
+![Using the screw and insert as go/no-go gauges](IMAGES/calibration_fasteners.png)
 
-## Step 3 — Print every Ultra enclosure part
+![Checking the speaker seats by hand](IMAGES/calibration_driver.png)
 
-Open `PRINT_THESE_FILES/2_ULTRA_ENCLOSURE_PARTS` and print every file:
+![Checking a radiator seats by hand](IMAGES/calibration_radiator.png)
+
+![Squeezing the foam between the two gasket pieces](IMAGES/calibration_gasket.png)
+
+![Fitting the two real wires through the cable seal](IMAGES/calibration_cable.png)
+
+## The eight checks
+
+{
+        _markdown_table(
+            ["Check", "What you do", "It passes when"],
+            [
+                [
+                    "XY scale",
+                    "Inside caliper jaws across the engraved 110.60 mm recess, at three heights",
+                    "110.40-110.80 mm after correction",
+                ],
+                [
+                    "Z scale",
+                    "Outside jaws across a clean 3.00 mm edge, at four corners",
+                    "2.90-3.10 mm",
+                ],
+                [
+                    "Screw clearance",
+                    "Try a clean M3 screw in the 3.4, 3.5 and 3.6 mm holes",
+                    "smallest hole the screw falls through without force",
+                ],
+                [
+                    "Insert bore",
+                    "Install identical inserts into the 4.0-4.3 mm blind bores",
+                    "square and flush, no crack, no spin",
+                ],
+                [
+                    "Speaker fit",
+                    "Seat the real ND91-4 in its test ring",
+                    "drops in by hand, flange lies flat, play under 0.30 mm",
+                ],
+                [
+                    "Radiator fit",
+                    "Seat one real SB12PACR-00 in its test ring",
+                    "drops in by hand, flange lies flat, play under 0.30 mm",
+                ],
+                [
+                    "Gasket squeeze",
+                    "Clamp a strip of your actual foam until both hard stops touch",
+                    "15%-45% compression, no light path, foam not cut",
+                ],
+                [
+                    "Cable seal",
+                    "Push the two real conductors and the TPU seal into the test hole",
+                    "moderate finger force, seal cannot rotate or lift",
+                ],
+            ],
+        )
+    }
+
+Do not measure a 3-4 mm hole with caliper tips. The screw and the insert are
+the gauges.
+
+## Enter your numbers
+
+You have three ways to turn those measurements into corrected files. All three
+produce the same `physical_calibration.yaml`.
+
+1. **In your browser (easiest).** Open the calibration wizard page listed in
+   the project README, type in what you measured, and it computes and
+   downloads the file for you. Nothing to install.
+2. **On GitHub.** Paste the file contents into the "Calibrated build" workflow
+   and GitHub rebuilds the whole corrected package for you to download.
+3. **On your own computer.** Run `python scripts/calibrate.py`, which asks the
+   same questions and then runs `make calibrated-release`.
+
+Reprint every calibration piece affected by a correction you entered, and
+re-check it. Continue only when all eight checks pass on corrected pieces.
+
+> If a piece fails, do not sand it and do not "make it work". Correct the
+> number, regenerate, and reprint. Sanding a sealing face destroys the seal.
+
+---
+
+# Phase 4 — Print every enclosure part
+
+Now print the real parts. Open `PRINT_THESE_FILES/2_ULTRA_ENCLOSURE_PARTS`
+and print every file:
 
 {_markdown_table(["File", "Print this many", "Material"], ultra_rows)}
 
-The outer shell is the largest part: 192 x 212 x 189 mm. Print it upright. On
-a 220 mm bed, use no more than a 3 mm brim and make sure purge lines or bed
-clips do not steal the needed space.
+Note that the radiator clamp ring is the only part you print **twice**.
 
-![Outer shell on the print bed](IMAGES/print_orientation_outer_shell.png)
+![The outer shell, positioned on the bed](IMAGES/print_orientation_outer_shell.png)
 
-## Step 4 — Print every Satellite Squircle top part
-
-Open `PRINT_THESE_FILES/3_SQUIRCLE_TOP_PARTS` and print all six:
+Then open `PRINT_THESE_FILES/3_SQUIRCLE_TOP_PARTS` and print all six official
+Satellite top parts. These are not optional; they complete the normal
+Satellite top:
 
 {_markdown_table(["File", "Print this many", "Material"], official_rows)}
 
-These are not optional. They complete the normal Satellite top. Do not print
-the old official speaker chamber, speaker plate, or rubber ring; the Ultra
-parts replace those three items.
+`PRINTING_GUIDE.pdf` holds the full slicer baseline, the per-part orientation
+sheets, and the inspection checklist. Check each part as it comes off the bed:
+gasket lands must be continuous and unbroken, shell slots must all be open,
+clamp rings must be flat within 0.20 mm, and no insert bore may have opened
+into the chamber.
 
-![The six official top parts in the assembled area](IMAGES/assembly_stage_08_upper.png)
+---
 
-## Step 5 — Check everything before assembly
+# Phase 5 — Cut the three foam gaskets
 
-Lay every printed part on a table and check it off against the two tables
-above. Also check:
+The gaskets are not printed. You cut them from your 2.0 mm EPDM sheet using the
+1:1 templates in `GASKET_TEMPLATES/`. Print each template at exactly 100% scale
+(no "fit to page"), check the printed size against the sheet, then cut with a
+sharp knife or a cutting plotter.
 
-- One Dayton Audio ND91-4 speaker.
-- Two SB Acoustics SB12PACR-00 passive radiators.
+{
+        _markdown_table(
+            ["ID", "Seal", "How many", "Material", "Template"],
+            gasket_rows,
+        )
+    }
+
+The fourth seal, G04, is the flexible cable seal you already printed in TPU as
+`08_FLEXIBLE_CABLE_SEAL_TPU.3mf`.
+
+Each gasket must be one continuous piece. Do not splice, join, or stretch a
+gasket to fit.
+
+![Where each of the four seals sits](IMAGES/gasket_placement.png)
+
+---
+
+# Phase 6 — Lay out and check every part
+
+Put everything on a clean table and account for it before you start. The
+diagram below names every single piece and tells you which file it came from
+or which item you purchased.
+
+![Every part in the build, with its file name](IMAGES/exploded_parts_identification.png)
+
+Check that you have all of it:
+
+- All 12 printed Ultra parts, with two radiator clamp rings.
+- All 6 printed Satellite top parts.
+- One ND91-4 speaker and two SB12PACR-00 radiators.
+- Three cut foam gaskets and one printed TPU cable seal.
 - Every screw and insert in `FASTENERS.csv`.
-- Four gaskets/seals G01 through G04 from `GASKETS.csv`.
-- Two equal passive-radiator weight stacks.
-- Two steel ballast plates.
-- One red/black speaker wire with the correct plug.
+- Two steel ballast plates, deburred and dry.
+- Two matched radiator tuning stacks, weighed to
+  {acoustics.get("added_pr_mass_each_g", 0):.2f} g each.
+- One red/black speaker lead with the correct plug.
+
+The screws all look similar, so identify them by length before you begin:
+
+![Screw lengths and where each one is used](IMAGES/fastener_identification.png)
 
 Do not begin assembly with a missing part.
 
-![All major printed pieces](IMAGES/exploded_parts_identification.png)
+---
 
-## Step 6 — Assemble in this order
+# Phase 7 — Assemble
 
-Keep `ASSEMBLY_GUIDE.pdf` open for the picture that goes with each numbered
-step. Use this screw-and-seal checklist so nothing is assumed:
+Nine steps, in this order. Each one shows what to install, which screws to use,
+which seal it captures, and how to tell it is right.
 
-| Step | What you install | Screws | Seal |
-|---|---|---|---|
-| 1 | Check all parts | none | none |
-| 2 | Brass inserts | H01; keep four spares | none |
-| 3 | Main speaker and clamp ring | four F04 | G02 |
-| 4 | Two side radiators and two clamp rings | eight F05 total | one G03 per side |
-| 5 | Electronics divider | eight F03 | G01, then flexible wire seal G04 |
-| 6 | Bottom base, weight-tray lid, access panel | four F07, four F06, four F08 | none |
-| 7 | Outer shell | four F09 with nylon washers | none |
-| 8 | Electronics cover and Satellite top | four each of F02, F01, F10, and F11 | none |
-| 9 | Flexible bottom grip | none | none |
+Tighten every screw into a printed part gently, using the short arm of the
+2 mm hex key: 0.35 N m is the target and 0.45 N m is the absolute maximum.
+Stop as soon as the parts meet evenly. Do not keep turning "for luck".
 
-Then follow these actions:
+{assembly_block}
 
-1. Check the electronics label and every print.
-2. Install the brass inserts. Let them cool before using a screw.
-3. Connect the speaker wire and clamp the main speaker.
-4. Add equal weights to both radiators, then clamp them to the two sides.
-5. Route the wire, fit the large divider gasket, close the divider, and run the
-   gentle leak test.
-6. Fit the bottom base, steel weights, weight-tray lid, and access panel.
-7. Slide on the outer shell without touching a speaker or radiator.
-8. Fit the electronics cover and all six Satellite top parts.
-9. Fit the flexible bottom grip and inspect the finished unit.
+---
 
-Tighten printed-part screws gently with the short end of the 2 mm hex key. Stop
-when the parts meet evenly. Do not keep turning “for luck.”
+# Phase 8 — Test before you use it
 
-## Step 7 — Test before normal use
+Complete every check in `TESTING_AND_COMMISSIONING_GUIDE.pdf`. The short
+version:
 
-Open `TESTING_AND_COMMISSIONING_GUIDE.pdf` and complete every checkbox:
+- The gentle 100-250 Pa leak screen shows no growing bubble at any seal.
+- The speaker cone moves outward on a brief positive polarity pulse.
+- Both radiators move freely and never scrape.
+- Every button clicks once and returns.
+- Every LED segment lights evenly.
+- All four microphones work.
+- USB-C plugs in and out without touching the shell.
+- Wi-Fi connects, and you have recorded the signal beside a bare kit.
+- There is no buzz, rattle, air whistle, overheating, or softened plastic.
 
-- No air bubbles at a gasket during the gentle leak test.
-- Main speaker moves outward on the quick polarity check.
-- Both side radiators move freely and do not scrape.
-- Buttons click and return.
-- Every light works.
-- All microphones work.
-- USB-C fits without rubbing.
-- Wi-Fi connects normally.
-- No buzz, rattle, air whistle, overheating, or soft plastic.
+Never use shop air on this enclosure, and never exceed 250 Pa.
 
-Stop using the unit if any check fails. Fix the problem, then repeat the test.
+Stop using the unit if any check fails. Fix the cause and repeat the test.
 
-## If you need to open it later
+---
 
-Disconnect power and open `MAINTENANCE_GUIDE.pdf`. It gives the safe removal
-order. Never cut a wire and never reuse a torn or permanently flattened gasket.
+# Phase 9 — Opening it again later
 
-## What is still unknown
+Disconnect power and wait five minutes. `MAINTENANCE_GUIDE.pdf` gives the safe
+removal order for each subassembly.
 
-The files and geometry pass digital checks, but no completed physical unit has
-been tested yet. Your calibration, fit, leak, sound, Wi-Fi, microphone, and
-temperature checks are required parts of the build—not optional extras.
+![The order things come apart in](IMAGES/service_disassembly.png)
+
+Replace any gasket you disturb. Never cut a wire to get a part out, and never
+reuse a torn or permanently flattened seal.
+
+---
+
+# If something goes wrong
+
+{
+        _markdown_table(
+            ["Symptom", "Most likely cause", "What to do"],
+            [
+                [
+                    "Calibration piece is warped",
+                    "chamber too cool, or bed not clean",
+                    "fix the printer and reprint; never compensate for a warped part",
+                ],
+                [
+                    "Every hole is too small",
+                    "over-extrusion or elephant-foot compensation",
+                    "fix flow and first-layer compensation before adding a CAD offset",
+                ],
+                [
+                    "Insert cracks the boss",
+                    "bore too small or iron too hot",
+                    "choose a larger bore or reduce dwell; never add torque",
+                ],
+                [
+                    "Speaker will not sit flat",
+                    "print strings, or cutout too small",
+                    "remove strings only; correct the cutout and reprint the coupon",
+                ],
+                [
+                    "Cable seal leaks or spins",
+                    "conductor too thick, or wet TPU",
+                    "confirm conductor OD is 1.8 mm or less, dry the TPU, reprint",
+                ],
+                [
+                    "Shell will not slide on",
+                    "clamp ring or surround contact",
+                    "stop immediately; find the contact rather than forcing the shell",
+                ],
+                [
+                    "Bubbles during the leak check",
+                    "gasket twisted, pinched, or a screw left loose",
+                    "vent, reopen, replace the gasket, and reseat evenly",
+                ],
+                [
+                    "One radiator moves more than the other",
+                    "unequal tuning mass",
+                    "reweigh both stacks; they must match within 0.02 g",
+                ],
+            ],
+        )
+    }
+
+---
+
+# What is still unproven
+
+The geometry, exports, schedules, and documents in this release pass their
+digital gates. No completed physical unit has been measured. That means your
+own calibration, leak, acoustic, thermal, Wi-Fi, and microphone checks are the
+first real evidence this design works. Record what you find.
+
+`ENGINEERING_APPENDIX.md` lists every open risk, its consequence, and how to
+close it.
 """
 
 
@@ -1205,8 +1426,7 @@ def generate_documentation(
     output.mkdir(parents=True, exist_ok=True)
 
     documents = {
-        "BEGINNER_BUILD_GUIDE.md": _beginner_guide(),
-        "START_HERE.md": _start_here(),
+        "BUILD_BOOK.md": _build_book(p, root),
         "CALIBRATION_GUIDE.md": _calibration_guide(),
         "PRINTING_GUIDE.md": _printing_guide(p, root),
         "HARDWARE_AND_MATERIALS_GUIDE.md": _hardware_guide(p, root),

@@ -21,9 +21,9 @@ EVIDENCE_LABELS = {
     "ENGINEERING_ESTIMATE",
     "REQUIRES_PHYSICAL_VALIDATION",
 }
+#: One entry-point book plus the reference guides it sends builders to.
 USER_GUIDES = (
-    "BEGINNER_BUILD_GUIDE.md",
-    "START_HERE.md",
+    "BUILD_BOOK.md",
     "CALIBRATION_GUIDE.md",
     "PRINTING_GUIDE.md",
     "HARDWARE_AND_MATERIALS_GUIDE.md",
@@ -33,10 +33,10 @@ USER_GUIDES = (
     "ENGINEERING_APPENDIX.md",
 )
 PDF_GUIDES = (
-    "BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf",
-    "START_HERE.pdf",
-    "START_HERE_CALIBRATION_GUIDE.pdf",
+    "SATELLITE1_ULTRA_BUILD_BOOK.pdf",
+    "CALIBRATION_GUIDE.pdf",
     "PRINTING_GUIDE.pdf",
+    "HARDWARE_AND_MATERIALS_GUIDE.pdf",
     "ASSEMBLY_GUIDE.pdf",
     "TESTING_AND_COMMISSIONING_GUIDE.pdf",
     "MAINTENANCE_GUIDE.pdf",
@@ -173,10 +173,10 @@ def validate_documentation(root: Path = ROOT) -> dict[str, Any]:
         except Exception as exc:
             errors.append(f"invalid PDF {pdf_name}: {exc}")
 
-    if "DO NOT PRINT THE FULL ENCLOSURE YET." not in (docs / "START_HERE.md").read_text(
+    if "DO NOT PRINT THE FULL ENCLOSURE YET." not in (docs / "BUILD_BOOK.md").read_text(
         encoding="utf-8"
     ):
-        errors.append("mandatory calibration warning absent from START_HERE")
+        errors.append("mandatory calibration warning absent from the build book")
 
     result: dict[str, Any] = {
         "status": "PASS" if not errors else "FAIL",

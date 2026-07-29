@@ -109,16 +109,23 @@ def package_release(
 
     read_first = """SATELLITE1 ULTRA - READ THIS FIRST
 
-1. Open BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf.
-2. Do not print the large enclosure parts yet.
-3. Open PRINT_THESE_FILES/1_CALIBRATION_FIRST and print those files first.
-4. Pass the checks in the guide.
-5. Then print every file in PRINT_THESE_FILES/2_ULTRA_ENCLOSURE_PARTS and
-   PRINT_THESE_FILES/3_SQUIRCLE_TOP_PARTS. Print the quantity shown in each
-   filename/guide.
+Open SATELLITE1_ULTRA_BUILD_BOOK.pdf and follow it from front to back.
+That one document takes you through the whole build. Everything else in this
+folder is reference material it points you to when you need it.
 
-You can ignore STEP, STL, 3MF, IMAGES, reports, and source files unless the
-beginner guide specifically sends you there.
+The short version:
+
+1. Do not print the large enclosure parts yet.
+2. Print everything in PRINT_THESE_FILES/1_CALIBRATION_FIRST.
+3. Measure those pieces and correct the files, as the build book describes.
+4. Then print every file in PRINT_THESE_FILES/2_ULTRA_ENCLOSURE_PARTS and
+   PRINT_THESE_FILES/3_SQUIRCLE_TOP_PARTS, using the quantity shown in the
+   build book.
+5. Cut the three foam gaskets from GASKET_TEMPLATES at 100% scale.
+6. Assemble, then complete the tests before normal use.
+
+You can ignore STEP, STL, 3MF, IMAGES, and report folders unless the build
+book specifically sends you there.
 
 Do not print the old official Squircle speaker chamber, speaker plate, or
 anti-slip ring. The Ultra files replace them.
@@ -143,7 +150,7 @@ the six unmodified official Squircle upper-stack STL files under
 speaker chamber, speaker plate, or anti-slip ring; the Ultra parts replace them.
 
 First-time builders should ignore the advanced CAD folders, open
-`BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf`, and print only from the numbered
+`SATELLITE1_ULTRA_BUILD_BOOK.pdf`, and print only from the numbered
 folders under `PRINT_THESE_FILES/`.
 
 No physical unit has been validated. Fit, sealing, acoustic performance,
