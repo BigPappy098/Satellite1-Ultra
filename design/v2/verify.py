@@ -8,14 +8,23 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+import cadquery as cq
 from parts import (
     BODY_BOTTOM_Z,
     BUSHING_BODY_H,
+    BUSHING_BORE_D,
     BUSHING_FLANGE_T,
+    CROWN_TAB_THICKNESS,
+    CRUSH_PROUD,
+    HEAD_CLEARANCE,
     LAP_CLEARANCE,
     LAP_DEPTH,
+    MID_PLATE_TOP_Z,
     SEAM_WALL,
     SEAM_Z,
+    SHOULDER_DIAMETER,
+    SHOULDER_LENGTH,
+    SHROUD_BOSS_HEIGHT,
     V2,
     main_cabinet,
     mic_isolation_bushing,
@@ -23,6 +32,8 @@ from parts import (
     shell_segments,
 )
 from v2_silhouette import BODY_HALF, TOP_Z
+
+from satellite1_ultra.geometry import cage_fastener_positions, shroud_fastener_positions
 
 BED_X, BED_Y = 220.0, 200.0
 
@@ -74,6 +85,38 @@ def main() -> int:
         overlap = segments[lower].intersect(segments[upper]).Volume() / 1.0e3
         failures += not check(f"{lower} vs {upper}", overlap < 0.05, f"{overlap:.4f} cm3 overlap")
 
+    print("\nSkin retention (the shell must not lift off or rattle)")
+    p = V2
+    tab_z = p.divider_bottom_z + p.divider_thickness + SHROUD_BOSS_HEIGHT
+    for x, y in shroud_fastener_positions(p):
+        probe = cq.Solid.makeCylinder(
+            p.fastener_clearance_diameter / 2.0 + 1.2,
+            CROWN_TAB_THICKNESS,
+            cq.Vector(x, y, tab_z),
+            cq.Vector(0, 0, 1),
+        )
+        got = segments["shell_crown"].intersect(probe).Volume()
+        failures += not check(
+            f"crown tab at ({x:.0f},{y:.0f})", got > 1.0, f"{got:.1f} mm3 of material"
+        )
+    for x, y in cage_fastener_positions(p):
+        probe = cq.Solid.makeCylinder(
+            p.boss_outer_diameter / 2.0,
+            6.0,
+            cq.Vector(x, y, p.shell_retention_z),
+            cq.Vector(0, 0, 1),
+        )
+        got = segments["shell_base"].intersect(probe).Volume()
+        failures += not check(
+            f"base boss at ({x:.0f},{y:.0f})", got > 1.0, f"{got:.1f} mm3 of material"
+        )
+    interference = CRUSH_PROUD - LAP_CLEARANCE
+    failures += not check(
+        "crush ribs preload the lap",
+        0.10 <= interference <= 0.25,
+        f"{interference:.2f} mm interference against the socket bore",
+    )
+
     print("\nOfficial interface isolation")
     divider = pressure_divider()
     seat = V2.official_interface_z + BUSHING_FLANGE_T
@@ -88,6 +131,22 @@ def main() -> int:
     )
     failures += not check(
         "divider is one solid", len(divider.Solids()) == 1, f"{len(divider.Solids())} solid(s)"
+    )
+    # The shoulder must bottom on the counterbore floor and stop clear of the
+    # plate, otherwise the screw clamps and the elastomer does nothing.
+    floor = V2.official_interface_z - BUSHING_BODY_H
+    head = floor + SHOULDER_LENGTH
+    failures += not check(
+        "shoulder screw captures without clamping",
+        abs(head - (MID_PLATE_TOP_Z + HEAD_CLEARANCE)) < 1e-9,
+        f"stock {SHOULDER_LENGTH:.0f} mm shoulder from {floor:.1f} ends at {head:.1f}, "
+        f"plate top {MID_PLATE_TOP_Z:.1f}, clearance {head - MID_PLATE_TOP_Z:.2f} mm",
+    )
+    failures += not check(
+        "bushing bore clears the shoulder",
+        0.05 <= (BUSHING_BORE_D - SHOULDER_DIAMETER) / 2.0 <= 0.2,
+        f"{(BUSHING_BORE_D - SHOULDER_DIAMETER) / 2.0:.2f} mm radial on a "
+        f"d{SHOULDER_DIAMETER:.0f} shoulder",
     )
 
     print("\nOverall")

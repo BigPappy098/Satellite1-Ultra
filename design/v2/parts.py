@@ -42,7 +42,9 @@ from satellite1_ultra.geometry import (
     _compression_stop,
     acoustic_mounts,
     base_fastener_positions,
+    cage_fastener_positions,
     official_mount_positions,
+    shroud_fastener_positions,
     top_fastener_positions,
 )
 
@@ -90,6 +92,17 @@ SEAM_WALL = 5.0  # wall thickened inward across the joint
 SEAM_RUNOUT = 4.0  # reinforcement below the seam plane
 SHADOW_DEPTH = 0.3  # deliberate relief at the visible butt line
 SHADOW_HEIGHT = 0.6
+
+# Crush ribs stand proud of the socket bore, so the lap is a light press fit
+# rather than a 0.25 mm slip fit that could rattle.
+CRUSH_PROUD = 0.40  # 0.15 mm interference against the socket
+CRUSH_WIDTH = 3.0
+CRUSH_LENGTH = 8.0
+
+# Skin retention.  Without these the shell simply lifts off.
+CROWN_TAB_RADIUS = 5.0
+CROWN_TAB_THICKNESS = 3.0
+SHROUD_BOSS_HEIGHT = 8.0
 
 
 def cabinet_envelope() -> cq.Shape:
@@ -220,6 +233,18 @@ def pressure_divider() -> cq.Shape:
                 size[0], size[1], interface_z - rib_bottom, centered=(True, True, False)
             )
             divider = divider.fuse(cast(cq.Shape, rib.val()))
+
+    # Bosses the shell crown bolts down onto.  Without these the skin is not
+    # attached to anything and simply lifts off.
+    for x, y in shroud_fastener_positions(p):
+        boss = cq.Solid.makeCylinder(
+            p.boss_outer_diameter / 2.0,
+            SHROUD_BOSS_HEIGHT,
+            cq.Vector(x, y, rib_bottom),
+            cq.Vector(0.0, 0.0, 1.0),
+        )
+        divider = divider.fuse(boss)
+        divider = divider.cut(_blind_insert(x, y, rib_bottom + SHROUD_BOSS_HEIGHT, -1.0, p))
     return divider
 
 
@@ -351,6 +376,11 @@ def shell_segments() -> dict[str, cq.Shape]:
             piece = piece.cut(socket)
         segments[name] = piece
 
+    # Crush ribs on each tongue: the lower segment of every pair carries them.
+    for index, zs in enumerate(SEAM_Z):
+        owner = names[index]
+        segments[owner] = segments[owner].fuse(_crush_ribs(zs))
+
     # Deliberate shadow line, cut equally from both sides of each seam.
     for zs in SEAM_Z:
         relief = _prism(BODY_HALF + 2.0, zs - SHADOW_HEIGHT / 2.0, zs + SHADOW_HEIGHT / 2.0).cut(
@@ -358,7 +388,89 @@ def shell_segments() -> dict[str, cq.Shape]:
         )
         for name, piece in segments.items():
             segments[name] = piece.cut(relief)
+
+    segments["shell_crown"] = _add_crown_retention(segments["shell_crown"])
+    segments["shell_base"] = _add_base_retention(segments["shell_base"])
     return segments
+
+
+def _crush_ribs(zs: float) -> cq.Shape:
+    """Interference ribs at the four face centres of a tongue.
+
+    The socket bore sits at mid + 0.25 mm; the ribs reach mid + 0.40 mm, so
+    each joint closes on 0.15 mm of crush instead of rattling in clearance.
+    Only the face centres are used, where the superellipse normal is axis
+    aligned and a plain box is a true radial rib.
+    """
+    mid = BODY_HALF - SEAM_WALL / 2.0
+    ribs: list[cq.Shape] = []
+    for sx, sy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        centre_x = sx * (mid + CRUSH_PROUD / 2.0)
+        centre_y = sy * (mid + CRUSH_PROUD / 2.0)
+        width = CRUSH_PROUD if sx else CRUSH_WIDTH
+        depth = CRUSH_WIDTH if sx else CRUSH_PROUD
+        box = cq.Workplane("XY", origin=(centre_x, centre_y, zs + 2.0)).box(
+            width, depth, CRUSH_LENGTH, centered=(True, True, False)
+        )
+        ribs.append(cast(cq.Shape, box.val()))
+    return cq.Compound.makeCompound(ribs)
+
+
+def _add_crown_retention(crown: cq.Shape) -> cq.Shape:
+    """Bolt the crown down onto the divider's shroud bosses.
+
+    Four tabs, each webbed back to the skin so the screw load is carried into
+    the wall rather than by an unsupported stalk.
+    """
+    p = V2
+    tab_z = p.divider_bottom_z + p.divider_thickness + SHROUD_BOSS_HEIGHT
+    outer = outer_body(BODY_BOTTOM_Z)
+    for x, y in shroud_fastener_positions(p):
+        tab = cq.Solid.makeCylinder(
+            CROWN_TAB_RADIUS, CROWN_TAB_THICKNESS, cq.Vector(x, y, tab_z), cq.Vector(0, 0, 1)
+        )
+        reach = 2.0 * BODY_HALF
+        if x:
+            bridge = cq.Workplane(
+                "XY", origin=(x + reach / 2.0 * (1 if x > 0 else -1), y, tab_z)
+            ).box(reach, 9.0, CROWN_TAB_THICKNESS, centered=(True, True, False))
+        else:
+            bridge = cq.Workplane(
+                "XY", origin=(x, y + reach / 2.0 * (1 if y > 0 else -1), tab_z)
+            ).box(9.0, reach, CROWN_TAB_THICKNESS, centered=(True, True, False))
+        crown = crown.fuse(tab).fuse(cast(cq.Shape, bridge.val()).intersect(outer))
+        crown = crown.cut(
+            cq.Solid.makeCylinder(
+                p.fastener_clearance_diameter / 2.0,
+                CROWN_TAB_THICKNESS,
+                cq.Vector(x, y, tab_z),
+                cq.Vector(0, 0, 1),
+            )
+        )
+    return crown
+
+
+def _add_base_retention(base: cq.Shape) -> cq.Shape:
+    """Bolt the base segment down into the bottom service plate."""
+    p = V2
+    retention_z = p.shell_retention_z
+    outer = outer_body(BODY_BOTTOM_Z)
+    for x, y in cage_fastener_positions(p):
+        boss = cq.Solid.makeCylinder(
+            p.boss_outer_diameter / 2.0, 10.0, cq.Vector(x, y, retention_z), cq.Vector(0, 0, 1)
+        )
+        reach = 2.0 * BODY_HALF
+        if x:
+            bridge = cq.Workplane(
+                "XY", origin=(x + reach / 2.0 * (1 if x > 0 else -1), y, retention_z)
+            ).box(reach, 9.0, 6.0, centered=(True, True, False))
+        else:
+            bridge = cq.Workplane(
+                "XY", origin=(x, y + reach / 2.0 * (1 if y > 0 else -1), retention_z)
+            ).box(9.0, reach, 6.0, centered=(True, True, False))
+        base = base.fuse(boss).fuse(cast(cq.Shape, bridge.val()).intersect(outer))
+        base = base.cut(_blind_insert(x, y, retention_z, 1.0, p))
+    return base
 
 
 # --------------------------------------------------------------------- #
@@ -370,16 +482,29 @@ def shell_segments() -> dict[str, cq.Shape]:
 BUSHING_FLANGE_T = 2.0
 BUSHING_FLANGE_D = 13.0
 BUSHING_BODY_D = 8.6
-BUSHING_BODY_H = 4.0
-BUSHING_BORE_D = 4.2  # radial slack so the M3 never touches TPU-free metal
+# Counterbore depth is set by the shoulder screw, not chosen freely.  A stock
+# 16 mm shoulder starting at the counterbore floor must end 0.3 mm above the
+# mid-plate's top face at z = +3.2, so the floor sits at -12.5 and the body is
+# -8.8 - (-12.5) = 3.7 mm deep.
+SHOULDER_LENGTH = 16.0  # stock M3 x d4 shoulder screw
+SHOULDER_DIAMETER = 4.0
+HEAD_CLEARANCE = 0.3  # plate is captured, never clamped
+MID_PLATE_TOP_Z = 3.2  # measured from the official CAD
+BUSHING_BODY_H = 3.7
+BUSHING_BORE_D = SHOULDER_DIAMETER + 0.2  # slip fit on the shoulder
 
 
 def mic_isolation_bushing() -> cq.Shape:
     """TPU 95A top-hat isolating the official stack from the divider.
 
-    Printed in the TPU already used for the anti-slip ring and gaskets.  The
-    screw passes through with radial clearance, so the only path from cabinet
-    to microphone array is through the elastomer.
+    Printed in the TPU already used for the anti-slip ring and gaskets.
+
+    This part only works with an M3 x d4 shoulder screw, 16 mm shoulder.  The
+    shoulder bottoms on the counterbore floor and its head stops 0.3 mm above
+    the mid-plate, so the official stack rests on the elastomer and no clamping
+    load passes through it.  With an ordinary M3 screw the fastener clamps in
+    parallel with the elastomer at 1.005e8 N/m against 2.853e6 N/m -- 35x
+    stiffer -- leaving the TPU carrying 2.8% of the path and isolating nothing.
     """
     flange = cq.Solid.makeCylinder(
         BUSHING_FLANGE_D / 2.0, BUSHING_FLANGE_T, cq.Vector(0, 0, 0), cq.Vector(0, 0, 1)
