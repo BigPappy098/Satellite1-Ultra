@@ -193,6 +193,14 @@
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
+      "feature": "pressure_divider to official_top_plate_snap_in_diffuser_ring",
+      "nominal_mm": 18.894999999999936,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
       "feature": "pressure_divider to official_hat_batch1_rev4_1",
       "nominal_mm": 10.150000095367432,
       "minimum_mm": 0.3,
@@ -235,6 +243,14 @@
     {
       "feature": "electronics_shroud to official_lock_ring",
       "nominal_mm": 1.199999799999986,
+      "minimum_mm": 0.3,
+      "note": "conservative bounding-box lower bound",
+      "status": "PASS",
+      "evidence": "DERIVED_FROM_OFFICIAL_CAD"
+    },
+    {
+      "feature": "electronics_shroud to official_top_plate_snap_in_diffuser_ring",
+      "nominal_mm": 12.094999899999934,
       "minimum_mm": 0.3,
       "note": "conservative bounding-box lower bound",
       "status": "PASS",

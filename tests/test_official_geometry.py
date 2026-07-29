@@ -136,8 +136,16 @@ def test_core_placement_is_not_asserted() -> None:
 @pytest.mark.geometry
 @pytest.mark.requires_official_assets
 def test_reference_assembly_contains_official_stack_and_placed_board() -> None:
+    """Every upper-stack part and the placed board must be in the reference.
+
+    Derived from UPPER_STACK rather than a fixed count, so adding a required
+    official part cannot silently leave the reference assembly behind.
+    """
     assembly = upper_reference_assembly()
-    assert len(assembly.objects) == 7
+    for part in UPPER_STACK:
+        assert part.name in assembly.objects, part.name
+    assert BATCH1_HAT.name in assembly.objects
+    assert len(assembly.objects) == len(UPPER_STACK) + 2  # + the board and the root
 
 
 @pytest.mark.deep

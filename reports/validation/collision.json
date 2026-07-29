@@ -4,7 +4,7 @@
   "method": "exact OCCT boolean intersection volume for every pair",
   "part_count": 20,
   "pair_count": 190,
-  "official_pair_count": 102,
+  "official_pair_count": 119,
   "official_reference_note": "The HAT is represented by a conservative convex-band envelope built from its official STL; the remaining official parts are exact B-reps.",
   "positive_volume_contacts": [
     {
