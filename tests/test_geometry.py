@@ -10,6 +10,8 @@ import pytest
 from satellite1_ultra.exporting import PARTS, print_oriented
 from satellite1_ultra.geometry import (
     DEFAULT_PARAMETERS,
+    SECTION_EXPONENT,
+    SKIN_SEGMENTS,
     DesignParameters,
     acoustic_mounts,
     driver_keepout,
@@ -18,7 +20,10 @@ from satellite1_ultra.geometry import (
     placed_functional_parts,
     pressure_divider,
     rounded_prism,
-    rounded_rect_stations,
+    section_area,
+    section_prism,
+    skin_segments,
+    skin_shell,
 )
 from satellite1_ultra.official import MID_PLATE, load_part
 
@@ -128,11 +133,64 @@ def test_functional_assembly_has_only_classified_interference() -> None:
     assert detected == set(INTENDED_CONTACTS)
 
 
-def test_rounded_rect_stations_walk_the_whole_perimeter() -> None:
-    stations = rounded_rect_stations(192.0, 212.0, 34.0, 9.5)
-    assert len(stations) > 60
-    for x, y, _ in stations:
-        assert abs(x) <= 96.001 and abs(y) <= 106.001
+def test_section_matches_the_official_squircle() -> None:
+    """The whole point of v2: our section is the official part's own curve.
+
+    Measured off the official lock ring, the squircle is a superellipse with
+    n = 4.13 to within 0.38 mm across the quarter. If SECTION_EXPONENT ever
+    drifts, the printed body stops matching the official top and the design
+    loses the property it exists for.
+    """
+    from math import cos, radians, sin
+
+    half = 55.0
+    q = SECTION_EXPONENT / (SECTION_EXPONENT - 1.0)
+    # Support function of the superellipse, i.e. its extent at each angle.
+    for angle, expected in ((0.0, 55.000), (22.5, 62.699), (45.0, 66.102)):
+        t = radians(angle)
+        support = half * (abs(cos(t)) ** q + abs(sin(t)) ** q) ** (1.0 / q)
+        assert abs(support - expected) < 0.05, f"{angle} deg: {support:.3f} vs {expected}"
+
+
+def test_section_prism_area_is_not_a_rounded_rectangle() -> None:
+    """A superellipse encloses measurably more than a rounded rectangle."""
+    prism = section_prism(152.0, 152.0, 10.0, 0.0)
+    area = prism.Volume() / 10.0
+    assert abs(area - section_area(76.0, 76.0)) < 1.0
+    # 0.927 of the bounding square for n = 4.13; a 20 mm-radius rounded
+    # rectangle of the same span would enclose about 0.985.
+    assert 0.92 < area / (152.0 * 152.0) < 0.94
+
+
+def test_skin_segments_are_each_one_printable_solid() -> None:
+    """Three segments, each a single solid that fits the configured bed."""
+    p = DEFAULT_PARAMETERS
+    bed_x, bed_y, bed_z = p.build_volume_mm
+    segments = skin_segments(p)
+    assert set(segments) == set(SKIN_SEGMENTS)
+    for name, shape in segments.items():
+        assert len(shape.Solids()) == 1, f"{name} fragmented"
+        box = shape.BoundingBox()
+        fits = (box.xlen <= bed_x and box.ylen <= bed_y) or (
+            box.ylen <= bed_x and box.xlen <= bed_y
+        )
+        assert fits and box.zlen <= bed_z, f"{name} does not fit the bed"
+
+
+def test_official_top_sits_flush_in_the_flat_top() -> None:
+    """The lip v2 exists to remove must stay removed."""
+    from satellite1_ultra.official import official_upper_solids
+
+    skin_top = skin_shell(DEFAULT_PARAMETERS).BoundingBox().zmax
+    plate_top = official_upper_solids()["official_top_plate"].BoundingBox().zmax
+    assert abs(plate_top - skin_top) < 0.05, f"{plate_top - skin_top:.3f} mm step at the junction"
+
+
+def test_shoulder_screw_captures_without_clamping() -> None:
+    """An ordinary M3 screw would defeat the mic isolation entirely."""
+    p = DEFAULT_PARAMETERS
+    head = p.shoulder_stop_z + p.shoulder_screw_length
+    assert abs(head - (p.official_plate_top_z + p.shoulder_head_clearance)) < 1e-9
 
 
 def test_cadquery_shape_type_contract() -> None:

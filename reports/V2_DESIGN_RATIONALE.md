@@ -1,9 +1,12 @@
 # v2 — seamless industrial design
 
-Exploratory work toward a v2 enclosure that reads as **one part** after
-assembly. Nothing here is production geometry, nothing here is validated by the
-project's gates, and nothing here is exported. It exists to settle the form and
-the joints before `src/satellite1_ultra/geometry.py` is touched.
+Why the v2 enclosure is shaped the way it is. The geometry itself now lives in
+`src/satellite1_ultra/geometry.py` and is exported and gated like everything
+else; this document records the reasoning and the measurements behind it so the
+decisions are not lost.
+
+**Nothing in v2 has been physically built or measured.** Every figure here is
+exact CAD.
 
 ## Why v1 does not look like one part
 
@@ -141,11 +144,14 @@ The v1 `outer_shell` is 192 × 212 mm and the printability gate never checked it
 against a real bed — see `reports/review/2026-07-29-claude-v2-review.json`,
 PRINT-001 and PRINT-002. Every v2 part is ≤ 184 × 184 mm and ≤ 146 mm tall.
 
-## Files
+## Where the geometry lives
 
-- `v2_silhouette.py` — the profile, the section family, and the volume solve.
-- `parts.py` — cabinet, divider, split shell, isolation bushing.
-- `render_v2.py` / `render_parts.py` — renders against the shared camera set.
-- `verify.py` — bed fit, solid count, lap fit, seam clearance, interference.
+- `geometry.superellipse_wire` / `section_prism` / `section_ring` — the section
+  family, `SECTION_EXPONENT = 4.13`.
+- `geometry.skin_body` / `skin_shell` / `skin_segments` — the monolith skin and
+  its three lapped segments, plus the `*_fabric` variants.
+- `geometry.mic_isolation_bushing` — the TPU isolator.
+- `validation.printability_report` — the per-axis bed gate that replaced the
+  scalar 256 mm check.
 
-Run from this directory with `../../.venv/bin/python verify.py`.
+Regenerate everything with `make release`.

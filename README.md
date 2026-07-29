@@ -6,6 +6,10 @@ It keeps the whole Satellite1 top — microphones, buttons, lights — and swaps
 small stock speaker box for a sealed, weighted cabinet with a proper 3.5&nbsp;inch
 driver and two passive radiators on the sides.
 
+The body is built from the official squircle's own curve — a superellipse, not a
+rounded rectangle — so the Satellite1 top sits **flush** in a single flat top
+rather than perched on a shoulder. After assembly it reads as one part.
+
 ![The finished Satellite1 Ultra](reports/renders/assembly_iso.png)
 
 ## 👉 Start here
@@ -25,7 +29,7 @@ every one. You never install anything — you only download part files.
 | **1. Print 8 small test pieces** | They're quick, and they tell us how your printer actually prints. |
 | **2. Measure them** | The site shows you exactly where to put the calipers and which box to type the number into. |
 | **3. Get your parts** | Printer spot on? Download the normal files. A bit off? We make a set sized for *your* printer. |
-| **4. Build it** | Nine steps, one picture each. Nothing is glued, so you can open it again. |
+| **4. Build it** | Nine steps, one picture each. Nothing is glued, so you can open it again. Wrap it in speaker cloth if you want. |
 
 **Do not print the big parts first.** The test pieces exist so you don't waste
 days of filament. It's the single most important thing on this page.
@@ -33,8 +37,8 @@ days of filament. It's the single most important thing on this page.
 ## What you'll need
 
 - A **Satellite1 Batch 1** kit — Core rev4.1 with HAT rev4.1. Batch 2 doesn't fit.
-- A printer that genuinely reaches **212 × 192 × 189 mm**. A 220 × 220 mm bed only
-  works if you can really use the whole bed.
+- A printer with about **184 × 184 mm** of usable bed and **150 mm** of height.
+  The outer skin is split into three stacked segments, so no single print is huge.
 - **ASA** filament (PETG is fine too) plus a little **TPU 95A** for two bendy parts.
 - One Dayton ND91-4 speaker, two SB Acoustics SB12PACR-00 radiators, M3 screws and
   heat-set inserts, a sheet of 2 mm foam, and two steel plates.

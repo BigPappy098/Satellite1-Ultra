@@ -1314,7 +1314,7 @@ def ballast_plate_extent(
     in the tray walls without touching either the steel or the outer shell.
     """
     width, depth = ballast_tray_extent(parameters)
-    return (width - 20.0, depth - 20.0, 10.0)
+    return (width - 20.0, depth - 20.0, 12.0)
 
 
 def ballast_lid_fastener_positions(
@@ -1342,18 +1342,18 @@ def ballast_cartridge(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.S
     """Removable dry ballast tray with four blind insert-retained lid bosses."""
     p = parameters
     width, depth = ballast_tray_extent(p)
-    tray = rounded_prism(width, depth, 14.0, 0.0, 10.0)
-    cavity = rounded_prism(width - 8.0, depth - 8.0, 12.0, 2.0, 6.0)
+    tray = rounded_prism(width, depth, 16.0, 0.0, 10.0)
+    cavity = rounded_prism(width - 8.0, depth - 8.0, 14.0, 2.0, 6.0)
     tray = tray.cut(cavity)
     for x, y in ballast_lid_fastener_positions(p):
         boss = cq.Solid.makeCylinder(
             p.boss_outer_diameter / 2.0,
-            12.0,
+            14.0,
             cq.Vector(x, y, 2.0),
             cq.Vector(0.0, 0.0, 1.0),
         )
         tray = tray.fuse(boss)
-        tray = tray.cut(_blind_insert(x, y, 14.0, -1.0, p))
+        tray = tray.cut(_blind_insert(x, y, 16.0, -1.0, p))
     return tray
 
 
@@ -1918,7 +1918,7 @@ def placed_functional_parts(
             cq.Vector(0.0, 0.0, p.base_bottom_z + p.bottom_plate_thickness)
         ),
         "ballast_cartridge_lid": ballast_cartridge_lid(p).translate(
-            cq.Vector(0.0, 0.0, p.base_bottom_z + p.bottom_plate_thickness + 12.5)
+            cq.Vector(0.0, 0.0, p.base_bottom_z + p.bottom_plate_thickness + 14.5)
         ),
     }
     for side in (-1, 1):

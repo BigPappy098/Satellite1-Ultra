@@ -83,7 +83,10 @@ acoustics:
   amplifier_peak_current_a: 6.0
 
 ballast:
-  target_mass_g: 879
+  # Two 6 mm mild-steel plates, 100 x 92 mm. v1 used two 5 mm plates for 879 g,
+  # but the square cabinet narrows the tray, so the stack is thicker to hold
+  # the base mass roughly constant on a taller, narrower body.
+  target_mass_g: 867
   maximum_mass_g: 1250
   cartridge_material: steel_plate_stack
 

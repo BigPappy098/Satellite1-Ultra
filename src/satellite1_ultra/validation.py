@@ -26,6 +26,7 @@ from satellite1_ultra.configuration import (
     selected_components,
 )
 from satellite1_ultra.geometry import (
+    SECTION_EXPONENT,
     DesignParameters,
     MountSpec,
     _bolt_points,
@@ -475,6 +476,18 @@ def collision_report(parameters: DesignParameters) -> dict[str, Any]:
 # ---------------------------------------------------------------------- #
 # Clearance
 # ---------------------------------------------------------------------- #
+def _section_half_at(half: float, offset: float) -> float:
+    """Remaining material from a chord *offset* out to the superellipse edge.
+
+    Replaces the rounded-rectangle notion of a "flat face": a superellipse has
+    no flat, so the honest check is how much section is still left beside the
+    widest chord the clamp ring occupies.
+    """
+    if offset >= half:
+        return -1.0
+    return float(half * (1.0 - (offset / half) ** SECTION_EXPONENT) ** (1.0 / SECTION_EXPONENT))
+
+
 def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
     """Report critical nominal clearances and their acceptance thresholds."""
     p = parameters
@@ -483,8 +496,8 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
 
     driver_face_y = -p.outer_depth / 2.0 + p.driver_seat_depth - p.compressed_gasket_thickness
     pr_face_x = p.outer_width / 2.0 - p.pr_seat_depth + p.compressed_gasket_thickness
-    grille_pr_inner = p.outer_width / 2.0 + 13.0
-    grille_driver_inner = p.outer_depth / 2.0 + 13.0
+    grille_pr_inner = p.outer_width / 2.0 + p.shell_gap
+    grille_driver_inner = p.outer_depth / 2.0 + p.shell_gap
 
     clearances: list[dict[str, Any]] = [
         {
@@ -542,9 +555,8 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
             "minimum_mm": 3.0,
         },
         {
-            "feature": "driver clamp ring within the flat cabinet face",
-            "nominal_mm": (p.outer_width / 2.0 - p.corner_radius)
-            - p.driver_clamp_ring_diameter / 2.0,
+            "feature": "driver clamp ring inside the cabinet face width",
+            "nominal_mm": _section_half_at(p.outer_width / 2.0, p.driver_clamp_ring_diameter / 2.0),
             "minimum_mm": 0.5,
         },
         {

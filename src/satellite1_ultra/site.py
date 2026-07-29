@@ -121,9 +121,10 @@ open it again.</p>
 <ul>
 <li><b>Your kit:</b> a FutureProofHomes Satellite1 <b>Batch 1</b> (Core rev4.1 and
 HAT rev4.1). Satellite1.1 / Batch 2 does not fit.</li>
-<li><b>Your printer:</b> it must really reach <b>212 &times; 192 &times; 189 mm</b>.
-The outer shell is the big one. A 220 &times; 220 mm bed only works if the whole
-bed is usable.</li>
+<li><b>Your printer:</b> it must really reach <b>184 &times; 184 mm</b> of bed and
+about <b>150 mm</b> of height. The outer skin is split into three stacked
+segments, so nothing you print is enormous and a failed print costs you one
+segment instead of the whole body.</li>
 <li><b>Your filament:</b> ASA for the hard parts (PETG also works), and TPU 95A
 for two bendy parts.</li>
 </ul></div>
@@ -401,10 +402,16 @@ files and re-check it before printing anything big.</div>
 <p>Print every file here. Only one of them needs printing twice.</p>
 {_file_table(ultra, "2_ULTRA_ENCLOSURE_PARTS")}
 
-<div class="note"><strong>About the big shell</strong>
-<code>10_OUTER_SHELL.3mf</code> is the biggest part at 192 &times; 212 &times; 189 mm.
-Print it upright. On a 220 mm bed keep the brim to 3 mm and make sure nothing
-else is using up bed space.</div>
+<div class="note"><strong>About the outer skin</strong>
+The skin is three parts that stack: <code>10_OUTER_SKIN_BOTTOM.3mf</code>,
+<code>11_OUTER_SKIN_MIDDLE_WITH_GRILLES.3mf</code> and
+<code>12_OUTER_SKIN_TOP.3mf</code>. They interlock and pull together, and the
+joint shows as a thin shadow line rather than a step. Print all three upright
+except the bottom one, which goes on the bed cut-face down.
+<br><br>
+<strong>Wrapping it in cloth?</strong> Use the <code>10F</code>, <code>11F</code>
+and <code>12F</code> files instead — same parts with a hidden channel to tuck
+the fabric edge into. Decide now: you cannot add the channel later.</div>
 
 <h2>The Satellite top parts</h2>
 <p>These six are the original Satellite1 top. They are not optional — they hold
@@ -492,10 +499,12 @@ piece and tells you which file it came from.</p>
 <li>The speaker cone pushes <b>outward</b> on a quick polarity test</li>
 <li>Both side radiators move freely and never scrape</li>
 <li>Every button clicks once and springs back</li>
-<li>Every light works, and all four microphones work</li>
-<li>USB-C plugs in without rubbing the shell</li>
+<li>Every light works, and the microphones hear you across the room</li>
+<li>USB-C plugs in without rubbing the skin</li>
 <li>Wi-Fi connects normally</li>
 <li>No buzzing, rattling, whistling, or hot spots</li>
+<li>The Satellite top sits flush with the flat top &mdash; a hairline, not a step</li>
+<li>None of the three skin segments rocks or rattles when you tap the body</li>
 </ul>
 Stop using it if any of these fail. Fix the cause, then test again.</div>
 
