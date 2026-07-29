@@ -38,7 +38,7 @@ from satellite1_ultra.geometry import (
     main_cabinet,
     official_mount_positions,
     placed_functional_parts,
-    rounded_prism,
+    section_prism,
     shroud_fastener_positions,
     support_polygon,
     top_fastener_positions,
@@ -101,12 +101,11 @@ def _minimum_section(shape: cq.Shape, probe: cq.Shape, span_mm: float) -> float:
 def acoustic_air_shape(parameters: DesignParameters) -> cq.Shape:
     """Return the connected air domain after exact printed-cabinet intrusions."""
     p = parameters
-    air = rounded_prism(
+    air = section_prism(
         p.inner_width,
         p.inner_depth,
         p.acoustic_top_z - p.cavity_bottom_z,
         p.cavity_bottom_z,
-        p.inner_corner_radius,
     )
     for mount in acoustic_mounts(p).values():
         air = air.fuse(
@@ -129,12 +128,11 @@ def acoustic_volume_report(
 ) -> dict[str, Any]:
     """Calculate gross, intrusion, component, and usable net acoustic volume."""
     p = parameters
-    gross = rounded_prism(
+    gross = section_prism(
         p.inner_width,
         p.inner_depth,
         p.acoustic_top_z - p.cavity_bottom_z,
         p.cavity_bottom_z,
-        p.inner_corner_radius,
     ).Volume()
     structural_air = acoustic_air_shape(p).Volume()
     component_displacement = (driver_displacement_l + 2.0 * radiator_displacement_l_each) * 1e6
@@ -297,15 +295,12 @@ def sealing_report(parameters: DesignParameters) -> dict[str, Any]:
     checks.extend(_flange_hole_seal_checks(p))
 
     # Divider gasket land continuity on the acoustic top rim.
-    land = rounded_prism(
-        p.outer_width, p.outer_depth, 0.6, p.acoustic_top_z - 0.6, p.corner_radius
-    ).cut(
-        rounded_prism(
+    land = section_prism(p.outer_width, p.outer_depth, 0.6, p.acoustic_top_z - 0.6).cut(
+        section_prism(
             p.inner_width,
             p.inner_depth,
             0.6,
             p.acoustic_top_z - 0.6,
-            p.inner_corner_radius,
         )
     )
     for x, y in top_fastener_positions(p):
@@ -614,7 +609,7 @@ def clearance_report(parameters: DesignParameters) -> dict[str, Any]:
     # boss tops are *designed* to seat on the official mid-plate underside, so
     # that one pair has a zero-distance requirement instead of a gap.
     seating_pairs = {("pressure_divider", "official_mid_plate")}
-    for printed_name in ("pressure_divider", "electronics_shroud"):
+    for printed_name in ("pressure_divider", "shell_crown"):
         shape = parts[printed_name]
         for official_name, official_shape in official.items():
             box_gap = _bounding_box_gap(shape, official_shape)
@@ -691,7 +686,7 @@ def core_fit_report(parameters: DesignParameters) -> dict[str, Any]:
     extent = core_clearance_extent(p.board_revision)
     bay_bottom = p.divider_bottom_z + p.divider_thickness
     obstructions = [
-        placed_functional_parts(p)[name] for name in ("pressure_divider", "electronics_shroud")
+        placed_functional_parts(p)[name] for name in ("pressure_divider", "shell_crown")
     ]
     step = 4.0
     reach = 30.0
@@ -1032,7 +1027,7 @@ STANDARD_M3_LENGTHS = (6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 20.0, 25.0)
 #: face is actually clamped.
 _CLAMPED_PARTS: dict[str, tuple[tuple[str, ...], int, float]] = {
     "F01": (("official_mid_plate",), 2, -1.0),
-    "F02": (("electronics_shroud",), 2, -1.0),
+    "F02": (("shell_crown",), 2, -1.0),
     "F03": (("pressure_divider", "divider_gasket"), 2, -1.0),
     "F04": (("active_driver_clamp_ring",), 1, 1.0),
     "F05": (("pr_+1_clamp_ring",), 0, -1.0),
@@ -1370,42 +1365,56 @@ ASSEMBLY_STEPS: tuple[dict[str, Any], ...] = (
         ),
     },
     {
-        "step": "connect the boards and bolt the electronics shroud to the divider",
-        "part": "electronics_shroud",
+        "step": "slide the bottom skin segment up over the cabinet",
+        "part": "shell_base",
         "direction": "+Z",
-        "tool": "2.0 mm hex key",
-        "requires": ("lower the outer shell over the cabinet",),
-    },
-    {
-        "step": "seat the official mid-plate and upper stack on the divider bosses",
-        "part": "official upper stack",
-        "direction": "+Z",
-        "tool": "2.0 mm hex key",
-        "requires": ("connect the boards and bolt the electronics shroud to the divider",),
-    },
-    {
-        "step": "lower the outer shell over the cabinet",
-        "part": "outer_shell",
-        "direction": "-Z",
         "tool": "hand",
         "requires": ("fit the divider gasket and bolt the pressure divider to the cabinet",),
     },
     {
-        "step": "invert and bolt the outer shell to the bottom service plate",
-        "part": "outer_shell",
+        "step": "bolt the bottom skin segment to the bottom service plate",
+        "part": "shell_base",
         "direction": "+Z",
         "tool": "2.0 mm hex key",
         "requires": (
-            "lower the outer shell over the cabinet",
+            "slide the bottom skin segment up over the cabinet",
             "seat the ballast cartridge and close the bottom service plate",
         ),
+    },
+    {
+        "step": "press the grille skin segment onto the bottom segment's lap",
+        "part": "shell_grille",
+        "direction": "-Z",
+        "tool": "hand",
+        "requires": ("bolt the bottom skin segment to the bottom service plate",),
+    },
+    {
+        "step": "press the crown skin segment on and bolt it to the divider",
+        "part": "shell_crown",
+        "direction": "-Z",
+        "tool": "2.0 mm hex key",
+        "requires": ("press the grille skin segment onto the bottom segment's lap",),
+    },
+    {
+        "step": "fit the four TPU isolation bushings into the divider counterbores",
+        "part": "mic_isolation_bushing",
+        "direction": "-Z",
+        "tool": "hand",
+        "requires": ("press the crown skin segment on and bolt it to the divider",),
+    },
+    {
+        "step": "connect the boards, then seat the official upper stack on the bushings",
+        "part": "official upper stack",
+        "direction": "+Z",
+        "tool": "2.0 mm hex key",
+        "requires": ("fit the four TPU isolation bushings into the divider counterbores",),
     },
     {
         "step": "stretch the TPU anti-slip ring onto the base",
         "part": "anti_slip_ring",
         "direction": "+Z",
         "tool": "hand",
-        "requires": ("invert and bolt the outer shell to the bottom service plate",),
+        "requires": ("connect the boards, then seat the official upper stack on the bushings",),
     },
 )
 
@@ -1415,7 +1424,9 @@ SERVICE_TASKS: tuple[dict[str, Any], ...] = (
         "remove": (
             "anti_slip_ring",
             "bottom_service_plate",
-            "outer_shell",
+            "shell_crown",
+            "shell_grille",
+            "shell_base",
             "active_driver_clamp_ring",
         ),
         "tool": "2.0 mm hex key",
@@ -1426,7 +1437,9 @@ SERVICE_TASKS: tuple[dict[str, Any], ...] = (
         "remove": (
             "anti_slip_ring",
             "bottom_service_plate",
-            "outer_shell",
+            "shell_crown",
+            "shell_grille",
+            "shell_base",
             "passive_radiator_clamp_ring",
         ),
         "tool": "2.0 mm hex key",
@@ -1434,7 +1447,7 @@ SERVICE_TASKS: tuple[dict[str, Any], ...] = (
     },
     {
         "task": "replace the boards",
-        "remove": ("official upper stack", "electronics_shroud"),
+        "remove": ("official upper stack",),
         "tool": "2.0 mm hex key",
         "opens_pressure_boundary": False,
     },
@@ -1529,28 +1542,48 @@ def printability_report(parameters: DesignParameters) -> dict[str, Any]:
     from satellite1_ultra.exporting import PARTS, print_oriented
 
     p = parameters
-    limit = 256.0
+    # Per-axis build volume, not a scalar.  The previous gate compared
+    # max(x, y, z) against a single 256.0 and so could not represent a
+    # rectangular bed, a separate Z limit, or orientation feasibility -- it
+    # would pass a 192 x 212 mm part on a 100 x 100 mm bed.  See
+    # reports/review/2026-07-29-claude-v2-review.json, PRINT-001 and PRINT-002.
+    bed_x, bed_y, bed_z = p.build_volume_mm
     records: list[dict[str, Any]] = []
     for name, definition in PARTS.items():
         shape = print_oriented(definition.builder(p))
         box = shape.BoundingBox()
-        largest = max(box.xlen, box.ylen, box.zlen)
+        # A part fits if either in-plane orientation fits; Z must always fit.
+        footprint_fits = (box.xlen <= bed_x and box.ylen <= bed_y) or (
+            box.ylen <= bed_x and box.xlen <= bed_y
+        )
+        fits = footprint_fits and box.zlen <= bed_z
         records.append(
             {
                 "part": name,
                 "material": definition.material,
                 "print_orientation": definition.print_orientation,
                 "bounds_mm": [box.xlen, box.ylen, box.zlen],
-                "largest_dimension_mm": largest,
-                "build_envelope_mm": limit,
-                "status": "PASS" if largest <= limit else "FAIL",
+                "largest_dimension_mm": max(box.xlen, box.ylen, box.zlen),
+                "build_volume_mm": [bed_x, bed_y, bed_z],
+                "footprint_fits_either_rotation": footprint_fits,
+                "height_fits": box.zlen <= bed_z,
+                "margin_mm": [
+                    round(max(bed_x, bed_y) - max(box.xlen, box.ylen), 3),
+                    round(min(bed_x, bed_y) - min(box.xlen, box.ylen), 3),
+                    round(bed_z - box.zlen, 3),
+                ],
+                "status": "PASS" if fits else "FAIL",
                 "evidence": EVIDENCE_DIGITAL,
             }
         )
     return {
         "status": "PASS" if all(item["status"] == "PASS" for item in records) else "FAIL",
         "evidence": EVIDENCE_DIGITAL,
-        "method": "print-oriented bounding box of every exported part",
+        "build_volume_mm": {"x": bed_x, "y": bed_y, "z": bed_z},
+        "method": (
+            "print-oriented bounding box of every exported part against a per-axis "
+            "build volume, testing both in-plane rotations"
+        ),
         "process": {
             "primary_material": "ASA",
             "alternative_material": "PETG",
@@ -1606,7 +1639,6 @@ def stability_report(parameters: DesignParameters) -> dict[str, Any]:
         "outer_shell",
         "main_cabinet",
         "pressure_divider",
-        "electronics_shroud",
         "active_driver_clamp_ring",
         "base_skirt",
         "bottom_service_plate",
@@ -1624,10 +1656,43 @@ def stability_report(parameters: DesignParameters) -> dict[str, Any]:
         [
             _shape_mass("anti_slip_ring", parts["anti_slip_ring"], TPU_DENSITY_G_CM3),
             _shape_mass("wire_gland", parts["wire_gland"], TPU_DENSITY_G_CM3),
-            MassElement("steel ballast", ballast_mass, 0, 0, -207.5, EVIDENCE_ESTIMATE),
-            MassElement("Dayton ND91-4", 250.0, 0, -78.0, p.driver_axis_z, EVIDENCE_DRAWING),
-            MassElement("left SB12PACR-00", 78.0, -70.0, 0, p.pr_axis_z, EVIDENCE_DRAWING),
-            MassElement("right SB12PACR-00", 78.0, 70.0, 0, p.pr_axis_z, EVIDENCE_DRAWING),
+            *(
+                _shape_mass(name, parts[name], TPU_DENSITY_G_CM3)
+                for name in sorted(parts)
+                if name.startswith("mic_isolation_bushing")
+            ),
+            MassElement(
+                "steel ballast",
+                ballast_mass,
+                0,
+                0,
+                p.base_bottom_z + p.bottom_plate_thickness + 12.5,
+                EVIDENCE_ESTIMATE,
+            ),
+            MassElement(
+                "Dayton ND91-4",
+                250.0,
+                0,
+                -(p.outer_depth / 2.0 - 12.0),
+                p.driver_axis_z,
+                EVIDENCE_DRAWING,
+            ),
+            MassElement(
+                "left SB12PACR-00",
+                78.0,
+                -(p.outer_width / 2.0 - 10.0),
+                0,
+                p.pr_axis_z,
+                EVIDENCE_DRAWING,
+            ),
+            MassElement(
+                "right SB12PACR-00",
+                78.0,
+                p.outer_width / 2.0 - 10.0,
+                0,
+                p.pr_axis_z,
+                EVIDENCE_DRAWING,
+            ),
             MassElement("official electronics and upper stack", 280.0, 0, 0, 0, EVIDENCE_ESTIMATE),
             MassElement("fabric sleeve", 60.0, 0, -4.0, -104.0, EVIDENCE_ESTIMATE),
             MassElement("fasteners, inserts, wires", 70.0, 0, 0, -105.0, EVIDENCE_ESTIMATE),

@@ -7,7 +7,14 @@ on:
     branches: [main]
     paths:
       - "wizard/**"
-      - "src/satellite1_ultra/site.py"
+      # The site is generated from the geometry, the docs and the exports, so a
+      # design change has to redeploy it. Filtering on site.py alone meant a
+      # geometry change could silently leave the published pages describing the
+      # previous design.
+      - "src/satellite1_ultra/**"
+      - "config/**"
+      - "docs/**"
+      - "exports/**"
       - "reports/renders/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:

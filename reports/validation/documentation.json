@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "evidence": "VERIFIED_DIGITALLY",
+  "checked_files": [
+    "docs/BUILD_BOOK.md",
+    "docs/CALIBRATION_GUIDE.md",
+    "docs/PRINTING_GUIDE.md",
+    "docs/HARDWARE_AND_MATERIALS_GUIDE.md",
+    "docs/ASSEMBLY_GUIDE.md",
+    "docs/TESTING_AND_COMMISSIONING_GUIDE.md",
+    "docs/MAINTENANCE_GUIDE.md",
+    "docs/ENGINEERING_APPENDIX.md"
+  ],
+  "pdfs": [
+    {
+      "file": "SATELLITE1_ULTRA_BUILD_BOOK.pdf",
+      "pages": 23,
+      "bytes": 9651700
+    },
+    {
+      "file": "CALIBRATION_GUIDE.pdf",
+      "pages": 6,
+      "bytes": 1487033
+    },
+    {
+      "file": "PRINTING_GUIDE.pdf",
+      "pages": 22,
+      "bytes": 5052192
+    },
+    {
+      "file": "HARDWARE_AND_MATERIALS_GUIDE.pdf",
+      "pages": 3,
+      "bytes": 8687
+    },
+    {
+      "file": "ASSEMBLY_GUIDE.pdf",
+      "pages": 11,
+      "bytes": 5913159
+    },
+    {
+      "file": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
+      "pages": 3,
+      "bytes": 1645355
+    },
+    {
+      "file": "MAINTENANCE_GUIDE.pdf",
+      "pages": 1,
+      "bytes": 621993
+    }
+  ],
+  "errors": []
+}

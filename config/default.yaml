@@ -8,16 +8,22 @@ hardware:
   official_interface: squircle_midplate_threaded
 
 enclosure:
+  # v2 is a square 160 mm cabinet inside a 184 mm superellipse body. The Z
+  # layout is solved so the gross sealed prism reproduces v1's 3.966 L on the
+  # narrower plan, so the footprint shrinks on both axes at no acoustic cost.
   outer_width: 160.0
-  outer_depth: 180.0
+  outer_depth: 160.0
+  # Vestigial for the superellipse section, which is defined by its exponent
+  # (geometry.SECTION_EXPONENT) rather than a corner radius. Retained only
+  # because the coupon and validation probes still reference it.
   corner_radius: 20.0
   cable_passage_x: 34.0
   cable_passage_y: 64.0
-  grille_width_margin: 32.0
-  grille_depth_margin: 32.0
+  grille_width_margin: 24.0
+  grille_depth_margin: 24.0
   acoustic_top_z: -33.0
-  acoustic_bottom_z: -194.0
-  base_bottom_z: -216.0
+  acoustic_bottom_z: -225.5
+  base_bottom_z: -247.5
   wall_thickness: 4.0
   divider_thickness: 4.0
   acoustic_floor_thickness: 8.0
@@ -26,8 +32,10 @@ enclosure:
   component_bore_clearance: 0.20
   brace_rib_width: 5.0
   brace_rib_depth: 8.0
-  driver_axis_z: -96.0
-  passive_radiator_axis_z: -116.0
+  # Driver and radiators share one axis height, at the centre of the visible
+  # silhouette, so the three grille windows read as a single band.
+  driver_axis_z: -117.0
+  passive_radiator_axis_z: -117.0
 
 component_mounts:
   # Clamp-ring acoustic component mounts. Fasteners are deliberately outboard
@@ -82,4 +90,11 @@ ballast:
 printing:
   primary_material: ASA
   alternative_material: PETG
-  maximum_build_dimension: 256.0
+  # Usable build volume of the reference machine, per axis. The printability
+  # gate reads these and tests both in-plane rotations of every part, so
+  # changing them here really does change the gate. The old scalar
+  # `maximum_build_dimension` was dead configuration; see
+  # reports/review/2026-07-29-claude-v2-review.json PRINT-002.
+  build_volume_x: 220.0
+  build_volume_y: 190.0
+  build_volume_z: 250.0

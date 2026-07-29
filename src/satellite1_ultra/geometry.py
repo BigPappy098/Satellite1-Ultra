@@ -33,7 +33,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from functools import lru_cache
-from math import cos, pi, sin
+from math import copysign, cos, gamma, pi, sin, sqrt
 from typing import cast
 
 import cadquery as cq
@@ -41,25 +41,35 @@ import cadquery as cq
 Vector3 = tuple[float, float, float]
 SegmentFn = Callable[[float, float, float, float], tuple[float, float, float, float]]
 
+# Superellipse exponent of the official Satellite1 squircle, measured from the
+# official lock ring: max fit error 0.38 mm across the quarter, against 1.00 mm
+# for a best-fit rounded rectangle.  Every section of the v2 enclosure uses it,
+# which is what makes the body and the official top read as a single part.
+SECTION_EXPONENT = 4.13
+
 
 @dataclass(frozen=True)
 class DesignParameters:
     """All principal dimensions in the documented master coordinate system."""
 
     # --- cabinet envelope -------------------------------------------------
+    # Square 160 mm cabinet inside a 184 mm body.  The Z layout is solved so
+    # the gross sealed prism reproduces v1's 3.966 L on the narrower plan.
     outer_width: float = 160.0
-    outer_depth: float = 180.0
+    outer_depth: float = 160.0
     corner_radius: float = 20.0
     wall_thickness: float = 4.0
     acoustic_top_z: float = -33.0
-    acoustic_bottom_z: float = -194.0
+    acoustic_bottom_z: float = -225.5
     acoustic_floor_thickness: float = 8.0
     divider_thickness: float = 4.0
-    base_bottom_z: float = -216.0
+    base_bottom_z: float = -247.5
     bottom_plate_thickness: float = 4.0
 
     # --- active driver ----------------------------------------------------
-    driver_axis_z: float = -96.0
+    # Driver and radiators share one axis height, at the centre of the visible
+    # silhouette, so the three grille windows read as a single band.
+    driver_axis_z: float = -117.0
     driver_cutout_diameter: float = 88.5
     driver_outer_diameter: float = 103.2
     driver_flange_thickness: float = 3.0
@@ -69,7 +79,7 @@ class DesignParameters:
     driver_pad_diameter: float = 126.0
 
     # --- passive radiators ------------------------------------------------
-    pr_axis_z: float = -116.0
+    pr_axis_z: float = -117.0
     pr_cutout_diameter: float = 102.0
     pr_outer_diameter: float = 122.0
     pr_flange_thickness: float = 4.0
@@ -106,24 +116,66 @@ class DesignParameters:
     # --- official interface ----------------------------------------------
     official_mount_x: float = 45.0534
     official_mount_y: float = 31.5467
-    official_interface_z: float = -6.8
+    # Divider boss tops drop by the isolation bushing's flange thickness so the
+    # official stack still seats at -6.8 and the flat top stays flush.
+    official_interface_z: float = -8.8
 
     # --- miscellaneous ----------------------------------------------------
     cable_passage_x: float = 34.0
     cable_passage_y: float = 64.0
     cable_passage_diameter: float = 8.0
-    grille_width_margin: float = 32.0
-    grille_depth_margin: float = 32.0
+    grille_width_margin: float = 24.0
+    grille_depth_margin: float = 24.0
     shell_wall_thickness: float = 3.0
-    shell_slot_width: float = 4.2
-    shell_slot_pitch: float = 9.5
-    shell_base_band: float = 24.0
-    shell_top_band: float = 22.0
-    shell_tie_band: float = 9.0
+    # --- v2 monolith skin -------------------------------------------------
+    # Flat top coplanar with the official top plate, so the Sat1 sits flush.
+    shell_flat_top_z: float = 17.09
+    shell_top_roll: float = 22.0
+    shell_bottom_roll: float = 6.0
+    official_pocket_clearance: float = 0.4
+    official_full_section_z: float = -7.0
+    official_plate_top_z: float = 3.2
+    # Grille windows over the driver and the two radiators only.
+    window_diameter: float = 124.0
+    shell_slot_width: float = 3.4
+    shell_slot_pitch: float = 7.0
+    # Fabric-wrap retention channels, cut only into the fabric part variant.
+    fabric_groove_width: float = 2.2
+    fabric_groove_depth: float = 1.5
+    # --- skin split -------------------------------------------------------
+    # Seams sit 5 mm clear of the windows so none grazes a window edge.
+    seam_lower_z: float = -184.0
+    seam_upper_z: float = -50.0
+    lap_depth: float = 12.0
+    lap_clearance: float = 0.25
+    seam_wall_thickness: float = 5.0
+    seam_runout: float = 4.0
+    shadow_depth: float = 0.3
+    shadow_height: float = 0.6
+    crush_proud: float = 0.40
+    crush_width: float = 3.0
+    crush_length: float = 8.0
+    crown_tab_radius: float = 5.0
+    crown_tab_thickness: float = 3.0
+    shroud_boss_height: float = 8.0
+    # --- microphone isolation --------------------------------------------
+    bushing_flange_thickness: float = 2.0
+    bushing_flange_diameter: float = 13.0
+    bushing_body_diameter: float = 8.6
+    bushing_body_height: float = 3.7
+    shoulder_screw_length: float = 16.0
+    shoulder_screw_diameter: float = 4.0
+    shoulder_head_clearance: float = 0.3
     brace_rib_width: float = 5.0
     brace_rib_depth: float = 8.0
     board_revision: str = "public_batch_1"
     ballast_mass_g: float = 879.0
+    # Usable build volume, per axis.  Sized for the reference machine (a
+    # modified Ender 5, X measured at 220 mm, Y at least 190 mm, generous Z)
+    # with real margin rather than a scalar diagonal.
+    build_volume_x: float = 220.0
+    build_volume_y: float = 190.0
+    build_volume_z: float = 250.0
 
     # ------------------------------------------------------------------ #
     # Derived quantities
@@ -154,12 +206,56 @@ class DesignParameters:
 
     @property
     def shell_top_z(self) -> float:
-        """Top rim of the outer shell; the shroud skirt starts just above it."""
-        return self.acoustic_top_z + 2.0
+        """The skin's flat top, coplanar with the official top plate."""
+        return self.shell_flat_top_z
 
     @property
     def shell_bottom_z(self) -> float:
         return self.base_bottom_z - 4.0
+
+    @property
+    def body_half(self) -> float:
+        """Half-size of the visible body: cabinet plus the grille margin."""
+        return (self.outer_width + self.grille_width_margin) / 2.0
+
+    @property
+    def official_half(self) -> float:
+        """Half-size of the official squircle the skin lands flush against."""
+        return 55.0
+
+    @property
+    def flat_top_half(self) -> float:
+        """Half-size where the top roll finishes and the flat top begins."""
+        return self.body_half - self.shell_top_roll
+
+    @property
+    def cabinet_offset(self) -> float:
+        """Radial inset from the visible body to the cabinet's outer face."""
+        return self.shell_wall_thickness + self.shell_gap
+
+    @property
+    def shell_gap(self) -> float:
+        """Air gap between the skin's inner face and the cabinet."""
+        return self.grille_width_margin / 2.0 - self.shell_wall_thickness
+
+    @property
+    def seam_positions(self) -> tuple[float, ...]:
+        return (self.seam_lower_z, self.seam_upper_z)
+
+    @property
+    def lap_mid_half(self) -> float:
+        """Half-size of the lap's dividing surface, mid-way through the wall."""
+        return self.body_half - self.seam_wall_thickness / 2.0
+
+    @property
+    def shoulder_stop_z(self) -> float:
+        """Hard face the shoulder screw bottoms on, in the divider boss."""
+        return self.official_interface_z - self.bushing_body_height
+
+    @property
+    def build_volume_mm(self) -> tuple[float, float, float]:
+        """Usable build volume, per axis, for the printability gate."""
+        return (self.build_volume_x, self.build_volume_y, self.build_volume_z)
 
     @property
     def shell_retention_z(self) -> float:
@@ -327,6 +423,76 @@ def rounded_prism(
                 cq.Workplane("XY", origin=(center_x, center_y, z0)).circle(radius).extrude(height)
             )
     return cast(cq.Shape, result.val())
+
+
+def superellipse_wire(
+    half_x: float,
+    half_y: float,
+    z: float,
+    exponent: float = SECTION_EXPONENT,
+    count: int = 160,
+) -> cq.Wire:
+    """Closed spline approximating |x/a|^n + |y/b|^n = 1 at height *z*.
+
+    This is the section family of the official Satellite1 squircle, measured
+    from the official lock ring at n = 4.13 with a 0.38 mm maximum fit error.
+    A best-fit rounded rectangle misses the same profile by 1.00 mm, so using
+    the true superellipse is what lets the printed body and the official top
+    read as one continuous form.
+    """
+    points = []
+    for index in range(count):
+        theta = 2.0 * pi * index / count
+        c, s = cos(theta), sin(theta)
+        points.append(
+            cq.Vector(
+                half_x * copysign(abs(c) ** (2.0 / exponent), c),
+                half_y * copysign(abs(s) ** (2.0 / exponent), s),
+                z,
+            )
+        )
+    # periodic=True closes the curve itself; repeating the first point breaks it.
+    return cq.Wire.assembleEdges([cq.Edge.makeSpline(points, periodic=True)])
+
+
+def section_prism(
+    width: float,
+    depth: float,
+    height: float,
+    z0: float,
+    exponent: float = SECTION_EXPONENT,
+) -> cq.Shape:
+    """Straight prism on the superellipse section.
+
+    Replaces :func:`rounded_prism` everywhere the enclosure's visible or
+    sealing geometry is concerned.  Walls are formed by scaling the half-size
+    rather than true offsetting, which gives exactly the nominal thickness at
+    the flat of a face and 1.20x nominal at the 45-degree corner -- thicker at
+    the corners, never thinner, which is the safe direction.
+    """
+    if min(width, depth, height) <= 0.0:
+        raise ValueError("Invalid section-prism dimensions")
+    face = cq.Face.makeFromWires(superellipse_wire(width / 2.0, depth / 2.0, z0, exponent))
+    return cast(cq.Shape, cq.Solid.extrudeLinear(face, cq.Vector(0.0, 0.0, height)))
+
+
+def section_ring(
+    outer_width: float,
+    outer_depth: float,
+    inner_width: float,
+    inner_depth: float,
+    thickness: float,
+    exponent: float = SECTION_EXPONENT,
+) -> cq.Shape:
+    """Flat gasket or flange ring on the superellipse section."""
+    outer = section_prism(outer_width, outer_depth, thickness, 0.0, exponent)
+    inner = section_prism(inner_width, inner_depth, thickness + 2.0, -1.0, exponent)
+    return outer.cut(inner)
+
+
+def section_area(half_x: float, half_y: float, exponent: float = SECTION_EXPONENT) -> float:
+    """Exact area enclosed by the superellipse, for volume solving."""
+    return 4.0 * half_x * half_y * gamma(1.0 + 1.0 / exponent) ** 2 / gamma(1.0 + 2.0 / exponent)
 
 
 def _radial_cylinder(
@@ -629,19 +795,12 @@ def main_cabinet(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """Structural acoustic cabinet: walls, floor, mounts, bracing, interfaces."""
     p = parameters
     height = p.acoustic_top_z - p.acoustic_bottom_z
-    envelope = rounded_prism(
-        p.outer_width,
-        p.outer_depth,
-        height,
-        p.acoustic_bottom_z,
-        p.corner_radius,
-    )
-    cavity = rounded_prism(
+    envelope = section_prism(p.outer_width, p.outer_depth, height, p.acoustic_bottom_z)
+    cavity = section_prism(
         p.inner_width,
         p.inner_depth,
         p.acoustic_top_z - p.cavity_bottom_z + 1.0,
         p.cavity_bottom_z,
-        p.inner_corner_radius,
     )
     cabinet = envelope.cut(cavity)
 
@@ -665,14 +824,16 @@ def main_cabinet(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
                 rib_height,
                 centered=(True, True, False),
             )
-            cabinet = cabinet.fuse(cast(cq.Shape, rib.val()))
+            # Clipped to the envelope: the superellipse wall curves away from a
+            # plain box, so an unclipped rib would poke through the outer face.
+            cabinet = cabinet.fuse(cast(cq.Shape, rib.val()).intersect(envelope))
 
     # Rear structural spine, tying the rear panel to floor and top rim.
     spine = cq.Workplane(
         "XY",
         origin=(0.0, half_depth - 5.0, p.cavity_bottom_z),
     ).box(20.0, 10.0, rib_height, centered=(True, True, False))
-    cabinet = cabinet.fuse(cast(cq.Shape, spine.val()))
+    cabinet = cabinet.fuse(cast(cq.Shape, spine.val()).intersect(envelope))
 
     # Acoustic component mounts.
     for mount in acoustic_mounts(p).values():
@@ -699,7 +860,7 @@ def main_cabinet(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
             web = cq.Workplane(
                 "XY", origin=(((x + wall_x) / 2.0, y, p.acoustic_top_z - boss_height))
             ).box(abs(wall_x - x), 8.0, boss_height, centered=(True, True, False))
-        cabinet = cabinet.fuse(boss).fuse(cast(cq.Shape, web.val()))
+        cabinet = cabinet.fuse(boss).fuse(cast(cq.Shape, web.val()).intersect(envelope))
         cabinet = cabinet.fuse(_compression_stop(x, y, p.acoustic_top_z, 1.0, 3.0, p))
         cabinet = cabinet.cut(_blind_insert(x, y, p.acoustic_top_z, -1.0, p))
 
@@ -789,13 +950,7 @@ def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
     """Airtight electronics/acoustic divider carrying the official interface."""
     p = parameters
     z0 = p.divider_bottom_z
-    divider = rounded_prism(
-        p.outer_width,
-        p.outer_depth,
-        p.divider_thickness,
-        z0,
-        p.corner_radius,
-    )
+    divider = section_prism(p.outer_width, p.outer_depth, p.divider_thickness, z0)
     cable_x, cable_y = p.cable_passage_x, p.cable_passage_y
     divider = divider.cut(
         cq.Solid.makeCylinder(
@@ -823,13 +978,24 @@ def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
     mounts = official_mount_positions(p)
     for x, y in mounts:
         boss = cq.Solid.makeCylinder(
-            p.boss_outer_diameter / 2.0,
+            p.bushing_flange_diameter / 2.0 + 1.6,
             interface_z - z0,
             cq.Vector(x, y, z0),
             cq.Vector(0.0, 0.0, 1.0),
         )
         divider = divider.fuse(boss)
-        divider = divider.cut(_blind_insert(x, y, interface_z, -1.0, p))
+        # Counterbore seats the isolation bushing's body and its floor is the
+        # hard face the shoulder screw bottoms on.  The insert bore starts
+        # below it so the heat-set insert still gets its full depth.
+        divider = divider.cut(
+            cq.Solid.makeCylinder(
+                (p.bushing_body_diameter + 2.0 * p.print_clearance) / 2.0,
+                p.bushing_body_height,
+                cq.Vector(x, y, p.shoulder_stop_z),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+        divider = divider.cut(_blind_insert(x, y, p.shoulder_stop_z, -1.0, p))
     rib_top = interface_z
     rib_bottom = z0 + p.divider_thickness
     for axis in ("x", "y"):
@@ -848,11 +1014,13 @@ def pressure_divider(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Sh
             )
             divider = divider.fuse(cast(cq.Shape, rib.val()))
 
+    # Bosses the shell crown bolts down onto.  Without these the skin is not
+    # attached to anything and lifts straight off.
     for x, y in shroud_fastener_positions(p):
-        boss_top_z = z0 + p.divider_thickness + 8.0
+        boss_top_z = z0 + p.divider_thickness + p.shroud_boss_height
         boss = cq.Solid.makeCylinder(
             p.boss_outer_diameter / 2.0,
-            8.0,
+            p.shroud_boss_height,
             cq.Vector(x, y, z0 + p.divider_thickness),
             cq.Vector(0.0, 0.0, 1.0),
         )
@@ -901,74 +1069,6 @@ def rounded_loft(
     )
 
 
-def electronics_shroud(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Cosmetic and structural transition from the outer shell to the official top.
-
-    The shroud carries the visible shoulder of the product: it starts flush
-    inside the outer shell's top rim, sweeps in to the official top-plate
-    diameter, and leaves one controlled concentric reveal at each end. It is
-    removed upward, so its widest section is its lowest.
-    """
-    p = parameters
-    skirt_z = p.shell_top_z + 0.5
-    shell_inner_width = p.outer_width + p.grille_width_margin - 2.0 * p.shell_wall_thickness
-    shell_inner_depth = p.outer_depth + p.grille_depth_margin - 2.0 * p.shell_wall_thickness
-    outer = rounded_loft(
-        shell_inner_width - 1.0,
-        shell_inner_depth - 1.0,
-        p.corner_radius + 13.0,
-        skirt_z,
-        120.0,
-        120.0,
-        15.0,
-        0.0,
-    )
-    inner = rounded_loft(
-        shell_inner_width - 9.0,
-        shell_inner_depth - 9.0,
-        p.corner_radius + 9.0,
-        skirt_z - 0.2,
-        112.0,
-        112.0,
-        11.5,
-        0.2,
-    )
-    shroud = outer.cut(inner)
-    for x in (-30.0, 0.0, 30.0):
-        vent = cq.Workplane(
-            "XY",
-            origin=(x, p.outer_depth / 2.0 - 4.0, -16.0),
-        ).box(7.0, 24.0, 10.0, centered=(True, True, False))
-        shroud = shroud.cut(cast(cq.Shape, vent.val()))
-    service = cq.Workplane(
-        "XY",
-        origin=(0.0, p.outer_depth / 2.0 + 2.0, -24.0),
-    ).box(40.0, 24.0, 12.0, centered=(True, True, False))
-    shroud = shroud.cut(cast(cq.Shape, service.val()))
-
-    tab_z = p.divider_bottom_z + p.divider_thickness + 8.0
-    for x, y in shroud_fastener_positions(p):
-        tab = cq.Solid.makeCylinder(5.0, 3.0, cq.Vector(x, y, tab_z), cq.Vector(0.0, 0.0, 1.0))
-        hole = cq.Solid.makeCylinder(
-            p.fastener_clearance_diameter / 2.0,
-            3.0,
-            cq.Vector(x, y, tab_z),
-            cq.Vector(0.0, 0.0, 1.0),
-        )
-        reach = 120.0
-        if x:
-            bridge = cq.Workplane(
-                "XY", origin=(x + reach / 2.0 * (1 if x > 0 else -1), y, tab_z)
-            ).box(reach, 10.0, 3.0, centered=(True, True, False))
-        else:
-            bridge = cq.Workplane(
-                "XY", origin=(x, y + reach / 2.0 * (1 if y > 0 else -1), tab_z)
-            ).box(10.0, reach, 3.0, centered=(True, True, False))
-        clipped = cast(cq.Shape, bridge.val()).intersect(outer)
-        shroud = shroud.fuse(tab).fuse(clipped).cut(hole)
-    return shroud
-
-
 # ---------------------------------------------------------------------- #
 # Replaceable seals
 # ---------------------------------------------------------------------- #
@@ -976,13 +1076,11 @@ def divider_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shap
     """Uncompressed replaceable closed-cell divider gasket."""
     p = parameters
     margin = (p.wall_thickness - p.gasket_land_width / 2.0 - 1.0) / 2.0
-    return rounded_ring(
+    return section_ring(
         p.outer_width - 2.0 * margin,
         p.outer_depth - 2.0 * margin,
-        p.corner_radius - margin,
         p.inner_width + 2.0 * margin,
         p.inner_depth + 2.0 * margin,
-        p.inner_corner_radius + margin,
         p.gasket_thickness,
     )
 
@@ -1084,13 +1182,12 @@ def base_skirt(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
     """Non-acoustic ballast/service bay, open at top and bottom for service."""
     p = parameters
     height = p.acoustic_bottom_z - p.base_bottom_z
-    outer = rounded_prism(p.outer_width, p.outer_depth, height, p.base_bottom_z, p.corner_radius)
-    cavity = rounded_prism(
+    outer = section_prism(p.outer_width, p.outer_depth, height, p.base_bottom_z)
+    cavity = section_prism(
         p.inner_width,
         p.inner_depth,
         height + 2.0,
         p.base_bottom_z - 1.0,
-        p.inner_corner_radius,
     )
     skirt = outer.cut(cavity)
 
@@ -1165,12 +1262,11 @@ def bottom_service_plate(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
     """Flush underside plate, exported in its support-free print orientation."""
     p = parameters
     clearance = p.print_clearance
-    plate = rounded_prism(
+    plate = section_prism(
         p.inner_width - 2.0 * clearance,
         p.inner_depth - 2.0 * clearance,
         p.bottom_plate_thickness,
         0.0,
-        p.inner_corner_radius - clearance / 2.0,
     )
     for x, y in bottom_plate_fastener_positions(p):
         plate = plate.cut(
@@ -1310,156 +1406,399 @@ def _place_pr_disc(shape: cq.Shape, side: int, inner_face_x: float, axis_z: floa
     )
 
 
-def rounded_rect_stations(
-    width: float,
-    depth: float,
-    radius: float,
-    pitch: float,
-) -> list[tuple[float, float, float]]:
-    """Walk a rounded rectangle at constant arc length.
+def body_half_at(z: float, parameters: DesignParameters = DEFAULT_PARAMETERS) -> float:
+    """Half-size of the visible silhouette at height *z*.
 
-    Returns ``(x, y, normal_angle_deg)`` stations, so grille features can be
-    placed truly normal to the surface instead of radially from the centre.
-    """
-    from math import atan2, degrees
-
-    a = width / 2.0 - radius
-    b = depth / 2.0 - radius
-    arc = pi * radius / 2.0
-    perimeter = 4.0 * (a + b) + 4.0 * arc
-    count = max(8, round(perimeter / pitch))
-    step = perimeter / count
-    stations: list[tuple[float, float, float]] = []
-    for index in range(count):
-        s = index * step
-        remaining = s
-        for segment, length in _perimeter_segments(a, b, radius, arc):
-            if remaining <= length:
-                x, y, nx, ny = segment(remaining, a, b, radius)
-                stations.append((x, y, degrees(atan2(ny, nx))))
-                break
-            remaining -= length
-    return stations
-
-
-def _seg_right(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
-    return (a + r, -b + s, 1.0, 0.0)
-
-
-def _arc_top_right(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
-    angle = s / r
-    return (a + r * cos(angle), b + r * sin(angle), cos(angle), sin(angle))
-
-
-def _seg_top(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
-    return (a - s, b + r, 0.0, 1.0)
-
-
-def _arc_top_left(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
-    angle = pi / 2.0 + s / r
-    return (-a + r * cos(angle), b + r * sin(angle), cos(angle), sin(angle))
-
-
-def _seg_left(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
-    return (-a - r, b - s, -1.0, 0.0)
-
-
-def _arc_bottom_left(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
-    angle = pi + s / r
-    return (-a + r * cos(angle), -b + r * sin(angle), cos(angle), sin(angle))
-
-
-def _seg_bottom(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
-    return (-a + s, -b - r, 0.0, -1.0)
-
-
-def _arc_bottom_right(s: float, a: float, b: float, r: float) -> tuple[float, float, float, float]:
-    angle = 3.0 * pi / 2.0 + s / r
-    return (a + r * cos(angle), -b + r * sin(angle), cos(angle), sin(angle))
-
-
-def _perimeter_segments(
-    a: float, b: float, r: float, arc: float
-) -> tuple[tuple[SegmentFn, float], ...]:
-    return (
-        (_seg_right, 2.0 * b),
-        (_arc_top_right, arc),
-        (_seg_top, 2.0 * a),
-        (_arc_top_left, arc),
-        (_seg_left, 2.0 * b),
-        (_arc_bottom_left, arc),
-        (_seg_bottom, 2.0 * a),
-        (_arc_bottom_right, arc),
-    )
-
-
-def outer_shell(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Removable slotted industrial-design shell.
-
-    A single continuous rounded-rectangle volume with one seam at the base:
-    solid bands top and bottom, a fine vertical slot field over the whole
-    acoustic section, and a mid-height tie band so no slot runs the full
-    height. The slots are placed normal to the surface, so they keep constant
-    width around the corners.
+    A vertical body, rolled over a generous radius into a single flat top, and
+    softened at the ground edge.  The flat top is coplanar with the official
+    top plate, so the Satellite1 module sits flush in it.
     """
     p = parameters
-    width = p.outer_width + p.grille_width_margin
-    depth = p.outer_depth + p.grille_depth_margin
-    radius = p.corner_radius + 14.0
-    wall = p.shell_wall_thickness
-    bottom_z = p.shell_bottom_z
-    top_z = p.shell_top_z
+    top = p.shell_flat_top_z
+    if z >= top:
+        return p.flat_top_half
+    shoulder = top - p.shell_top_roll
+    if z > shoulder:
+        d = (z - shoulder) / p.shell_top_roll
+        return p.body_half - p.shell_top_roll * (1.0 - sqrt(max(1.0 - d * d, 0.0)))
+    roll_top = p.shell_bottom_z + p.shell_bottom_roll
+    if z < roll_top:
+        d = (roll_top - z) / p.shell_bottom_roll
+        return p.body_half - p.shell_bottom_roll * (1.0 - sqrt(max(1.0 - d * d, 0.0)))
+    return p.body_half
 
-    shell = rounded_prism(width, depth, top_z - bottom_z, bottom_z, radius).cut(
-        rounded_prism(
-            width - 2.0 * wall,
-            depth - 2.0 * wall,
-            top_z - bottom_z + 2.0,
-            bottom_z - 1.0,
-            radius - wall,
+
+def _skin_loft(
+    offset: float,
+    z0: float,
+    z1: float,
+    parameters: DesignParameters,
+    steps: int = 14,
+) -> cq.Shape:
+    zs = [z0 + (z1 - z0) * i / steps for i in range(steps + 1)]
+    wires = [
+        superellipse_wire(
+            max(body_half_at(z, parameters) - offset, 0.5),
+            max(body_half_at(z, parameters) - offset, 0.5),
+            z,
+        )
+        for z in zs
+    ]
+    return cast(cq.Shape, cq.Solid.makeLoft(wires, ruled=False))
+
+
+def skin_body(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+    offset: float = 0.0,
+) -> cq.Shape:
+    """Solid bounded by the silhouette, inset by *offset*, base to flat top.
+
+    Straight sections are true extrusions and only the two rolls are lofted, so
+    a smooth loft cannot bulge the vertical body outward.
+    """
+    p = parameters
+    roll_top = p.shell_bottom_z + p.shell_bottom_roll
+    shoulder = p.shell_flat_top_z - p.shell_top_roll
+    solid = _skin_loft(offset, p.shell_bottom_z, roll_top, p)
+    span = 2.0 * (p.body_half - offset)
+    solid = solid.fuse(section_prism(span, span, shoulder - roll_top, roll_top))
+    return solid.fuse(_skin_loft(offset, shoulder, p.shell_flat_top_z, p))
+
+
+def _window_slots(
+    centre: Vector3,
+    normal: str,
+    parameters: DesignParameters,
+) -> cq.Shape:
+    """Vertical slot field clipped to one circular grille window."""
+    p = parameters
+    cx, cy, cz = centre
+    radius = p.window_diameter / 2.0
+    reach = 4.0 * p.shell_wall_thickness
+    cutters: list[cq.Shape] = []
+    count = int(p.window_diameter // p.shell_slot_pitch)
+    for index in range(-count, count + 1):
+        offset = index * p.shell_slot_pitch
+        if abs(offset) > radius - p.shell_slot_width:
+            continue
+        half_len = sqrt(max(radius**2 - offset**2, 0.0))
+        if normal == "y":
+            box = cq.Workplane("XY", origin=(cx + offset, cy, cz)).box(
+                p.shell_slot_width, reach, 2.0 * half_len, centered=(True, True, True)
+            )
+        else:
+            box = cq.Workplane("XY", origin=(cx, cy + offset, cz)).box(
+                reach, p.shell_slot_width, 2.0 * half_len, centered=(True, True, True)
+            )
+        cutters.append(cast(cq.Shape, box.val()))
+    return cq.Compound.makeCompound(cutters)
+
+
+def acoustic_windows(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """Grille fields over the driver (-Y) and both radiators (+/-X).
+
+    The +Y rear face is left solid: the skin is cosmetic and the cabinet inside
+    it is sealed, so open area only matters where a cone actually radiates.
+    """
+    p = parameters
+    z = p.driver_axis_z
+    driver = _window_slots((0.0, -p.body_half, z), "y", p)
+    result = driver
+    for side in (-1.0, 1.0):
+        result = result.fuse(_window_slots((side * p.body_half, 0.0, z), "x", p))
+    return result
+
+
+def _fabric_grooves(parameters: DesignParameters) -> cq.Shape:
+    """Concealed wrap-retention channels just inside both rolls."""
+    p = parameters
+    span = 2.0 * p.body_half
+    grooves: list[cq.Shape] = []
+    for z0 in (
+        p.shell_bottom_z + p.shell_bottom_roll,
+        p.shell_flat_top_z - p.shell_top_roll - p.fabric_groove_width,
+    ):
+        ring = section_prism(span, span, p.fabric_groove_width, z0).cut(
+            section_prism(
+                span - 2.0 * p.fabric_groove_depth,
+                span - 2.0 * p.fabric_groove_depth,
+                p.fabric_groove_width + 2.0,
+                z0 - 1.0,
+            )
+        )
+        grooves.append(ring)
+    return grooves[0].fuse(grooves[1])
+
+
+@lru_cache(maxsize=8)
+def skin_shell(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+    fabric: bool = False,
+) -> cq.Shape:
+    """The one-piece monolith skin before it is split for printing.
+
+    *fabric* adds the wrap-retention channels.  They are off by default because
+    on the bare printed finish they read as horizontal seam lines, which is
+    exactly what this design exists to remove.
+    """
+    p = parameters
+    outer = skin_body(p)
+    inner = skin_body(p, offset=p.shell_wall_thickness)
+    span = 2.0 * (p.body_half - p.shell_wall_thickness)
+    # Open the base so the skin is a shell rather than a solid block.
+    inner = inner.fuse(section_prism(span, span, 2.1, p.shell_bottom_z - 2.0))
+    shell = outer.cut(inner)
+    # Flush pocket the official module drops into, with a hairline all round.
+    pocket = 2.0 * (p.official_half + p.official_pocket_clearance)
+    shell = shell.cut(
+        section_prism(
+            pocket,
+            pocket,
+            p.shell_flat_top_z + 2.0 - (p.official_full_section_z - 14.0),
+            p.official_full_section_z - 14.0,
         )
     )
+    shell = shell.cut(acoustic_windows(p))
+    if fabric:
+        shell = shell.cut(_fabric_grooves(p))
+    return shell
 
-    band_bottom = bottom_z + p.shell_base_band
-    band_top = top_z - p.shell_top_band
-    tie_centre = (band_bottom + band_top) / 2.0
-    lower = (band_bottom, tie_centre - p.shell_tie_band / 2.0)
-    upper = (tie_centre + p.shell_tie_band / 2.0, band_top)
 
-    cutters: list[cq.Shape] = []
-    for x, y, angle in rounded_rect_stations(width, depth, radius, p.shell_slot_pitch):
-        for low, high in (lower, upper):
-            box = (
-                cq.Workplane("XY")
-                .box(3.0 * wall, p.shell_slot_width, high - low, centered=(True, True, False))
-                .translate((0.0, 0.0, low))
-                .rotate((0.0, 0.0, 0.0), (0.0, 0.0, 1.0), angle)
-                .translate((x, y, 0.0))
+def _seam_reinforcement(parameters: DesignParameters) -> cq.Shape:
+    """Local inward wall thickening across every seam, to carry the laps."""
+    p = parameters
+    span_in = 2.0 * (p.body_half - p.shell_wall_thickness)
+    span_seam = 2.0 * (p.body_half - p.seam_wall_thickness)
+    bands: list[cq.Shape] = []
+    for zs in p.seam_positions:
+        z0 = zs - p.seam_runout
+        z1 = zs + p.lap_depth + 2.0
+        bands.append(
+            section_prism(span_in, span_in, z1 - z0, z0).cut(
+                section_prism(span_seam, span_seam, z1 - z0 + 2.0, z0 - 1.0)
             )
-            cutters.append(cast(cq.Shape, box.val()))
-    shell = shell.cut(cq.Compound.makeCompound(cutters))
+        )
+    return bands[0].fuse(bands[1])
 
+
+def _crush_ribs(zs: float, parameters: DesignParameters) -> cq.Shape:
+    """Interference ribs at the four face centres of a tongue.
+
+    The socket bore sits at mid + lap_clearance; the ribs reach mid +
+    crush_proud, so each joint closes on real interference instead of rattling
+    in clearance.  Only the face centres are used, where the superellipse
+    normal is axis aligned and a plain box is a true radial rib.
+    """
+    p = parameters
+    mid = p.lap_mid_half
+    ribs: list[cq.Shape] = []
+    for sx, sy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        box = cq.Workplane(
+            "XY",
+            origin=(
+                sx * (mid + p.crush_proud / 2.0),
+                sy * (mid + p.crush_proud / 2.0),
+                zs + 2.0,
+            ),
+        ).box(
+            p.crush_proud if sx else p.crush_width,
+            p.crush_width if sx else p.crush_proud,
+            p.crush_length,
+            centered=(True, True, False),
+        )
+        ribs.append(cast(cq.Shape, box.val()))
+    return cq.Compound.makeCompound(ribs)
+
+
+def _crown_retention(crown: cq.Shape, parameters: DesignParameters) -> cq.Shape:
+    """Bolt the crown down onto the divider's bosses.
+
+    Four tabs, each webbed back to the skin so the screw load is carried into
+    the wall rather than by an unsupported stalk.
+    """
+    p = parameters
+    tab_z = p.divider_bottom_z + p.divider_thickness + p.shroud_boss_height
+    outer = skin_body(p)
+    for x, y in shroud_fastener_positions(p):
+        tab = cq.Solid.makeCylinder(
+            p.crown_tab_radius,
+            p.crown_tab_thickness,
+            cq.Vector(x, y, tab_z),
+            cq.Vector(0.0, 0.0, 1.0),
+        )
+        reach = 2.0 * p.body_half
+        if x:
+            bridge = cq.Workplane(
+                "XY", origin=(x + reach / 2.0 * (1.0 if x > 0 else -1.0), y, tab_z)
+            ).box(reach, 9.0, p.crown_tab_thickness, centered=(True, True, False))
+        else:
+            bridge = cq.Workplane(
+                "XY", origin=(x, y + reach / 2.0 * (1.0 if y > 0 else -1.0), tab_z)
+            ).box(9.0, reach, p.crown_tab_thickness, centered=(True, True, False))
+        crown = crown.fuse(tab).fuse(cast(cq.Shape, bridge.val()).intersect(outer))
+        crown = crown.cut(
+            cq.Solid.makeCylinder(
+                p.fastener_clearance_diameter / 2.0,
+                p.crown_tab_thickness,
+                cq.Vector(x, y, tab_z),
+                cq.Vector(0.0, 0.0, 1.0),
+            )
+        )
+    return crown
+
+
+def _base_retention(base: cq.Shape, parameters: DesignParameters) -> cq.Shape:
+    """Bolt the base segment down into the bottom service plate."""
+    p = parameters
+    retention_z = p.shell_retention_z
+    outer = skin_body(p)
     for x, y in cage_fastener_positions(p):
-        retention_z = p.shell_retention_z
         boss = cq.Solid.makeCylinder(
             p.boss_outer_diameter / 2.0,
             10.0,
             cq.Vector(x, y, retention_z),
             cq.Vector(0.0, 0.0, 1.0),
         )
+        reach = 2.0 * p.body_half
         if x:
-            target_x = (width / 2.0 - wall) * (1.0 if x > 0 else -1.0)
-            bridge = cq.Workplane("XY", origin=((x + target_x) / 2.0, y, retention_z)).box(
-                abs(x - target_x), 9.0, 6.0, centered=(True, True, False)
-            )
+            bridge = cq.Workplane(
+                "XY", origin=(x + reach / 2.0 * (1.0 if x > 0 else -1.0), y, retention_z)
+            ).box(reach, 9.0, 6.0, centered=(True, True, False))
         else:
-            target_y = (depth / 2.0 - wall) * (1.0 if y > 0 else -1.0)
-            bridge = cq.Workplane("XY", origin=(x, (y + target_y) / 2.0, retention_z)).box(
-                9.0, abs(y - target_y), 6.0, centered=(True, True, False)
+            bridge = cq.Workplane(
+                "XY", origin=(x, y + reach / 2.0 * (1.0 if y > 0 else -1.0), retention_z)
+            ).box(9.0, reach, 6.0, centered=(True, True, False))
+        base = base.fuse(boss).fuse(cast(cq.Shape, bridge.val()).intersect(outer))
+        base = base.cut(_blind_insert(x, y, retention_z, 1.0, p))
+    return base
+
+
+SKIN_SEGMENTS = ("shell_base", "shell_grille", "shell_crown")
+
+
+@lru_cache(maxsize=8)
+def skin_segments(
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+    fabric: bool = False,
+) -> dict[str, cq.Shape]:
+    """Split the skin into three printable segments joined by lapped rabbets.
+
+    The outer surface is continuous across every joint; the only visible mark
+    is a deliberate relief.  A designed shadow line reads as intentional, where
+    a bare butt joint would show FDM layer registration error between three
+    separate prints as a ragged and obviously accidental step.
+
+    There is no hardware at the seams: the radial gap to the cabinet is only
+    9 mm at the faces and 10.8 mm at the corners, too little for an M3 boss.
+    The laps carry shear and alignment, the crown bolts to the pressure divider
+    and the base to the bottom service plate, and the grille segment -- which
+    carries the entire visible grille -- is held captive between them.
+    """
+    p = parameters
+    blank = skin_shell(p, fabric).fuse(_seam_reinforcement(p))
+    mid = p.lap_mid_half
+    span = 2.0 * (p.body_half + 5.0)
+    bounds = [p.shell_bottom_z - 5.0, *p.seam_positions, p.shell_flat_top_z + 5.0]
+
+    segments: dict[str, cq.Shape] = {}
+    for index, name in enumerate(SKIN_SEGMENTS):
+        z0, z1 = bounds[index], bounds[index + 1]
+        piece = blank.intersect(section_prism(span, span, z1 - z0, z0))
+        if z1 in p.seam_positions:
+            tongue = blank.intersect(section_prism(2.0 * mid, 2.0 * mid, p.lap_depth, z1))
+            piece = piece.fuse(tongue)
+        if z0 in p.seam_positions:
+            socket_span = 2.0 * (mid + p.lap_clearance)
+            piece = piece.cut(
+                section_prism(
+                    socket_span,
+                    socket_span,
+                    p.lap_depth + p.lap_clearance + 1.0,
+                    z0 - 1.0,
+                )
             )
-        shell = shell.fuse(boss).fuse(cast(cq.Shape, bridge.val()))
-        shell = shell.cut(_blind_insert(x, y, retention_z, 1.0, p))
-    return shell
+        segments[name] = piece
+
+    for index, zs in enumerate(p.seam_positions):
+        owner = SKIN_SEGMENTS[index]
+        segments[owner] = segments[owner].fuse(_crush_ribs(zs, p))
+
+    for zs in p.seam_positions:
+        relief = section_prism(span, span, p.shadow_height, zs - p.shadow_height / 2.0).cut(
+            section_prism(
+                2.0 * (p.body_half - p.shadow_depth),
+                2.0 * (p.body_half - p.shadow_depth),
+                p.shadow_height * 3.0,
+                zs - p.shadow_height,
+            )
+        )
+        for name, piece in segments.items():
+            segments[name] = piece.cut(relief)
+
+    segments["shell_crown"] = _crown_retention(segments["shell_crown"], p)
+    segments["shell_base"] = _base_retention(segments["shell_base"], p)
+    return segments
+
+
+def shell_base(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    return skin_segments(parameters)["shell_base"]
+
+
+def shell_grille(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    return skin_segments(parameters)["shell_grille"]
+
+
+def shell_crown(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    return skin_segments(parameters)["shell_crown"]
+
+
+def shell_base_fabric(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    return skin_segments(parameters, fabric=True)["shell_base"]
+
+
+def shell_grille_fabric(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    return skin_segments(parameters, fabric=True)["shell_grille"]
+
+
+def shell_crown_fabric(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    return skin_segments(parameters, fabric=True)["shell_crown"]
+
+
+def mic_isolation_bushing(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """TPU 95A top-hat isolating the official stack from the divider.
+
+    Only works with the specified M3 x d4 shoulder screw.  The shoulder bottoms
+    on the counterbore floor and its head stops clear of the mid-plate, so the
+    official stack rests on the elastomer and no clamping load passes through
+    it.  With an ordinary M3 screw the fastener clamps in parallel with the
+    elastomer at roughly 1.0e8 N/m against 2.9e6 N/m -- 35x stiffer -- leaving
+    the TPU carrying under 3% of the path and isolating nothing.
+    """
+    p = parameters
+    flange = cq.Solid.makeCylinder(
+        p.bushing_flange_diameter / 2.0,
+        p.bushing_flange_thickness,
+        cq.Vector(0.0, 0.0, 0.0),
+        cq.Vector(0.0, 0.0, 1.0),
+    )
+    body = cq.Solid.makeCylinder(
+        p.bushing_body_diameter / 2.0,
+        p.bushing_body_height,
+        cq.Vector(0.0, 0.0, -p.bushing_body_height),
+        cq.Vector(0.0, 0.0, 1.0),
+    )
+    bore = cq.Solid.makeCylinder(
+        (p.shoulder_screw_diameter + 0.2) / 2.0,
+        p.bushing_flange_thickness + p.bushing_body_height + 2.0,
+        cq.Vector(0.0, 0.0, -p.bushing_body_height - 1.0),
+        cq.Vector(0.0, 0.0, 1.0),
+    )
+    return flange.fuse(body).cut(bore)
+
+
+def outer_shell(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
+    """The whole skin as one solid, for assembly views and collision checks."""
+    return skin_shell(parameters)
 
 
 def support_polygon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> tuple[float, float]:
@@ -1475,13 +1814,11 @@ def anti_slip_ring(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shap
     """Stretch-fit TPU perimeter foot defining the support polygon."""
     p = parameters
     half_x, half_y = support_polygon(p)
-    return rounded_ring(
+    return section_ring(
         2.0 * half_x,
         2.0 * half_y,
-        p.corner_radius + 12.0,
         2.0 * half_x - 7.0,
         2.0 * half_y - 7.0,
-        p.corner_radius + 9.0,
         2.0,
     )
 
@@ -1563,7 +1900,6 @@ def placed_functional_parts(
             cq.Vector(0.0, 0.0, p.acoustic_top_z)
         ),
         "pressure_divider": pressure_divider(p),
-        "electronics_shroud": electronics_shroud(p),
         "wire_gland": cable_gland(p).translate(
             cq.Vector(p.cable_passage_x, p.cable_passage_y, p.divider_bottom_z)
         ),
@@ -1596,6 +1932,10 @@ def placed_functional_parts(
             p.pr_axis_z,
         )
         parts[f"pr_{side:+d}_envelope"] = passive_radiator_keepout(side, p)
+    for index, (x, y) in enumerate(official_mount_positions(p)):
+        parts[f"mic_isolation_bushing_{index}"] = mic_isolation_bushing(p).translate(
+            cq.Vector(x, y, p.official_interface_z)
+        )
     return parts
 
 

@@ -32,13 +32,18 @@ from satellite1_ultra.geometry import (
     cable_gland,
     divider_gasket,
     driver_gasket,
-    electronics_shroud,
     leak_test_adapter,
     main_cabinet,
-    outer_shell,
+    mic_isolation_bushing,
     passive_radiator_clamp_ring,
     passive_radiator_gasket,
     pressure_divider,
+    shell_base,
+    shell_base_fabric,
+    shell_crown,
+    shell_crown_fabric,
+    shell_grille,
+    shell_grille_fabric,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -70,10 +75,25 @@ class PartDefinition:
 
 PARTS: dict[str, PartDefinition] = {
     "anti_slip_ring": PartDefinition(anti_slip_ring, 1, "TPU 95A", "flat"),
-    "outer_shell": PartDefinition(outer_shell, 1, "ASA", "upright, base band on the bed"),
+    # The skin, split into three lapped segments.  Smooth is the default
+    # finish; the *_fabric variants add the wrap-retention channels.
+    "shell_base": PartDefinition(shell_base, 1, "ASA", "inverted, cut face on the bed"),
+    "shell_grille": PartDefinition(shell_grille, 1, "ASA", "upright, lower cut face on bed"),
+    "shell_crown": PartDefinition(shell_crown, 1, "ASA", "upright, flat top uppermost"),
+    "shell_base_fabric": PartDefinition(
+        shell_base_fabric, 1, "ASA", "inverted, cut face on the bed"
+    ),
+    "shell_grille_fabric": PartDefinition(
+        shell_grille_fabric, 1, "ASA", "upright, lower cut face on bed"
+    ),
+    "shell_crown_fabric": PartDefinition(
+        shell_crown_fabric, 1, "ASA", "upright, flat top uppermost"
+    ),
     "main_cabinet": PartDefinition(main_cabinet, 1, "ASA", "upright, acoustic floor on bed"),
     "pressure_divider": PartDefinition(pressure_divider, 1, "ASA", "flat, acoustic face on bed"),
-    "electronics_shroud": PartDefinition(electronics_shroud, 1, "ASA", "wide divider end on bed"),
+    "mic_isolation_bushing": PartDefinition(
+        mic_isolation_bushing, 4, "TPU 95A", "flange face on bed"
+    ),
     "active_driver_clamp_ring": PartDefinition(
         active_driver_clamp_ring, 1, "ASA", "lip face on bed"
     ),

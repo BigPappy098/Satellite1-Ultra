@@ -22,10 +22,20 @@ ULTRA_PRINT_ORDER = (
     ("ballast_cartridge", "06_WEIGHT_TRAY.3mf", 1),
     ("ballast_cartridge_lid", "07_WEIGHT_TRAY_LID.3mf", 1),
     ("bottom_service_plate", "08_BOTTOM_ACCESS_PANEL.3mf", 1),
-    ("electronics_shroud", "09_ELECTRONICS_COVER.3mf", 1),
-    ("outer_shell", "10_OUTER_SHELL.3mf", 1),
-    ("anti_slip_ring", "11_FLEXIBLE_BOTTOM_GRIP_TPU.3mf", 1),
-    ("leak_test_adapter", "12_LEAK_TEST_TOOL.3mf", 1),
+    ("mic_isolation_bushing", "09_MIC_ISOLATORS_TPU_PRINT_FOUR.3mf", 4),
+    ("shell_base", "10_OUTER_SKIN_BOTTOM.3mf", 1),
+    ("shell_grille", "11_OUTER_SKIN_MIDDLE_WITH_GRILLES.3mf", 1),
+    ("shell_crown", "12_OUTER_SKIN_TOP.3mf", 1),
+    ("anti_slip_ring", "13_FLEXIBLE_BOTTOM_GRIP_TPU.3mf", 1),
+    ("leak_test_adapter", "14_LEAK_TEST_TOOL.3mf", 1),
+)
+
+# Swap-in set for builders wrapping the body in speaker cloth.  Identical to
+# the three smooth segments plus a concealed retention channel inside each roll.
+FABRIC_WRAP_PRINT_ORDER = (
+    ("shell_base_fabric", "10F_OUTER_SKIN_BOTTOM_FOR_FABRIC.3mf", 1),
+    ("shell_grille_fabric", "11F_OUTER_SKIN_MIDDLE_FOR_FABRIC.3mf", 1),
+    ("shell_crown_fabric", "12F_OUTER_SKIN_TOP_FOR_FABRIC.3mf", 1),
 )
 
 OFFICIAL_TOP_PRINT_ORDER = (

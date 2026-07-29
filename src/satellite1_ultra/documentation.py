@@ -417,7 +417,7 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
     {
         "number": "2",
         "title": "Install and cold-check all M3 inserts",
-        "parts": "main_cabinet, pressure_divider, base_skirt, ballast_cartridge, outer_shell",
+        "parts": "main_cabinet, pressure_divider, base_skirt, ballast_cartridge, skin segments",
         "fasteners": "H01 inserts",
         "tools": "temperature-controlled iron; M3 insert tip; square",
         "gasket": "none",
@@ -476,26 +476,26 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
     },
     {
         "number": "7",
-        "title": "Install and lock the outer shell",
-        "parts": "outer_shell; lower assembly",
-        "fasteners": "F09, 4 screws with nylon washers",
+        "title": "Stack the three outer skin segments",
+        "parts": "shell_base, shell_grille, shell_crown; lower assembly",
+        "fasteners": "F09, 4 screws with nylon washers; F02, 4 screws into the divider",
         "tools": "2.0 mm hex",
         "gasket": "none",
-        "action": "Align FRONT with -Y and slide the shell downward without touching either surround. Invert on a soft mat and install F09 through the bottom service plate into the shell bosses.",
-        "pass": "Every slot is clear; shell has an even reveal and at least 2 mm moving-part clearance; no wire is visible near a cone.",
-        "warning": "Stop if the shell contacts a clamp ring or surround. Do not flex the shell over an obstruction.",
+        "action": "Work bottom to top. Slide shell_base up over the cabinet with FRONT at -Y, invert on a soft mat, and install F09 through the bottom service plate into its four bosses. Stand the unit back up. Press shell_grille down onto the exposed lap until its outer face meets the segment below; the four crush ribs give a firm, even resistance and the joint closes on 0.15 mm of interference, so it should need hand pressure and stay put. Press shell_crown on the same way, then bolt it down onto the divider's four bosses with F02. Check that all three grille windows line up with the driver and both radiators.",
+        "pass": "Both seams show an even hairline shadow line all round with no step you can catch a fingernail on; no segment rocks or rattles when the body is tapped; at least 2 mm clearance from every clamp ring and surround; no wire visible through a window.",
+        "warning": "Do not force a segment on if it binds — lift it off and check for a stringing artefact on the lap or a crush rib that printed proud. Never flex a segment over an obstruction. The crown must be bolted to the divider before the official stack goes on, because its tabs sit underneath.",
         "image": "IMAGES/assembly_stage_07_shell.png",
     },
     {
         "number": "8",
-        "title": "Install the shroud and official Batch 1 upper stack",
-        "parts": "electronics_shroud; O01-O06 official prints; Batch 1 HAT/Core",
-        "fasteners": "F01, F02, F10, and F11; 4 of each",
+        "title": "Fit the mic isolators and the official Batch 1 upper stack",
+        "parts": "mic_isolation_bushing x4; O01-O06 official prints; Batch 1 HAT/Core",
+        "fasteners": "F01 (M3 x d4 shoulder screws, 16 mm shoulder), F10, F11; 4 of each",
         "tools": "2.0 mm hex; ESD-safe bench",
         "gasket": "none; electronics bay is outside the acoustic chamber",
-        "action": "Bolt the shroud to its four outboard bosses with F02. Seat O01 on the four measured divider bosses and install F01. Snap O06 into O05 (or use both O07/O08 during a multi-material O05 print; never install O06 and O08 together). Align O03's taller standoffs with the I/O side and locate the HAT. Install the Core/HAT using the official Batch 1 sequence. Align the logos and I/O on O04/O05, engage the snaps, and rotate the lock ring. Align O02's four nubs with O01 and keep I/O toward rear/+Y. Connect the keyed JST-XH speaker plug before closure.",
-        "pass": "Mid-plate sits on all four bosses; USB-C remains reachable; cable has service slack and cannot enter a moving-part envelope; buttons click and diffuser/LED apertures remain clear.",
-        "warning": "Core placement is REQUIRES_PHYSICAL_VALIDATION. Follow the official Batch 1 instructions and stop at any collision; do not improvise a transform from the CAD envelope.",
+        "action": "Press one TPU isolation bushing into each of the four divider counterbores, flange up. Seat O01 on the four bushing flanges — it must rest on elastomer, not on printed plastic. Install F01 and tighten until each shoulder bottoms firmly on the counterbore floor; the screw head then stops 0.3 mm above the plate and the plate stays floating on the TPU. Snap O06 into O05 (or use both O07/O08 during a multi-material O05 print; never install O06 and O08 together). Align O03's taller standoffs with the I/O side and locate the HAT. Install the Core/HAT using the official Batch 1 sequence. Align the logos and I/O on O04/O05, engage the snaps, and rotate the lock ring. Align O02's four nubs with O01 and keep I/O toward rear/+Y. Connect the keyed JST-XH speaker plug before closure.",
+        "pass": "The official top sits flush with the surrounding flat top — you should feel a hairline, not a step or a lip. The upper stack has a barely perceptible give when pressed, which is the isolation working. USB-C remains reachable; cable has service slack and cannot enter a moving-part envelope; buttons click and diffuser/LED apertures remain clear.",
+        "warning": "F01 must be M3 x d4 shoulder screws, not ordinary M3 screws. An ordinary screw clamps in parallel with the elastomer at roughly 35 times its stiffness, so the TPU carries under 3% of the load path and the isolation does nothing at all. If the plate feels rock solid, you have the wrong screws. Core placement is REQUIRES_PHYSICAL_VALIDATION: follow the official Batch 1 instructions and stop at any collision.",
         "image": "IMAGES/assembly_stage_08_upper.png",
     },
     {
@@ -511,6 +511,44 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
         "image": "IMAGES/assembly_stage_09_final.png",
     },
 )
+
+
+def printer_requirement(parameters: DesignParameters) -> dict[str, Any]:
+    """Derive the real printer requirement from the geometry, not from prose.
+
+    The old guides carried these numbers as hand-written text that no gate
+    enforced, which is how a 192 x 212 mm shell came to be documented as
+    fitting a 220 x 220 mm bed while the printability gate only compared a
+    scalar against 256 mm.  Everything here is computed, so the guide cannot
+    drift from the parts.
+    """
+    from satellite1_ultra.exporting import PARTS, print_oriented
+
+    worst_name, worst = "", (0.0, 0.0, 0.0)
+    for name, definition in PARTS.items():
+        box = print_oriented(definition.builder(parameters)).BoundingBox()
+        footprint = sorted((box.xlen, box.ylen), reverse=True)
+        if footprint[0] * footprint[1] > worst[0] * worst[1]:
+            worst_name, worst = name, (footprint[0], footprint[1], box.zlen)
+    tall_name, tall = "", 0.0
+    for name, definition in PARTS.items():
+        box = print_oriented(definition.builder(parameters)).BoundingBox()
+        if box.zlen > tall:
+            tall_name, tall = name, box.zlen
+    bed_x, bed_y, bed_z = parameters.build_volume_mm
+    return {
+        "limiting_part": worst_name,
+        "long_mm": round(worst[0], 1),
+        "short_mm": round(worst[1], 1),
+        "height_mm": round(worst[2], 1),
+        "tallest_part": tall_name,
+        "tallest_mm": round(tall, 1),
+        "bed_x": bed_x,
+        "bed_y": bed_y,
+        "bed_z": bed_z,
+        "margin_long_mm": round(max(bed_x, bed_y) - worst[0], 1),
+        "margin_short_mm": round(min(bed_x, bed_y) - worst[1], 1),
+    }
 
 
 def _phase_table() -> str:
@@ -538,12 +576,17 @@ def _build_book(parameters: DesignParameters, root: Path) -> str:
     step you must actually perform.
     """
     acoustics = _acoustics(root)
+    req = printer_requirement(parameters)
     calibration_rows = [
         [filename, str(quantity), "ASA" if source != "cable_gland" else "TPU 95A"]
         for source, filename, quantity in CALIBRATION_PRINT_ORDER
     ]
     ultra_rows = [
-        [filename, str(quantity), "TPU 95A" if source == "anti_slip_ring" else "ASA"]
+        [
+            filename,
+            str(quantity),
+            "TPU 95A" if source in {"anti_slip_ring", "mic_isolation_bushing"} else "ASA",
+        ]
         for source, filename, quantity in ULTRA_PRINT_ORDER
     ]
     official_rows = [
@@ -617,18 +660,26 @@ optional extras.
 
 # Phase 1 — Check your printer and buy the parts
 
-## Your printer must actually fit the shell
+## Your printer must actually fit the parts
 
-The outer shell is the limiting part at **192 x 212 x 189 mm**, printed
-upright. You therefore need **212 x 192 x 189 mm of genuinely usable travel**
-(X and Y may be swapped).
+The largest footprint belongs to `{req["limiting_part"]}` at
+**{req["long_mm"]:.0f} x {req["short_mm"]:.0f} mm**. The tallest part is
+`{req["tallest_part"]}` at **{req["tallest_mm"]:.0f} mm**. Against the
+configured usable travel of **{req["bed_x"]:.0f} x {req["bed_y"]:.0f} x
+{req["bed_z"]:.0f} mm** that leaves {req["margin_long_mm"]:.0f} mm and
+{req["margin_short_mm"]:.0f} mm of edge margin.
 
-- A 220 x 220 x 200 mm printer works only if the whole bed is usable. That
-  leaves about 4 mm per long-side edge and limits the shell brim to 3 mm.
+The outer skin is deliberately split into three stacked segments so no single
+print is enormous. That keeps every part comfortably inside a common bed and
+means a failed print costs you one segment, not the whole body.
+
 - Purge lines, bed clips, and firmware exclusion zones all steal usable travel.
-  Measure what your machine really reaches before you commit.
-- Rotating the shell in-plane does not make it fit a 210 x 210 mm bed, and
-  printing it on its side is not supported.
+  Measure what your machine really reaches, then set `printing.build_volume_x`,
+  `_y` and `_z` in `config/default.yaml` to what you measured. The printability
+  gate reads those numbers and tests both in-plane rotations of every part, so
+  it will actually fail if something does not fit.
+- Printing a skin segment on its side is not supported: it puts support contact
+  on the cosmetic surface.
 
 You also need an enclosed printer, a 0.4 mm nozzle, and dry filament.
 
@@ -885,6 +936,66 @@ Stop using the unit if any check fails. Fix the cause and repeat the test.
 
 ---
 
+# Optional — Wrapping the body in speaker cloth
+
+Entirely optional, and purely cosmetic: the enclosure is finished and airtight
+without it. Cloth hides every print seam and layer line, so the body reads as
+one continuous surface. The grille windows stay acoustically open underneath.
+
+**Decide before you print.** The wrap needs the `*_FOR_FABRIC` skin files, which
+are the same three segments with a concealed retention channel inside each roll.
+The standard files have no channel, because on a bare printed finish it reads as
+a horizontal line — exactly what this design exists to remove. You cannot add
+the channel later without reprinting.
+
+## What to buy
+
+- About 0.5 m of **acoustically transparent speaker grille cloth**. Stretch
+  knit intended for loudspeakers is right; upholstery fabric, canvas and
+  blackout linings are not.
+- **The breath test:** hold a single layer over your mouth and breathe out
+  hard. If you feel noticeable resistance, it will audibly dull the treble.
+  Anything you can breathe through freely is fine.
+- A small tube of **contact adhesive**. Not superglue, which wicks and stiffens.
+
+## Steps
+
+1. **Print the fabric variants.** From `PRINT_THESE_FILES/2_ULTRA_PARTS`, use
+   `10F`, `11F` and `12F` in place of `10`, `11` and `12`. Everything else is
+   unchanged.
+2. **Assemble the three segments first**, exactly as in phase 7, and bolt them
+   down. Wrapping before assembly puts a fabric edge inside a lap joint, which
+   will hold the seam open.
+3. **Cut a rectangle** about 30 mm taller than the body and long enough to go
+   right round plus 25 mm of overlap. Cut with the stretch running **around**
+   the body, not up it.
+4. **Find the overlap seam position.** Put it on the rear (+Y) face, which has
+   no grille window. It is the only part of the wrap you will be able to see.
+5. **Tension it evenly.** Work from the seam outward in both directions,
+   keeping the weave straight. A squircle shows tension variation at the corners
+   far more than a cylinder does, so check the weave stays square as it passes
+   each corner rather than pulling into a curve.
+6. **Tuck the top edge** into the channel under the top roll with a blunt
+   plastic tool. Do the whole perimeter before committing any adhesive.
+7. **Tuck the bottom edge** into the lower channel the same way, keeping the
+   vertical tension while you work.
+8. **Glue last, and only inside the channel.** A thin bead in the channel only.
+   Keep adhesive away from the grille windows: it stiffens the cloth locally and
+   changes its acoustic transparency, which you cannot undo.
+9. **Trim the overlap** flush at the rear seam once the adhesive has set.
+
+## Checks
+
+- The weave runs straight and square across all four faces, with no diagonal
+  pull at the corners.
+- All three grille windows are still visibly open cloth, with no adhesive
+  bleed and no stretched-thin patches.
+- The cloth still passes the breath test after wrapping. If tension has closed
+  it up over a window, it is too tight.
+- The anti-slip ring still seats on the base without trapping a fabric edge.
+
+---
+
 # Phase 9 — Opening it again later
 
 Disconnect power and wait five minutes. `MAINTENANCE_GUIDE.pdf` gives the safe
@@ -1068,6 +1179,7 @@ full enclosure only when all eight checks above pass on the corrected coupons.
 
 def _printing_guide(parameters: DesignParameters, root: Path) -> str:
     report = _validation(root).get("printability", {})
+    req = printer_requirement(parameters)
     rows: list[list[str]] = []
     for record in report.get("parts", []):
         name = str(record["part"])
@@ -1079,14 +1191,15 @@ def _printing_guide(parameters: DesignParameters, root: Path) -> str:
             else "service tool"
             if name == "leak_test_adapter"
             else "cosmetic"
-            if name in {"outer_shell", "electronics_shroud", "anti_slip_ring"}
+            if name in {"shell_base", "shell_grille", "shell_crown", "anti_slip_ring"}
+            or name.endswith("_fabric")
             else "structural"
         )
         brim = (
             "10 mm"
             if name == "main_cabinet"
-            else "3 mm maximum on a 220 mm bed"
-            if name == "outer_shell"
+            else "3 mm"
+            if name.startswith("shell_")
             else "5 mm"
             if group == "calibration"
             else "none"
@@ -1152,17 +1265,17 @@ printer, use O05 plus O06 and ignore the optional folder.
 
 ## Minimum printer volume
 
-- Limiting part: `outer_shell.3mf`, exactly 192.0 x 212.0 x 189.0 mm in its
-  required upright orientation.
-- Absolute usable travel: 212 x 192 x 189 mm (X/Y may be swapped).
-- Practical minimum: 220 x 220 x 200 mm only when the full 220 mm is usable;
-  this leaves 4 mm per long-side edge and limits the shell brim to 3 mm.
-- If purge lines, bed clips, firmware exclusions, or a wider shell brim reduce
-  usable travel below 218 mm, use a larger printer. A 230 mm bed is preferable,
-  but it is not the geometric minimum.
-- In-plane rotation cannot fit the shell on a 210 x 210 mm bed. Side printing
-  is unsupported because it creates extensive support contact and degrades
-  slots and cosmetic surfaces.
+- Largest footprint: `{req["limiting_part"]}`, {req["long_mm"]:.1f} x
+  {req["short_mm"]:.1f} mm in its documented orientation.
+- Tallest part: `{req["tallest_part"]}`, {req["tallest_mm"]:.1f} mm.
+- Configured usable travel: {req["bed_x"]:.0f} x {req["bed_y"]:.0f} x
+  {req["bed_z"]:.0f} mm, leaving {req["margin_long_mm"]:.1f} mm and
+  {req["margin_short_mm"]:.1f} mm of edge margin.
+- These figures are computed from the released B-reps every time this guide is
+  generated, and the printability gate enforces them per axis against both
+  in-plane rotations. Set your own measured travel in `config/default.yaml`
+  under `printing.build_volume_*`.
+- Side printing is unsupported: it places support contact on cosmetic surfaces.
 
 ## Authoritative slicer baseline
 
