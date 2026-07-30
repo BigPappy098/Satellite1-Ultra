@@ -6,8 +6,8 @@ evidence_labels:
 selection:
   active_driver_primary: dayton_nd91_4
   active_driver_fallback: tectonic_tebm65c20f_4
-  passive_radiator_primary: sb_acoustics_sb12pacr_00
-  passive_radiator_fallback: dayton_dma105_pr
+  passive_radiator_primary: dayton_dsa115_pr
+  passive_radiator_fallback: sb_acoustics_sb12pacr_00
   architecture: one_active_two_opposed_passive_radiators
 
 active_drivers:
@@ -238,6 +238,40 @@ active_drivers:
     source: https://doc.soundimports.nl/pdf/brands/Peerless%20by%20Tymphany/TC9FD18-08/TC9FD18-08.pdf
 
 passive_radiators:
+  dayton_dsa115_pr:
+    manufacturer: Dayton Audio
+    model: DSA115-PR
+    count: 2
+    sd_cm2: 54.1
+    fs_hz: 30.9
+    qms: 3.48
+    mms_g: 11.7
+    cms_mm_per_n: 2.27
+    rms_kg_per_s: 0.70
+    xmech_mm: 9.0
+    xmech_evidence: ENGINEERING_ESTIMATE
+    xmech_note: Published Xmax is 6 mm linear; mechanical limit is not published, so 9 mm is carried as a conservative keepout.
+    design_excursion_mm: 6.0
+    outer_diameter_mm: 115.57
+    basket_diameter_mm: 106.93
+    cutout_diameter_mm: 93.73
+    bolt_circle_mm: 106.93
+    mounting_hole_diameter_mm: 4.3
+    mounting_holes: 4
+    depth_mm: 29.72
+    flange_thickness_mm: 4.0
+    flange_thickness_evidence: ENGINEERING_ESTIMATE
+    flange_thickness_note: Not dimensioned on the published drawing; verify on coupon_passive_radiator before printing the cabinet.
+    displacement_l_estimate: 0.05
+    adjustable_mass_thread: M5
+    price_usd_each: 27.99
+    source: https://www.daytonaudio.com/product/1588/dsa115-pr-4-designer-series-aluminum-cone-passive-radiator
+    sourcing_note: >-
+      Chosen for US availability. Stocked by Parts Express (295-544), Amazon and
+      Newegg. The previously specified SB Acoustics SB12PACR-00 has no US
+      distributor at all, and its US-stocked sibling SB12PFCR-00 was out of
+      stock. This part is shallower (29.72 mm vs 38.3 mm) and smaller in
+      diameter, so every cabinet clearance improves.
   sb_acoustics_sb12pacr_00:
     manufacturer: SB Acoustics
     model: SB12PACR-00

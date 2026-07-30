@@ -4,20 +4,20 @@
 
 ## System
 
-- Net acoustic volume: **3.509 L** (exact B-rep, `VERIFIED_DIGITALLY`)
+- Net acoustic volume: **3.527 L** (exact B-rep, `VERIFIED_DIGITALLY`)
 - Architecture: one active driver, 2 opposed passive radiators
 - Target tuning: 60.0 Hz
-- Required moving mass per radiator: **20.02 g**
-- Published Mms per radiator: 19.20 g
-- Added tuning mass per radiator: **0.82 g** (1.64 g total), fitted to the M6 post
+- Required moving mass per radiator: **19.64 g**
+- Published Mms per radiator: 11.70 g
+- Added tuning mass per radiator: **7.94 g** (15.88 g total), fitted to the M5 mass-adjustment thread
 
 ## Modelled results
 
 - Sealed-alignment f3: 132.1 Hz
-- Passive-radiator f3: **56.9 Hz** (75.2 Hz of extension)
+- Passive-radiator f3: **59.0 Hz** (73.1 Hz of extension)
 - Minimum modelled impedance: 4.39 ohm at 394 Hz (amplifier minimum 3.2 ohm, margin 1.19 ohm)
-- Maximum SPL at 50 Hz: 84.6 dB at 1 m
-- Maximum SPL at 100 Hz: 93.9 dB at 1 m
+- Maximum SPL at 50 Hz: 86.3 dB at 1 m
+- Maximum SPL at 100 Hz: 94.2 dB at 1 m
 - Maximum SPL at 1 kHz: 93.1 dB at 1 m
 - Recommended protective high-pass: **51.0 Hz, order 4**
 

@@ -220,6 +220,77 @@ def fastener_rows(root: Path = ROOT) -> list[dict[str, Any]]:
     return list(_validation(root).get("fasteners", {}).get("schedule", []))
 
 
+#: Where to buy each purchasable BOM line, in the US. Exact product pages are
+#: used where the listing has been verified; store search URLs elsewhere, since
+#: those keep working when a specific listing is replaced.
+BUY_LINKS: dict[str, str] = {
+    "A01": "https://www.parts-express.com/Dayton-Audio-ND91-4-3-1-2-Aluminum-Cone-Full-Range-Driver-4-290-224",
+    "A02": "https://www.parts-express.com/Dayton-Audio-DSA115-PR-4-Designer-Series-Aluminum-Cone-Passive-Radiator-295-544",
+    "E01": "https://futureproofhomes.net/products/satellite1-kit",
+    "H01": "https://www.amazon.com/s?k=CNC+Kitchen+M3+heat+set+insert+M3x5.7",
+    "H02": "https://www.amazon.com/s?k=JST-XH+2.54mm+2+pin+speaker+pigtail",
+    "H03": "https://www.amazon.com/s?k=2.8mm+fully+insulated+female+quick+disconnect",
+    "B01": "https://www.onlinemetals.com/en/buy/steel/0-25-mild-steel-plate-a36-hot-rolled/pid/1156",
+    "B02": "https://www.amazon.com/s?k=M5+flat+washer+stainless+assortment",
+    "G00": "https://www.amazon.com/s?k=2mm+closed+cell+EPDM+foam+sheet+adhesive",
+    "D01": "https://www.parts-express.com/search?keywords=acoustic%20polyfill",
+    "FASTENERS": "https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/",
+    "SHOULDER": "https://www.mcmaster.com/shoulder-screws/shoulder-diameter~4-mm/shoulder-length~16-mm/",
+}
+
+
+def _tuning_mass_item(added_mass: float, radiator: dict[str, Any]) -> str:
+    """Name the thing to buy, which depends on how the mass is reached."""
+    thread = str(radiator.get("adjustable_mass_thread", "threaded"))
+    washer_g = {"M5": 0.6, "M6": 1.0}.get(thread, 1.0)
+    if added_mass < 3.0 * washer_g:
+        return "self-adhesive tuning mass, lead-free strip"
+    return f"{thread} washers plus self-adhesive lead-free strip for final trim"
+
+
+def _tuning_mass_specification(added_mass: float, radiator: dict[str, Any]) -> str:
+    """How to actually reach the added mass, given how big it is.
+
+    The advice is not constant. Against a sub-gram target a single washer
+    overshoots the whole figure, so adhesive strip is the only way to hit it.
+    Against several grams, stacking washers on the radiator's own mass post is
+    easier and more repeatable, and strip is only wanted for the final trim.
+    Hardcoding the sub-gram reasoning sent builders down the fiddly route once
+    the radiator changed and the target grew tenfold.
+    """
+    thread = str(radiator.get("adjustable_mass_thread", "threaded"))
+    washer_g = {"M5": 0.6, "M6": 1.0}.get(thread, 1.0)
+    common = (
+        f"{added_mass:.2f} g per radiator, the two sets matched within 0.02 g, "
+        f"applied centred on the {thread} mass post"
+    )
+    if added_mass < 3.0 * washer_g:
+        return (
+            f"self-adhesive lead-free strip trimmed to {common}. One {thread} washer "
+            f"is about {washer_g:.1f} g, a large fraction of the whole target, so "
+            "threaded mass alone cannot reach this figure"
+        )
+    return (
+        f"{common}. Stack {thread} washers for the bulk -- about "
+        f"{added_mass / washer_g:.0f} of them at roughly {washer_g:.1f} g each -- then "
+        "trim self-adhesive lead-free strip for the last fraction of a gram. Weigh "
+        "both radiators' finished stacks and match them, rather than trusting counts"
+    )
+
+
+def _with_buy_links(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Attach a US purchase link to every line that is bought rather than printed."""
+    for row in rows:
+        identifier = str(row["id"])
+        if identifier.startswith(("P", "O")):
+            row["buy_link"] = "printed by you"
+        elif identifier.startswith("F"):
+            row["buy_link"] = BUY_LINKS["FASTENERS"]
+        else:
+            row["buy_link"] = BUY_LINKS.get(identifier, "")
+    return rows
+
+
 def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[dict[str, str]]:
     """Return the user-facing purchasing and manufactured-parts list."""
     driver, radiator = selected_components(root)
@@ -266,7 +337,10 @@ def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[d
                 "id": "A02",
                 "category": "passive radiator",
                 "item": f"{radiator['manufacturer']} {radiator['model']}",
-                "specification": "4 inch aluminum passive radiator with M6 mass post",
+                "specification": (
+                    f"4 inch passive radiator with "
+                    f"{radiator.get('adjustable_mass_thread', 'threaded')} mass post"
+                ),
                 "quantity": "2",
                 "required": "yes",
                 "evidence": EVIDENCE_DRAWING,
@@ -328,13 +402,8 @@ def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[d
             {
                 "id": "B02",
                 "category": "radiator tuning",
-                "item": "self-adhesive tuning mass, lead-free strip",
-                "specification": (
-                    f"trimmed to {added_mass:.2f} g per radiator, the two sets matched "
-                    "within 0.02 g; applied centred on the radiator mass post. A single "
-                    "M6 washer is about 1.0 g, which is coarser than the whole target, "
-                    "so threaded mass cannot hit this figure"
-                ),
+                "item": _tuning_mass_item(added_mass, radiator),
+                "specification": _tuning_mass_specification(added_mass, radiator),
                 "quantity": "2 matched sets",
                 "required": "yes; final mass requires physical tuning",
                 "evidence": EVIDENCE_ESTIMATE,
@@ -393,7 +462,7 @@ def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[d
                 "source": "industrial fastener supplier",
             }
         )
-    return rows
+    return _with_buy_links(rows)
 
 
 ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
@@ -1324,7 +1393,15 @@ it before starting each full-size print.
 def _hardware_guide(parameters: DesignParameters, root: Path) -> str:
     bom = bill_of_materials(parameters, root)
     rows = [
-        [r["id"], r["category"], r["item"], r["specification"], r["quantity"], r["required"]]
+        [
+            r["id"],
+            r["category"],
+            r["item"],
+            r["specification"],
+            r["quantity"],
+            r["required"],
+            r.get("buy_link", ""),
+        ]
         for r in bom
         if not r["id"].startswith("P")
     ]
@@ -1334,7 +1411,7 @@ Use Batch 1 only. The public Batch 1 pair is Core rev4.1 plus HAT rev4.1 /
 R2024.12.06. If the board or packaging says Satellite1.1, rev5.1 Core, rev6.1
 HAT, or requires an external Wi-Fi antenna, stop: that hardware is unsupported.
 
-{_markdown_table(["ID", "Category", "Item", "Exact specification", "Qty", "Required"], rows)}
+{_markdown_table(["ID", "Category", "Item", "Exact specification", "Qty", "Required", "Where to buy (US)"], rows)}
 
 All purchasing availability and prices must be checked by the builder.
 Manufacturer geometry and electrical parameters are

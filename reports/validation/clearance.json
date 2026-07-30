@@ -25,7 +25,7 @@
     },
     {
       "feature": "passive-radiator rear excursion to cabinet centre plane",
-      "nominal_mm": 22.700000000000003,
+      "nominal_mm": 31.28,
       "minimum_mm": 10.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -39,21 +39,21 @@
     },
     {
       "feature": "radiator bore to acoustic floor",
-      "nominal_mm": 19.200000000000017,
+      "nominal_mm": 23.335000000000008,
       "minimum_mm": 4.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "radiator clamp-ring seating land inside the cabinet height (lower)",
-      "nominal_mm": 8.0,
+      "nominal_mm": 11.0,
       "minimum_mm": 3.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
       "feature": "radiator clamp-ring seating land inside the cabinet height (upper)",
-      "nominal_mm": 32.7,
+      "nominal_mm": 35.7,
       "minimum_mm": 3.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -88,7 +88,7 @@
     },
     {
       "feature": "radiator clamp-ring insert land to component seat wall",
-      "nominal_mm": 1.6000000000000014,
+      "nominal_mm": 1.8150000000000048,
       "minimum_mm": 1.5,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -109,7 +109,7 @@
     },
     {
       "feature": "radiator gasket land radial width",
-      "nominal_mm": 8.699999999999996,
+      "nominal_mm": 9.61999999999999,
       "minimum_mm": 3.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

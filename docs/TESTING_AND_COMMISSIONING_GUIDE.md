@@ -11,7 +11,7 @@ Every result in this guide requires a physical unit and is
 
 1. Verify red driver lead to + and black to -.
 2. Confirm both radiators carry equal added mass: model target
-   0.82 g each.
+   7.94 g each.
 3. Confirm every screw ID and quantity against `FASTENERS.csv`.
 4. Confirm G01-G04 are continuous and no wire touches a moving component.
 5. Perform the 100-250 Pa gross-leak screen during assembly. Never use shop air.
@@ -36,7 +36,7 @@ Measure impedance magnitude and phase from 20 Hz to 20 kHz at low level. The
 two low-frequency peaks should bracket tuning; the minimum between them is the
 real Fb. Model targets are 60.0 Hz Fb,
 4.39 ohm minimum impedance,
-and 56.9 Hz f3. They are
+and 59.0 Hz f3. They are
 `ENGINEERING_ESTIMATE`, not pass/fail measurements.
 
 Start DSP with the modelled 51.0

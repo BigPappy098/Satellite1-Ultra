@@ -298,11 +298,11 @@
       "material": "ASA",
       "print_orientation": "lip face on bed",
       "bounds_mm": [
-        140.0,
-        140.0,
+        134.0,
+        134.0,
         6.0
       ],
-      "largest_dimension_mm": 140.0,
+      "largest_dimension_mm": 134.0,
       "build_volume_mm": [
         220.0,
         200.0,
@@ -311,8 +311,8 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        80.0,
-        60.0,
+        86.0,
+        66.0,
         244.0
       ],
       "status": "PASS",
@@ -373,11 +373,11 @@
       "material": "2 mm closed-cell EPDM",
       "print_orientation": "flat",
       "bounds_mm": [
-        122.6,
-        122.6,
+        116.16999999999999,
+        116.16999999999999,
         2.0
       ],
-      "largest_dimension_mm": 122.6,
+      "largest_dimension_mm": 116.16999999999999,
       "build_volume_mm": [
         220.0,
         200.0,
@@ -386,8 +386,8 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        97.4,
-        77.4,
+        103.83,
+        83.83,
         248.0
       ],
       "status": "PASS",
@@ -598,11 +598,11 @@
       "material": "ASA",
       "print_orientation": "largest flat face on bed",
       "bounds_mm": [
-        144.0,
-        144.0,
+        138.0,
+        138.0,
         15.2
       ],
-      "largest_dimension_mm": 144.0,
+      "largest_dimension_mm": 138.0,
       "build_volume_mm": [
         220.0,
         200.0,
@@ -611,8 +611,8 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        76.0,
-        56.0,
+        82.0,
+        62.0,
         234.8
       ],
       "status": "PASS",

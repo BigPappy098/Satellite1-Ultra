@@ -52,6 +52,18 @@ class AcousticModel:
     published_pr_mms_g: float
 
 
+def _selected_radiator_thread() -> str:
+    """The mass-adjustment thread of whichever radiator is selected.
+
+    Hardcoding "M6" was correct only for the SB12PACR-00; the Dayton DSA115-PR
+    uses M5, and a builder buying washers off a stale guide gets the wrong ones.
+    """
+    from satellite1_ultra.configuration import selected_components
+
+    _, radiator = selected_components()
+    return str(radiator.get("adjustable_mass_thread", "mass-adjustment"))
+
+
 def net_volume_from_validation(root: Path = ROOT) -> float:
     """Read the exact B-rep net volume produced by the validation gate."""
     path = root / "reports" / "validation" / "acoustic_volume.json"
@@ -161,7 +173,8 @@ def optimal_tuning_hz(
     the passband above the corner must stay inside ``maximum_ripple_db``, and
     the required moving mass must exceed the published Mms by at least
     ``minimum_added_mass_g`` so the alignment is reachable by *adding* mass to
-    the M6 post rather than by removing mass from the radiator.
+    the radiator's own mass-adjustment thread rather than by removing mass
+    from the radiator.
     """
     sweep_points: NDArray[np.float64] = (
         np.arange(40.0, 90.5, 1.0, dtype=np.float64) if candidates is None else candidates
@@ -436,7 +449,8 @@ def _write_markdown(path: Path, model: AcousticModel, summary: dict[str, Any]) -
         f"- Required moving mass per radiator: **{model.required_pr_mass_g:.2f} g**",
         f"- Published Mms per radiator: {model.published_pr_mms_g:.2f} g",
         f"- Added tuning mass per radiator: **{model.added_pr_mass_g:.2f} g** "
-        f"({summary['added_pr_mass_total_g']:.2f} g total), fitted to the M6 post",
+        f"({summary['added_pr_mass_total_g']:.2f} g total), fitted to the "
+        f"{_selected_radiator_thread()} mass-adjustment thread",
         "",
         "## Modelled results",
         "",
