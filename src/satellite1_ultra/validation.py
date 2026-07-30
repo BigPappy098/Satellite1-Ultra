@@ -68,10 +68,9 @@ INTENDED_CONTACTS: dict[frozenset[str], str] = {
     # skin cannot rattle. A clearance fit here would be the defect.
     frozenset(("shell_base", "shell_grille")): "intended_interference_fit",
     frozenset(("shell_grille", "shell_crown")): "intended_interference_fit",
-    # The crown is bolted down onto the divider's bosses.
-    frozenset(("shell_crown", "pressure_divider")): "intended_bolted_joint",
-    # The base segment is bolted into the bottom service plate.
-    frozenset(("shell_base", "bottom_service_plate")): "intended_bolted_joint",
+    # The crown-to-divider and base-to-bottom-plate joints are face contacts
+    # with zero volume overlap, so they do not belong in a whitelist of
+    # intended *interference*. audit_connections.py verifies them instead.
 }
 
 

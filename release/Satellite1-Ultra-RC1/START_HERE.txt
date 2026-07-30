@@ -12,6 +12,8 @@ WHAT IS IN HERE
 ---------------
 1_PRINT_THESE_FIRST   Eight small test pieces. Print these before anything else.
 2_ENCLOSURE_PARTS     The enclosure. Print every file, after the test pieces pass.
+                      OPTIONAL_FABRIC_WRAP holds three alternative skin
+                      segments, for wrapping the body in speaker cloth.
 3_SATELLITE_TOP_PARTS The original Satellite1 top. Print all six.
 GASKET_TEMPLATES      Print at 100% scale and cut three foam seals from them.
 GUIDES                The full manuals as PDFs.

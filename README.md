@@ -155,11 +155,11 @@ a 140 mm clamp ring hangs off the corners.
 
 ### Coordinate system
 
-- origin: centre of the official mid-plate interface plane, as measured from the
+- origin: center of the official mid-plate interface plane, as measured from the
   preserved B-rep.
 - +Z: toward the microphones.
-- −Y: active-driver front.
-- ±X: opposed passive radiators.
+- -Y: active-driver front.
+- +/-X: opposed passive radiators.
 - Units: millimetres everywhere.
 
 STEP is the authoritative exchange format; STL and 3MF are derived meshes. Source
