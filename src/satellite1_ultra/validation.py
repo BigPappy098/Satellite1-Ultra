@@ -1176,7 +1176,12 @@ def fastener_report(parameters: DesignParameters) -> dict[str, Any]:
         )
         # A shoulder screw engages by its thread alone; its shoulder is a
         # spacer that bottoms out, so length - stack is not the engagement.
-        engagement = joint.thread_length_mm if joint.head == "shoulder" else length - stack
+        if joint.head == "shoulder":
+            if joint.thread_length_mm is None:
+                raise ValueError(f"{joint.name}: a shoulder screw needs thread_length_mm")
+            engagement = joint.thread_length_mm
+        else:
+            engagement = length - stack
         bore_depth = joint.pilot_depth_mm or p.insert_bore_depth
         bottoms = engagement > bore_depth
         status = "PASS" if engagement >= 3.0 and not bottoms else "FAIL"
@@ -1734,7 +1739,7 @@ def stability_report(parameters: DesignParameters) -> dict[str, Any]:
                 EVIDENCE_DRAWING,
             ),
             MassElement(
-                "left SB12PACR-00",
+                "left passive radiator",
                 78.0,
                 -(p.outer_width / 2.0 - 10.0),
                 0,
@@ -1742,7 +1747,7 @@ def stability_report(parameters: DesignParameters) -> dict[str, Any]:
                 EVIDENCE_DRAWING,
             ),
             MassElement(
-                "right SB12PACR-00",
+                "right passive radiator",
                 78.0,
                 p.outer_width / 2.0 - 10.0,
                 0,

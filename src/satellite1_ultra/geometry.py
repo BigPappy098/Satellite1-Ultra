@@ -1987,7 +1987,7 @@ def passive_radiator_keepout(
     side: int,
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> cq.Shape:
-    """SB12PACR-00 frame plus full rear/outward excursion and tuning-mass envelope."""
+    """Radiator frame plus full rear/outward excursion and tuning-mass envelope."""
     if side not in (-1, 1):
         raise ValueError("side must be -1 or +1")
     p = parameters

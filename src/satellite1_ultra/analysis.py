@@ -268,7 +268,9 @@ def summarise(model: AcousticModel) -> dict[str, Any]:
         "required_pr_moving_mass_each_g": model.required_pr_mass_g,
         "added_pr_mass_each_g": model.added_pr_mass_g,
         "added_pr_mass_total_g": model.added_pr_mass_g * model.radiator.count,
-        "pr_mass_adjustment_interface": "M6 threaded post on each SB12PACR-00",
+        "pr_mass_adjustment_interface": (
+            f"{_selected_radiator_thread()} threaded post on each radiator"
+        ),
         "minimum_modeled_impedance_ohm": float(impedance.min()),
         "minimum_impedance_frequency_hz": float(frequency[int(np.argmin(impedance))]),
         "amplifier_minimum_load_ohm": 3.2,

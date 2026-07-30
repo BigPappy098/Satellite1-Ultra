@@ -161,7 +161,7 @@ TPU 95A for the flexible ones. You want an enclosed printer and dry filament \u2
 ASA will warp otherwise, and a warped cabinet will not seal.</li>
 </ul></div>
 
-<p>You will also need one Dayton ND91-4 driver, two SB Acoustics SB12PACR-00
+<p>You will also need one Dayton ND91-4 driver, two Dayton Audio DSA115-PR
 radiators, M3 screws and heat-set inserts, <b>M3&nbsp;&times;&nbsp;\u23004
 shoulder screws with a 16&nbsp;mm shoulder</b>, a sheet of 2&nbsp;mm closed-cell
 foam, and two 6&nbsp;mm steel plates. Full list in
@@ -365,7 +365,7 @@ code contains printer measurements and nothing else.</p></div>
             "Does your radiator drop in?",
             "calibration_radiator.png",
             "the piece marked <code>04_CHECK_RADIATOR_FIT</code>",
-            "Same idea, with one SB12PACR-00 passive radiator.",
+            "Same idea, with one passive radiator.",
             '<div class="field"><label class="q" for="pcut">Change the hole size by (mm)</label>'
             '<div class="help">0 means "it was fine".</div>'
             '<input type="number" id="pcut" step="0.05" value="0">'
@@ -498,7 +498,7 @@ Ultra parts. Printing them wastes filament.</div>
 <tr><th>What</th><th>How many</th><th>Notes</th></tr>
 <tr><td>Satellite1 Batch 1 kit</td><td class="qty">1</td><td>Core rev4.1 + HAT rev4.1. Batch 2 does not fit.</td></tr>
 <tr><td>Dayton Audio ND91-4 speaker</td><td class="qty">1</td><td>The main speaker.</td></tr>
-<tr><td>SB Acoustics SB12PACR-00</td><td class="qty">2</td><td>The two passive radiators on the sides.</td></tr>
+<tr><td>Dayton Audio DSA115-PR</td><td class="qty">2</td><td>The two passive radiators on the sides.</td></tr>
 <tr><td>M3 heat-set inserts</td><td class="qty">48</td><td>Buy spares; they are easy to ruin.</td></tr>
 <tr><td>M3 screws</td><td class="qty">52</td><td>Mixed lengths — see <code>FASTENERS.csv</code>.</td></tr>
 <tr><td>2 mm closed-cell EPDM foam</td><td class="qty">1 sheet</td><td>300 &times; 300 mm is plenty.</td></tr>

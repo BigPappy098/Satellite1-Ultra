@@ -45,9 +45,9 @@ download part files.
 - **ASA** for the rigid parts (PETG works too) and a little **TPU 95A** for the
   flexible ones. You want an enclosed printer and dry filament — ASA warps
   otherwise, and a warped cabinet will not seal.
-- One Dayton ND91-4 driver, two SB Acoustics SB12PACR-00 radiators, M3 screws
-  and heat-set inserts, a sheet of 2 mm closed-cell foam, and two 6 mm steel
-  plates.
+- One **Dayton ND91-4** driver and two **Dayton DSA115-PR** passive radiators,
+  both from Parts Express. M3 screws and heat-set inserts, a sheet of 2 mm
+  closed-cell foam, and two 6 mm steel plates.
 - **M3 × ⌀4 shoulder screws with a 16 mm shoulder, ×4.** See the warning below.
 
 It's a chunky build — about 4 out of 5 for difficulty — but there's no glue and

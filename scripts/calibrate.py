@@ -110,7 +110,7 @@ def _run_wizard() -> dict[str, Any]:
         0.85 * gasket_sheet,
     )
     driver_flange = _number("Measured Dayton ND91-4 flange thickness (mm)", 3.0, 2.0, 5.0)
-    passive_flange = _number("Measured SB12PACR-00 flange thickness (mm)", 4.0, 2.0, 6.0)
+    passive_flange = _number("Measured radiator flange thickness (mm)", 4.0, 2.0, 6.0)
 
     return {
         "xy_scale_correction_fraction": round(110.60 / xy_measured - 1.0, 7),

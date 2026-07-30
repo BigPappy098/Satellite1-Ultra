@@ -510,7 +510,7 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
     {
         "number": "4",
         "title": "Mass-match and clamp both passive radiators",
-        "parts": "2 SB12PACR-00, 2 passive_radiator_gaskets, 2 clamp rings, matched tuning masses",
+        "parts": "2 passive radiators, 2 passive_radiator_gaskets, 2 clamp rings, matched tuning masses",
         "fasteners": "F05, 8 screws total",
         "tools": "0.01 g scale; 2.0 mm hex",
         "gasket": "G03, one per side",
@@ -646,6 +646,12 @@ def _build_book(parameters: DesignParameters, root: Path) -> str:
     """
     acoustics = _acoustics(root)
     req = printer_requirement(parameters)
+    # Component names come from the selection, never typed in. Hardcoding
+    # "SB12PACR-00" here meant every guide kept naming a radiator the design
+    # no longer uses after the part changed.
+    _driver, _radiator = selected_components(root)
+    driver_name = f"{_driver['manufacturer']} {_driver['model']}"
+    radiator_name = f"{_radiator['manufacturer']} {_radiator['model']}"
     calibration_rows = [
         [filename, str(quantity), "ASA" if source != "cable_gland" else "TPU 95A"]
         for source, filename, quantity in CALIBRATION_PRINT_ORDER
@@ -770,8 +776,8 @@ with a 0-500 Pa gauge, and leak-detection solution.
 Buy every item marked required in `BOM.csv`. The essentials are:
 
 - One FutureProofHomes Satellite1 Batch 1 kit (E01).
-- One Dayton Audio ND91-4 speaker (A01).
-- Two SB Acoustics SB12PACR-00 passive radiators (A02).
+- One {driver_name} speaker (A01).
+- Two {radiator_name} passive radiators (A02).
 - M3 heat-set inserts, with four spares (H01).
 - Every M3 screw in `FASTENERS.csv`.
 - One 300 x 300 mm sheet of 2.0 mm closed-cell EPDM foam (G00).
@@ -853,7 +859,7 @@ exactly where each caliper jaw goes; the images below name each check.
                 ],
                 [
                     "Radiator fit",
-                    "Seat one real SB12PACR-00 in its test ring",
+                    "Seat one real passive radiator in its test ring",
                     "drops in by hand, flange lies flat, play under 0.30 mm",
                 ],
                 [
@@ -903,7 +909,7 @@ and print every file:
 
 Note that the radiator clamp ring is the only part you print **twice**.
 
-![The outer shell, positioned on the bed](IMAGES/print_orientation_outer_shell.png)
+![The grille skin segment, positioned on the bed](IMAGES/print_orientation_shell_grille.png)
 
 Then open `PRINT_THESE_FILES/3_SQUIRCLE_TOP_PARTS` and print all six official
 Satellite top parts. These are not optional; they complete the normal
@@ -955,7 +961,7 @@ Check that you have all of it:
 
 - All 12 printed Ultra parts, with two radiator clamp rings.
 - All 6 printed Satellite top parts.
-- One ND91-4 speaker and two SB12PACR-00 radiators.
+- One {driver_name} speaker and two {radiator_name} radiators.
 - Three cut foam gaskets and one printed TPU cable seal.
 - Every screw and insert in `FASTENERS.csv`.
 - Two steel ballast plates, deburred and dry.
@@ -1179,7 +1185,7 @@ Use the engraved labels and `IMAGES/calibration_*.png`.
 | M3 clearance | Try a clean ISO M3 screw in labeled 3.4/3.5/3.6 holes | 3.4 mm | smallest hole that falls through without force | chosen diameter minus 3.4 |
 | Insert bore | Install identical inserts in 4.0/4.1/4.2/4.3 blind bores | 4.2 mm | square, flush, no crack/spin at 0.35 N m | chosen diameter minus 4.2 |
 | Driver fit | Seat the purchased ND91-4 in the labeled coupon | catalog interface | drops in by hand, <=0.30 mm radial play, flange lies flat | cutout correction and measured flange thickness |
-| Radiator fit | Seat one SB12PACR-00 in the labeled coupon | catalog interface | drops in by hand, <=0.30 mm radial play, flange lies flat | cutout correction and measured flange thickness |
+| Radiator fit | Seat one passive radiator in the labeled coupon | catalog interface | drops in by hand, <=0.30 mm radial play, flange lies flat | cutout correction and measured flange thickness |
 | Gasket | Tighten cap on a strip of the actual sheet until both stops contact | 2.00 to 1.50 mm | 15%-45% compression; no open light path | sheet thickness and compressed-thickness offset |
 | Cable gland | Fit actual two 22 AWG conductors and gland in cable coupon | 8.0 mm passage | moderate finger force; gland cannot rotate or lift | cable-passage offset |
 

@@ -147,7 +147,7 @@ def active_driver_coupon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
 def passive_radiator_coupon(
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> cq.Shape:
-    """SB12PACR-00 ledge, seat, bore, clamp-ring bolt circle and insert coupon."""
+    """Radiator ledge, seat, bore, clamp-ring bolt circle and insert coupon."""
     p = parameters
     coupon = _component_seat_coupon(
         p.pr_pad_diameter,
