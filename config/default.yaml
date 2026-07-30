@@ -47,9 +47,9 @@ component_mounts:
   driver_clamp_ring_diameter: 118.0
   driver_clamp_bolt_circle: 112.0
   driver_pad_diameter: 126.0
-  pr_clamp_ring_diameter: 140.0
-  pr_clamp_bolt_circle: 130.0
-  pr_pad_diameter: 144.0
+  pr_clamp_ring_diameter: 134.0
+  pr_clamp_bolt_circle: 124.0
+  pr_pad_diameter: 138.0
   pr_ledge_depth: 5.0
 
 sealing:
