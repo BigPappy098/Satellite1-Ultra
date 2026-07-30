@@ -13,7 +13,7 @@ HAT, or requires an external Wi-Fi antenna, stop: that hardware is unsupported.
 | H02 | speaker cable | 2-pin JST-XH 2.54 mm speaker lead | 22 AWG stranded red/black, each insulated conductor OD <=1.8 mm, 350 mm minimum | 1 | yes |
 | H03 | speaker terminals | 2.8 mm fully insulated female quick-disconnects | for 22-18 AWG wire; verify fit on the purchased ND91-4 before crimping | 2 | recommended; direct solder is acceptable |
 | B01 | ballast | mild-steel plate | 100 x 92 x 6 mm, edges deburred, dry, light oil removed | 2 | yes |
-| B02 | radiator tuning | self-adhesive tuning mass, lead-free strip | trimmed to 0.78 g per radiator, the two sets matched within 0.02 g; applied centred on the radiator mass post. A single M6 washer is about 1.0 g, which is coarser than the whole target, so threaded mass cannot hit this figure | 2 matched sets | yes; final mass requires physical tuning |
+| B02 | radiator tuning | self-adhesive tuning mass, lead-free strip | trimmed to 0.82 g per radiator, the two sets matched within 0.02 g; applied centred on the radiator mass post. A single M6 washer is about 1.0 g, which is coarser than the whole target, so threaded mass cannot hit this figure | 2 matched sets | yes; final mass requires physical tuning |
 | G00 | gasket stock | closed-cell EPDM foam sheet | 2.0 mm nominal, soft, smooth skin, ASTM D1056 2A1 or equivalent | one 300 x 300 mm sheet | yes |
 | D01 | optional acoustic material | polyester acoustic batting | not installed in RC1; reserve for measurement-led development only | 0 | no |
 | O01 | official printed part | official_mid_plate | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_mid_plate.stl; preserved official STL | 1 | yes |

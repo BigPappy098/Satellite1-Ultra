@@ -266,7 +266,7 @@ Check that you have all of it:
 - Every screw and insert in `FASTENERS.csv`.
 - Two steel ballast plates, deburred and dry.
 - Two matched radiator tuning masses, each weighed to
-  0.78 g within 0.02 g.
+  0.82 g within 0.02 g.
 - One red/black speaker lead with the correct plug.
 
 The screws all look similar, so identify them by length before you begin:
