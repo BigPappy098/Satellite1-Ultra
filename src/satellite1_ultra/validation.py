@@ -930,6 +930,10 @@ class Joint:
     uses_heat_set_insert: bool = True
     fixed_length_mm: float | None = None
     pilot_depth_mm: float | None = None
+    #: Threaded length below the shoulder, for shoulder screws only. On those,
+    #: fixed_length_mm is the *shoulder*, which passes through the joint and
+    #: bottoms on a hard face; only this thread enters the insert.
+    thread_length_mm: float | None = None
 
 
 def _joints(p: DesignParameters) -> list[Joint]:
@@ -938,17 +942,25 @@ def _joints(p: DesignParameters) -> list[Joint]:
     return [
         Joint(
             "F01",
-            "official mid-plate to pressure divider",
+            "official upper stack to pressure divider, through the isolation bushings",
             4,
             1.0,
-            "socket cap",
+            "shoulder",
             "top, through the official Ø6.5 counterbore",
             "none",
-            "Screw passes the official Ø3.2 hole; head seats in the official counterbore.",
+            (
+                "M3 x d4 shoulder screw, 16 mm shoulder. The shoulder bottoms on the "
+                "divider counterbore floor and the head stops 0.3 mm above the plate, "
+                "so the official stack floats on the TPU bushings. An ordinary M3 "
+                "screw clamps in parallel with the elastomer at roughly 35 times its "
+                "stiffness and defeats the microphone isolation entirely."
+            ),
+            fixed_length_mm=16.0,
+            thread_length_mm=6.0,
         ),
         Joint(
             "F02",
-            "electronics shroud to pressure divider",
+            "skin crown to pressure divider",
             4,
             3.0,
             "button head",
@@ -1162,7 +1174,9 @@ def fastener_report(parameters: DesignParameters) -> dict[str, Any]:
             (value for value in STANDARD_M3_LENGTHS if value >= stack + 3.5),
             key=lambda value: abs(value - target),
         )
-        engagement = length - stack
+        # A shoulder screw engages by its thread alone; its shoulder is a
+        # spacer that bottoms out, so length - stack is not the engagement.
+        engagement = joint.thread_length_mm if joint.head == "shoulder" else length - stack
         bore_depth = joint.pilot_depth_mm or p.insert_bore_depth
         bottoms = engagement > bore_depth
         status = "PASS" if engagement >= 3.0 and not bottoms else "FAIL"
@@ -1171,7 +1185,13 @@ def fastener_report(parameters: DesignParameters) -> dict[str, Any]:
                 "joint": joint.name,
                 "id": joint.identifier,
                 "thread": "M3 x 0.5",
-                "standard": ("ISO 4762" if joint.head == "socket cap" else "ISO 7380-1"),
+                "standard": (
+                    "M3 x d4 shoulder screw"
+                    if joint.head == "shoulder"
+                    else "ISO 4762"
+                    if joint.head == "socket cap"
+                    else "ISO 7380-1"
+                ),
                 "material": "A2 stainless",
                 "quantity": joint.quantity,
                 "length_mm": length,

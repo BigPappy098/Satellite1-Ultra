@@ -4,37 +4,37 @@ Use Batch 1 only. The public Batch 1 pair is Core rev4.1 plus HAT rev4.1 /
 R2024.12.06. If the board or packaging says Satellite1.1, rev5.1 Core, rev6.1
 HAT, or requires an external Wi-Fi antenna, stop: that hardware is unsupported.
 
-| ID | Category | Item | Exact specification | Qty | Required |
-|---|---|---|---|---|---|
-| A01 | active driver | Dayton Audio ND91-4 | 4 ohm full-range driver; manufacturer model ND91-4 | 1 | yes |
-| A02 | passive radiator | SB Acoustics SB12PACR-00 | 4 inch aluminum passive radiator with M6 mass post | 2 | yes |
-| E01 | official electronics | FutureProofHomes Satellite1 Batch 1 development kit | Core rev4.1 + HAT rev4.1 / R2024.12.06; not Satellite1.1 | 1 | yes |
-| H01 | insert | CNC Kitchen M3 x 5.7 heat-set insert | M3x0.5 internal thread, 5.7 mm length, 4.6 mm maximum OD | 48 | yes; includes four spares |
-| H02 | speaker cable | 2-pin JST-XH 2.54 mm speaker lead | 22 AWG stranded red/black, each insulated conductor OD <=1.8 mm, 350 mm minimum | 1 | yes |
-| H03 | speaker terminals | 2.8 mm fully insulated female quick-disconnects | for 22-18 AWG wire; verify fit on the purchased ND91-4 before crimping | 2 | recommended; direct solder is acceptable |
-| B01 | ballast | mild-steel plate | 100 x 92 x 6 mm, edges deburred, dry, light oil removed | 2 | yes |
-| B02 | radiator tuning | self-adhesive tuning mass, lead-free strip | trimmed to 0.82 g per radiator, the two sets matched within 0.02 g; applied centred on the radiator mass post. A single M6 washer is about 1.0 g, which is coarser than the whole target, so threaded mass cannot hit this figure | 2 matched sets | yes; final mass requires physical tuning |
-| G00 | gasket stock | closed-cell EPDM foam sheet | 2.0 mm nominal, soft, smooth skin, ASTM D1056 2A1 or equivalent | one 300 x 300 mm sheet | yes |
-| D01 | optional acoustic material | polyester acoustic batting | not installed in RC1; reserve for measurement-led development only | 0 | no |
-| O01 | official printed part | official_mid_plate | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_mid_plate.stl; preserved official STL | 1 | yes |
-| O02 | official printed part | official_mid_plate_threads | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_mid_plate_threads.stl; preserved official STL | 1 | yes |
-| O03 | official printed part | official_pcb_spacer | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_pcb_spacer.stl; preserved official STL | 1 | yes |
-| O04 | official printed part | official_lock_ring | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_lock_ring.stl; preserved official STL | 1 | yes |
-| O05 | official printed part | official_top_plate | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_top_plate.stl; preserved official STL | 1 | yes |
-| O06 | official printed part | official_top_plate_snap_in_diffuser_ring | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_top_plate_snap_in_diffuser_ring.stl; preserved official STL | 1 | yes |
-| O07 | official printed part | official_top_plate_mm_buttons | ASA (PETG alternative); exact file OFFICIAL_PARTS/OPTIONAL_MULTI_MATERIAL/official_top_plate_mm_buttons.stl; preserved official STL | 1 | optional alternative |
-| O08 | official printed part | official_top_plate_mm_diffuser_ring | ASA (PETG alternative); exact file OFFICIAL_PARTS/OPTIONAL_MULTI_MATERIAL/official_top_plate_mm_diffuser_ring.stl; preserved official STL | 1 | optional alternative |
-| F01 | fastener | M3 x 6 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes |
-| F02 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes |
-| F03 | fastener | M3 x 8 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 8 | yes |
-| F04 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes |
-| F05 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 8 | yes |
-| F06 | fastener | M3 x 6 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes |
-| F07 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes |
-| F08 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes |
-| F09 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes |
-| F10 | fastener | M3 x 8 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes |
-| F11 | fastener | M3 x 8 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes |
+| ID | Category | Item | Exact specification | Qty | Required | Where to buy (US) |
+|---|---|---|---|---|---|---|
+| A01 | active driver | Dayton Audio ND91-4 | 4 ohm full-range driver; manufacturer model ND91-4 | 1 | yes | https://www.parts-express.com/Dayton-Audio-ND91-4-3-1-2-Aluminum-Cone-Full-Range-Driver-4-290-224 |
+| A02 | passive radiator | Dayton Audio DSA115-PR | 4 inch passive radiator with M5 mass post | 2 | yes | https://www.parts-express.com/Dayton-Audio-DSA115-PR-4-Designer-Series-Aluminum-Cone-Passive-Radiator-295-544 |
+| E01 | official electronics | FutureProofHomes Satellite1 Batch 1 development kit | Core rev4.1 + HAT rev4.1 / R2024.12.06; not Satellite1.1 | 1 | yes | https://futureproofhomes.net/products/satellite1-kit |
+| H01 | insert | CNC Kitchen M3 x 5.7 heat-set insert | M3x0.5 internal thread, 5.7 mm length, 4.6 mm maximum OD | 48 | yes; includes four spares | https://www.amazon.com/s?k=CNC+Kitchen+M3+heat+set+insert+M3x5.7 |
+| H02 | speaker cable | 2-pin JST-XH 2.54 mm speaker lead | 22 AWG stranded red/black, each insulated conductor OD <=1.8 mm, 350 mm minimum | 1 | yes | https://www.amazon.com/s?k=JST-XH+2.54mm+2+pin+speaker+pigtail |
+| H03 | speaker terminals | 2.8 mm fully insulated female quick-disconnects | for 22-18 AWG wire; verify fit on the purchased ND91-4 before crimping | 2 | recommended; direct solder is acceptable | https://www.amazon.com/s?k=2.8mm+fully+insulated+female+quick+disconnect |
+| B01 | ballast | mild-steel plate | 100 x 92 x 6 mm, edges deburred, dry, light oil removed | 2 | yes | https://www.onlinemetals.com/en/buy/steel/0-25-mild-steel-plate-a36-hot-rolled/pid/1156 |
+| B02 | radiator tuning | M5 washers plus self-adhesive lead-free strip for final trim | 7.94 g per radiator, the two sets matched within 0.02 g, applied centred on the M5 mass post. Stack M5 washers for the bulk -- about 13 of them at roughly 0.6 g each -- then trim self-adhesive lead-free strip for the last fraction of a gram. Weigh both radiators' finished stacks and match them, rather than trusting counts | 2 matched sets | yes; final mass requires physical tuning | https://www.amazon.com/s?k=M5+flat+washer+stainless+assortment |
+| G00 | gasket stock | closed-cell EPDM foam sheet | 2.0 mm nominal, soft, smooth skin, ASTM D1056 2A1 or equivalent | one 300 x 300 mm sheet | yes | https://www.amazon.com/s?k=2mm+closed+cell+EPDM+foam+sheet+adhesive |
+| D01 | optional acoustic material | polyester acoustic batting | not installed in RC1; reserve for measurement-led development only | 0 | no | https://www.parts-express.com/search?keywords=acoustic%20polyfill |
+| O01 | official printed part | official_mid_plate | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_mid_plate.stl; preserved official STL | 1 | yes | printed by you |
+| O02 | official printed part | official_mid_plate_threads | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_mid_plate_threads.stl; preserved official STL | 1 | yes | printed by you |
+| O03 | official printed part | official_pcb_spacer | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_pcb_spacer.stl; preserved official STL | 1 | yes | printed by you |
+| O04 | official printed part | official_lock_ring | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_lock_ring.stl; preserved official STL | 1 | yes | printed by you |
+| O05 | official printed part | official_top_plate | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_top_plate.stl; preserved official STL | 1 | yes | printed by you |
+| O06 | official printed part | official_top_plate_snap_in_diffuser_ring | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_top_plate_snap_in_diffuser_ring.stl; preserved official STL | 1 | yes | printed by you |
+| O07 | official printed part | official_top_plate_mm_buttons | ASA (PETG alternative); exact file OFFICIAL_PARTS/OPTIONAL_MULTI_MATERIAL/official_top_plate_mm_buttons.stl; preserved official STL | 1 | optional alternative | printed by you |
+| O08 | official printed part | official_top_plate_mm_diffuser_ring | ASA (PETG alternative); exact file OFFICIAL_PARTS/OPTIONAL_MULTI_MATERIAL/official_top_plate_mm_diffuser_ring.stl; preserved official STL | 1 | optional alternative | printed by you |
+| F01 | fastener | M3 x 16 shoulder screw | M3 x d4 shoulder screw, A2-70 stainless, M3x0.5 | 4 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F02 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F03 | fastener | M3 x 8 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 8 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F04 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F05 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 8 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F06 | fastener | M3 x 6 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F07 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F08 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F09 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F10 | fastener | M3 x 8 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
+| F11 | fastener | M3 x 8 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes | https://www.mcmaster.com/screws/socket-head-screws/thread-size~m3/ |
 
 All purchasing availability and prices must be checked by the builder.
 Manufacturer geometry and electrical parameters are
