@@ -8,11 +8,11 @@
     "evidence": "VERIFIED_DIGITALLY"
   },
   "collision": {
-    "status": "FAIL",
+    "status": "PASS",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "clearance": {
-    "status": "FAIL",
+    "status": "PASS",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "core_fit": {

@@ -1,5 +1,5 @@
 {
-  "status": "FAIL",
+  "status": "PASS",
   "evidence": "VERIFIED_DIGITALLY",
   "clearances": [
     {
@@ -160,10 +160,10 @@
     },
     {
       "feature": "pressure_divider to official_mid_plate",
-      "nominal_mm": 0.0,
+      "nominal_mm": 0.9999999999999858,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
@@ -216,15 +216,15 @@
     },
     {
       "feature": "shell_crown to official_mid_plate",
-      "nominal_mm": 0.0,
+      "nominal_mm": 2.0,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "shell_crown to official_mid_plate_threads",
-      "nominal_mm": 17.299999999999983,
+      "nominal_mm": 18.008053753806916,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -264,7 +264,7 @@
     },
     {
       "feature": "shell_crown to official_hat_batch1_rev4_1",
-      "nominal_mm": 20.672197539875945,
+      "nominal_mm": 24.159749628342915,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",

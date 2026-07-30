@@ -1567,6 +1567,20 @@ def skin_shell(
     span = 2.0 * (p.body_half - p.shell_wall_thickness)
     # Open the base so the skin is a shell rather than a solid block.
     inner = inner.fuse(section_prism(span, span, 2.1, p.shell_bottom_z - 2.0))
+    # Stop the hollow one wall short of the top plane, so the flat top is a
+    # closed deck of full wall thickness.  Letting the hollow run to the top
+    # left only a 3 mm rim at the outer edge and an open trench around the
+    # official pocket -- the top looked flush in section but you could see
+    # straight into the electronics bay from above.
+    deck = 2.0 * (p.body_half + 5.0)
+    inner = inner.cut(
+        section_prism(
+            deck,
+            deck,
+            p.shell_top_roll,
+            p.shell_flat_top_z - p.shell_wall_thickness,
+        )
+    )
     shell = outer.cut(inner)
     # Flush pocket the official module drops into, with a hairline all round.
     pocket = 2.0 * (p.official_half + p.official_pocket_clearance)

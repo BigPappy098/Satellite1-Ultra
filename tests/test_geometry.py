@@ -195,3 +195,26 @@ def test_shoulder_screw_captures_without_clamping() -> None:
 
 def test_cadquery_shape_type_contract() -> None:
     assert isinstance(main_cabinet(), cq.Shape)
+
+
+def test_flat_top_is_a_closed_deck() -> None:
+    """The top must be material, not a rim around an open trench.
+
+    The flush-top measurement only checks the outer surface height, which was
+    true while the hollow ran to the top plane and left a 3 mm rim with a hole
+    behind it. This probes for real material across the whole annulus between
+    the official pocket and the outer edge.
+    """
+    p = DEFAULT_PARAMETERS
+    shell = skin_shell(p)
+    inner_edge = p.official_half + p.official_pocket_clearance
+    for fraction in (0.15, 0.5, 0.85):
+        radius = inner_edge + (p.flat_top_half - inner_edge) * fraction
+        probe = cq.Solid.makeBox(
+            4.0,
+            4.0,
+            p.shell_wall_thickness - 0.4,
+            cq.Vector(radius - 2.0, -2.0, p.shell_flat_top_z - p.shell_wall_thickness + 0.2),
+        )
+        filled = shell.intersect(probe).Volume()
+        assert filled > 20.0, f"top deck is open at radius {radius:.1f} mm ({filled:.1f} mm3)"
