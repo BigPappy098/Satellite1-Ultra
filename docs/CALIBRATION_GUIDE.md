@@ -35,7 +35,7 @@ Use the engraved labels and `IMAGES/calibration_*.png`.
 | M3 clearance | Try a clean ISO M3 screw in labeled 3.4/3.5/3.6 holes | 3.4 mm | smallest hole that falls through without force | chosen diameter minus 3.4 |
 | Insert bore | Install identical inserts in 4.0/4.1/4.2/4.3 blind bores | 4.2 mm | square, flush, no crack/spin at 0.35 N m | chosen diameter minus 4.2 |
 | Driver fit | Seat the purchased ND91-4 in the labeled coupon | catalog interface | drops in by hand, <=0.30 mm radial play, flange lies flat | cutout correction and measured flange thickness |
-| Radiator fit | Seat one SB12PACR-00 in the labeled coupon | catalog interface | drops in by hand, <=0.30 mm radial play, flange lies flat | cutout correction and measured flange thickness |
+| Radiator fit | Seat one passive radiator in the labeled coupon | catalog interface | drops in by hand, <=0.30 mm radial play, flange lies flat | cutout correction and measured flange thickness |
 | Gasket | Tighten cap on a strip of the actual sheet until both stops contact | 2.00 to 1.50 mm | 15%-45% compression; no open light path | sheet thickness and compressed-thickness offset |
 | Cable gland | Fit actual two 22 AWG conductors and gland in cable coupon | 8.0 mm passage | moderate finger force; gland cannot rotate or lift | cable-passage offset |
 

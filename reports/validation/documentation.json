@@ -1,5 +1,5 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "checked_files": [
     "docs/BUILD_BOOK.md",
@@ -14,39 +14,68 @@
   "pdfs": [
     {
       "file": "SATELLITE1_ULTRA_BUILD_BOOK.pdf",
-      "pages": 23,
-      "bytes": 9651700
+      "pages": 24,
+      "bytes": 9030145
     },
     {
       "file": "CALIBRATION_GUIDE.pdf",
       "pages": 6,
-      "bytes": 1487033
+      "bytes": 1493679
     },
     {
       "file": "PRINTING_GUIDE.pdf",
-      "pages": 22,
-      "bytes": 5052192
+      "pages": 26,
+      "bytes": 6699896
     },
     {
       "file": "HARDWARE_AND_MATERIALS_GUIDE.pdf",
-      "pages": 3,
-      "bytes": 8687
+      "pages": 4,
+      "bytes": 11214
     },
     {
       "file": "ASSEMBLY_GUIDE.pdf",
       "pages": 11,
-      "bytes": 5913159
+      "bytes": 5702100
     },
     {
       "file": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
       "pages": 3,
-      "bytes": 1645355
+      "bytes": 1510763
     },
     {
       "file": "MAINTENANCE_GUIDE.pdf",
       "pages": 1,
-      "bytes": 621993
+      "bytes": 441203
     }
   ],
-  "errors": []
+  "errors": [
+    "stale export anti_slip_ring: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export shell_base: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export shell_grille: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export shell_crown: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export shell_base_fabric: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export shell_grille_fabric: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export shell_crown_fabric: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export main_cabinet: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export pressure_divider: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export mic_isolation_bushing: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export active_driver_clamp_ring: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export passive_radiator_clamp_ring: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export divider_gasket: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export driver_gasket: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export passive_radiator_gasket: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export cable_gland: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export leak_test_adapter: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export base_skirt: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export bottom_service_plate: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export ballast_cartridge: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export ballast_cartridge_lid: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export coupon_official_interface: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export coupon_active_driver: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export coupon_passive_radiator: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export coupon_heat_set_insert: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export coupon_gasket_base: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export coupon_gasket_cap: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64",
+    "stale export coupon_cable_passage: source inputs changed since f7db0699e4c202e0bbf54fa991a299357e295b64"
+  ]
 }

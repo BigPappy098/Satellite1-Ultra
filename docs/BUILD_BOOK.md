@@ -84,7 +84,7 @@ Buy every item marked required in `BOM.csv`. The essentials are:
 
 - One FutureProofHomes Satellite1 Batch 1 kit (E01).
 - One Dayton Audio ND91-4 speaker (A01).
-- Two SB Acoustics SB12PACR-00 passive radiators (A02).
+- Two Dayton Audio DSA115-PR passive radiators (A02).
 - M3 heat-set inserts, with four spares (H01).
 - Every M3 screw in `FASTENERS.csv`.
 - One 300 x 300 mm sheet of 2.0 mm closed-cell EPDM foam (G00).
@@ -151,7 +151,7 @@ exactly where each caliper jaw goes; the images below name each check.
 | Screw clearance | Try a clean M3 screw in the 3.4, 3.5 and 3.6 mm holes | smallest hole the screw falls through without force |
 | Insert bore | Install identical inserts into the 4.0-4.3 mm blind bores | square and flush, no crack, no spin |
 | Speaker fit | Seat the real ND91-4 in its test ring | drops in by hand, flange lies flat, play under 0.30 mm |
-| Radiator fit | Seat one real SB12PACR-00 in its test ring | drops in by hand, flange lies flat, play under 0.30 mm |
+| Radiator fit | Seat one real passive radiator in its test ring | drops in by hand, flange lies flat, play under 0.30 mm |
 | Gasket squeeze | Clamp a strip of your actual foam until both hard stops touch | 15%-45% compression, no light path, foam not cut |
 | Cable seal | Push the two real conductors and the TPU seal into the test hole | moderate finger force, seal cannot rotate or lift |
 
@@ -203,7 +203,7 @@ and print every file:
 
 Note that the radiator clamp ring is the only part you print **twice**.
 
-![The outer shell, positioned on the bed](IMAGES/print_orientation_outer_shell.png)
+![The grille skin segment, positioned on the bed](IMAGES/print_orientation_shell_grille.png)
 
 Then open `PRINT_THESE_FILES/3_SQUIRCLE_TOP_PARTS` and print all six official
 Satellite top parts. These are not optional; they complete the normal
@@ -261,7 +261,7 @@ Check that you have all of it:
 
 - All 12 printed Ultra parts, with two radiator clamp rings.
 - All 6 printed Satellite top parts.
-- One ND91-4 speaker and two SB12PACR-00 radiators.
+- One Dayton Audio ND91-4 speaker and two Dayton Audio DSA115-PR radiators.
 - Three cut foam gaskets and one printed TPU cable seal.
 - Every screw and insert in `FASTENERS.csv`.
 - Two steel ballast plates, deburred and dry.
@@ -332,7 +332,7 @@ Stop as soon as the parts meet evenly. Do not keep turning "for luck".
 
 ![Build step 4: Mass-match and clamp both passive radiators](IMAGES/assembly_stage_04_radiators.png)
 
-**You need:** 2 SB12PACR-00, 2 passive_radiator_gaskets, 2 clamp rings, matched tuning masses
+**You need:** 2 passive radiators, 2 passive_radiator_gaskets, 2 clamp rings, matched tuning masses
 
 **Screws:** F05, 8 screws total   **Seal:** G03, one per side   **Tools:** 0.01 g scale; 2.0 mm hex
 

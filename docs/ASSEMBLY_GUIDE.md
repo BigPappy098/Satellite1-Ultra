@@ -77,7 +77,7 @@ until the selected insert/process is pull-tested.
 
 ## Step 4: Mass-match and clamp both passive radiators
 
-- Parts: 2 SB12PACR-00, 2 passive_radiator_gaskets, 2 clamp rings, matched tuning masses
+- Parts: 2 passive radiators, 2 passive_radiator_gaskets, 2 clamp rings, matched tuning masses
 - Fasteners: F05, 8 screws total
 - Tools: 0.01 g scale; 2.0 mm hex
 - Gasket/seal: G03, one per side
