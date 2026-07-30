@@ -8,6 +8,7 @@ from pathlib import Path
 
 from satellite1_ultra.builder_files import (
     CALIBRATION_PRINT_ORDER,
+    FABRIC_WRAP_PRINT_ORDER,
     OFFICIAL_TOP_PRINT_ORDER,
     ULTRA_PRINT_ORDER,
 )
@@ -92,6 +93,12 @@ def package_release(
             root / "exports" / "3mf" / f"{source_name}.3mf",
             output / "2_ENCLOSURE_PARTS" / friendly_name,
         )
+    # Swap-in skin segments for builders wrapping the body in speaker cloth.
+    for source_name, friendly_name, _quantity in FABRIC_WRAP_PRINT_ORDER:
+        _copy(
+            root / "exports" / "3mf" / f"{source_name}.3mf",
+            output / "2_ENCLOSURE_PARTS" / "OPTIONAL_FABRIC_WRAP" / friendly_name,
+        )
     official_by_name = {part.name: part for part in OFFICIAL_PRINT_PARTS_REQUIRED}
     for part in OFFICIAL_PRINT_PARTS_REQUIRED:
         _copy(
@@ -123,6 +130,8 @@ WHAT IS IN HERE
 ---------------
 1_PRINT_THESE_FIRST   Eight small test pieces. Print these before anything else.
 2_ENCLOSURE_PARTS     The enclosure. Print every file, after the test pieces pass.
+                      OPTIONAL_FABRIC_WRAP holds three alternative skin
+                      segments, for wrapping the body in speaker cloth.
 3_SATELLITE_TOP_PARTS The original Satellite1 top. Print all six.
 GASKET_TEMPLATES      Print at 100% scale and cut three foam seals from them.
 GUIDES                The full manuals as PDFs.

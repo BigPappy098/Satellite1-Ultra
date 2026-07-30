@@ -4,12 +4,12 @@
 
 ## System
 
-- Net acoustic volume: **3.518 L** (exact B-rep, `VERIFIED_DIGITALLY`)
+- Net acoustic volume: **3.509 L** (exact B-rep, `VERIFIED_DIGITALLY`)
 - Architecture: one active driver, 2 opposed passive radiators
 - Target tuning: 60.0 Hz
-- Required moving mass per radiator: **19.98 g**
+- Required moving mass per radiator: **20.02 g**
 - Published Mms per radiator: 19.20 g
-- Added tuning mass per radiator: **0.78 g** (1.56 g total), fitted to the M6 post
+- Added tuning mass per radiator: **0.82 g** (1.64 g total), fitted to the M6 post
 
 ## Modelled results
 

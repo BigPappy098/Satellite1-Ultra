@@ -175,7 +175,7 @@ class DesignParameters:
     brace_rib_width: float = 5.0
     brace_rib_depth: float = 8.0
     board_revision: str = "public_batch_1"
-    ballast_mass_g: float = 879.0
+    ballast_mass_g: float = 867.0  # two 6 mm plates, 100 x 92 mm
     # Usable build volume, per axis, measured on the reference machine (a
     # modified Ender 5: X 220 mm, Y 200 mm, generous Z). The 188 mm body prints
     # with 6 mm of margin per side, comfortably clearing a 3 mm brim.
@@ -1432,7 +1432,7 @@ def _place_pr_disc(shape: cq.Shape, side: int, inner_face_x: float, axis_z: floa
 
 
 @lru_cache(maxsize=8)
-def official_pocket_wire(clearance: float) -> cq.Wire:
+def official_pocket_wire(clearance: float, count: int = 192) -> cq.Wire:
     """The official stack's real outline, offset outward by *clearance*.
 
     Deliberately not our own superellipse. SECTION_EXPONENT = 4.13 matches the
@@ -1464,7 +1464,29 @@ def official_pocket_wire(clearance: float) -> cq.Wire:
             best = (area, face)
     if best is None:
         raise ValueError("could not find the official stack's full-width outline")
-    return best[1].outerWire().offset2D(clearance)[0]
+    outline = best[1].outerWire()
+
+    # Offset by sampling and re-splining rather than with Wire.offset2D. The
+    # offset2D result is geometrically right -- it differs from this by about
+    # 10 mm^3 -- but it does not survive a STEP round trip: the exported crown
+    # reopened 194043 mm^3 light, while the same shell built from a spline
+    # profile reopens with zero error. A clean periodic spline is the same class
+    # of curve the body's own sections use, and those round-trip exactly.
+    points = [outline.positionAt(index / count) for index in range(count)]
+    offset: list[cq.Vector] = []
+    for index, point in enumerate(points):
+        previous = points[index - 1]
+        following = points[(index + 1) % count]
+        tx, ty = following.x - previous.x, following.y - previous.y
+        length = sqrt(tx * tx + ty * ty)
+        if length <= 0.0:
+            raise ValueError("degenerate official outline sample")
+        nx, ny = ty / length, -tx / length
+        # The outline is convex about the origin, so orient the normal outward.
+        if nx * point.x + ny * point.y < 0.0:
+            nx, ny = -nx, -ny
+        offset.append(cq.Vector(point.x + nx * clearance, point.y + ny * clearance, point.z))
+    return cq.Wire.assembleEdges([cq.Edge.makeSpline(offset, periodic=True)])
 
 
 def official_pocket(z0: float, z1: float, clearance: float) -> cq.Shape:
@@ -1695,6 +1717,24 @@ def _crush_ribs(zs: float, parameters: DesignParameters) -> cq.Shape:
     return cq.Compound.makeCompound(ribs)
 
 
+def _straight_body(z0: float, z1: float, parameters: DesignParameters) -> cq.Shape:
+    """The body over a span that lies entirely in its straight section.
+
+    Geometrically identical to skin_body there, but a single extrusion rather
+    than a fusion of two lofts and a prism. Trimming a bridge against the fused
+    solid produced composite spline faces that cost the crown 0.0221 mm^3 on a
+    STEP round trip, against a 0.0066 mm^3 budget -- while the same operation
+    against this extrusion round-trips at 2e-6.
+    """
+    p = parameters
+    shoulder = p.shell_flat_top_z - p.shell_top_roll
+    roll_top = p.shell_bottom_z + p.shell_bottom_roll
+    if not (roll_top <= z0 and z1 <= shoulder):
+        raise ValueError("span is not inside the body's straight section")
+    span = 2.0 * p.body_half
+    return section_prism(span, span, z1 - z0, z0)
+
+
 def _crown_retention(crown: cq.Shape, parameters: DesignParameters) -> cq.Shape:
     """Bolt the crown down onto the divider's bosses.
 
@@ -1703,7 +1743,7 @@ def _crown_retention(crown: cq.Shape, parameters: DesignParameters) -> cq.Shape:
     """
     p = parameters
     tab_z = p.divider_bottom_z + p.divider_thickness + p.shroud_boss_height
-    outer = skin_body(p)
+    outer = _straight_body(tab_z - 1.0, tab_z + p.crown_tab_thickness + 1.0, p)
     for x, y in shroud_fastener_positions(p):
         tab = cq.Solid.makeCylinder(
             p.crown_tab_radius,
@@ -1736,7 +1776,7 @@ def _base_retention(base: cq.Shape, parameters: DesignParameters) -> cq.Shape:
     """Bolt the base segment down into the bottom service plate."""
     p = parameters
     retention_z = p.shell_retention_z
-    outer = skin_body(p)
+    outer = _straight_body(retention_z - 1.0, retention_z + 11.0, p)
     for x, y in cage_fastener_positions(p):
         boss = cq.Solid.makeCylinder(
             p.boss_outer_diameter / 2.0,

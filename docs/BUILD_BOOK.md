@@ -42,18 +42,26 @@ optional extras.
 
 # Phase 1 — Check your printer and buy the parts
 
-## Your printer must actually fit the shell
+## Your printer must actually fit the parts
 
-The outer shell is the limiting part at **192 x 212 x 189 mm**, printed
-upright. You therefore need **212 x 192 x 189 mm of genuinely usable travel**
-(X and Y may be swapped).
+The largest footprint belongs to `shell_base` at
+**188 x 188 mm**. The tallest part is
+`main_cabinet` at **183 mm**. Against the
+configured usable travel of **220 x 200 x
+250 mm** that leaves 32 mm and
+12 mm of edge margin.
 
-- A 220 x 220 x 200 mm printer works only if the whole bed is usable. That
-  leaves about 4 mm per long-side edge and limits the shell brim to 3 mm.
+The outer skin is deliberately split into three stacked segments so no single
+print is enormous. That keeps every part comfortably inside a common bed and
+means a failed print costs you one segment, not the whole body.
+
 - Purge lines, bed clips, and firmware exclusion zones all steal usable travel.
-  Measure what your machine really reaches before you commit.
-- Rotating the shell in-plane does not make it fit a 210 x 210 mm bed, and
-  printing it on its side is not supported.
+  Measure what your machine really reaches, then set `printing.build_volume_x`,
+  `_y` and `_z` in `config/default.yaml` to what you measured. The printability
+  gate reads those numbers and tests both in-plane rotations of every part, so
+  it will actually fail if something does not fit.
+- Printing a skin segment on its side is not supported: it puts support contact
+  on the cosmetic surface.
 
 You also need an enclosed printer, a 0.4 mm nozzle, and dry filament.
 
@@ -186,10 +194,12 @@ and print every file:
 | 06_WEIGHT_TRAY.3mf | 1 | ASA |
 | 07_WEIGHT_TRAY_LID.3mf | 1 | ASA |
 | 08_BOTTOM_ACCESS_PANEL.3mf | 1 | ASA |
-| 09_ELECTRONICS_COVER.3mf | 1 | ASA |
-| 10_OUTER_SHELL.3mf | 1 | ASA |
-| 11_FLEXIBLE_BOTTOM_GRIP_TPU.3mf | 1 | TPU 95A |
-| 12_LEAK_TEST_TOOL.3mf | 1 | ASA |
+| 09_MIC_ISOLATORS_TPU_PRINT_FOUR.3mf | 4 | TPU 95A |
+| 10_OUTER_SKIN_BOTTOM.3mf | 1 | ASA |
+| 11_OUTER_SKIN_MIDDLE_WITH_GRILLES.3mf | 1 | ASA |
+| 12_OUTER_SKIN_TOP.3mf | 1 | ASA |
+| 13_FLEXIBLE_BOTTOM_GRIP_TPU.3mf | 1 | TPU 95A |
+| 14_LEAK_TEST_TOOL.3mf | 1 | ASA |
 
 Note that the radiator clamp ring is the only part you print **twice**.
 
@@ -294,7 +304,7 @@ Stop as soon as the parts meet evenly. Do not keep turning "for luck".
 
 ![Build step 2: Install and cold-check all M3 inserts](IMAGES/assembly_stage_02_inserts.png)
 
-**You need:** main_cabinet, pressure_divider, base_skirt, ballast_cartridge, outer_shell
+**You need:** main_cabinet, pressure_divider, base_skirt, ballast_cartridge, skin segments
 
 **Screws:** H01 inserts   **Seal:** none   **Tools:** temperature-controlled iron; M3 insert tip; square
 
@@ -360,33 +370,33 @@ Stop as soon as the parts meet evenly. Do not keep turning "for luck".
 
 > Careful: The steel stack is heavy. Keep fingers clear and do not operate the unit without the retained lid and service plate.
 
-### Step 7 of 9 — Install and lock the outer shell
+### Step 7 of 9 — Stack the three outer skin segments
 
-![Build step 7: Install and lock the outer shell](IMAGES/assembly_stage_07_shell.png)
+![Build step 7: Stack the three outer skin segments](IMAGES/assembly_stage_07_shell.png)
 
-**You need:** outer_shell; lower assembly
+**You need:** shell_base, shell_grille, shell_crown; lower assembly
 
-**Screws:** F09, 4 screws with nylon washers   **Seal:** none   **Tools:** 2.0 mm hex
+**Screws:** F09, 4 screws with nylon washers; F02, 4 screws into the divider   **Seal:** none   **Tools:** 2.0 mm hex
 
-**Do this:** Align FRONT with -Y and slide the shell downward without touching either surround. Invert on a soft mat and install F09 through the bottom service plate into the shell bosses.
+**Do this:** Work bottom to top. Slide shell_base up over the cabinet with FRONT at -Y, invert on a soft mat, and install F09 through the bottom service plate into its four bosses. Stand the unit back up. Press shell_grille down onto the exposed lap until its outer face meets the segment below; the four crush ribs give a firm, even resistance and the joint closes on 0.15 mm of interference, so it should need hand pressure and stay put. Press shell_crown on the same way, then bolt it down onto the divider's four bosses with F02. Check that all three grille windows line up with the driver and both radiators.
 
-**It is right when:** Every slot is clear; shell has an even reveal and at least 2 mm moving-part clearance; no wire is visible near a cone.
+**It is right when:** Both seams show an even hairline shadow line all round with no step you can catch a fingernail on; no segment rocks or rattles when the body is tapped; at least 2 mm clearance from every clamp ring and surround; no wire visible through a window.
 
-> Careful: Stop if the shell contacts a clamp ring or surround. Do not flex the shell over an obstruction.
+> Careful: Do not force a segment on if it binds — lift it off and check for a stringing artefact on the lap or a crush rib that printed proud. Never flex a segment over an obstruction. The crown must be bolted to the divider before the official stack goes on, because its tabs sit underneath.
 
-### Step 8 of 9 — Install the shroud and official Batch 1 upper stack
+### Step 8 of 9 — Fit the mic isolators and the official Batch 1 upper stack
 
-![Build step 8: Install the shroud and official Batch 1 upper stack](IMAGES/assembly_stage_08_upper.png)
+![Build step 8: Fit the mic isolators and the official Batch 1 upper stack](IMAGES/assembly_stage_08_upper.png)
 
-**You need:** electronics_shroud; O01-O06 official prints; Batch 1 HAT/Core
+**You need:** mic_isolation_bushing x4; O01-O06 official prints; Batch 1 HAT/Core
 
-**Screws:** F01, F02, F10, and F11; 4 of each   **Seal:** none; electronics bay is outside the acoustic chamber   **Tools:** 2.0 mm hex; ESD-safe bench
+**Screws:** F01 (M3 x d4 shoulder screws, 16 mm shoulder), F10, F11; 4 of each   **Seal:** none; electronics bay is outside the acoustic chamber   **Tools:** 2.0 mm hex; ESD-safe bench
 
-**Do this:** Bolt the shroud to its four outboard bosses with F02. Seat O01 on the four measured divider bosses and install F01. Snap O06 into O05 (or use both O07/O08 during a multi-material O05 print; never install O06 and O08 together). Align O03's taller standoffs with the I/O side and locate the HAT. Install the Core/HAT using the official Batch 1 sequence. Align the logos and I/O on O04/O05, engage the snaps, and rotate the lock ring. Align O02's four nubs with O01 and keep I/O toward rear/+Y. Connect the keyed JST-XH speaker plug before closure.
+**Do this:** Press one TPU isolation bushing into each of the four divider counterbores, flange up. Seat O01 on the four bushing flanges — it must rest on elastomer, not on printed plastic. Install F01 and tighten until each shoulder bottoms firmly on the counterbore floor; the screw head then stops 0.3 mm above the plate and the plate stays floating on the TPU. Snap O06 into O05 (or use both O07/O08 during a multi-material O05 print; never install O06 and O08 together). Align O03's taller standoffs with the I/O side and locate the HAT. Install the Core/HAT using the official Batch 1 sequence. Align the logos and I/O on O04/O05, engage the snaps, and rotate the lock ring. Align O02's four nubs with O01 and keep I/O toward rear/+Y. Connect the keyed JST-XH speaker plug before closure.
 
-**It is right when:** Mid-plate sits on all four bosses; USB-C remains reachable; cable has service slack and cannot enter a moving-part envelope; buttons click and diffuser/LED apertures remain clear.
+**It is right when:** The official top sits flush with the surrounding flat top — you should feel a hairline, not a step or a lip. The upper stack has a barely perceptible give when pressed, which is the isolation working. USB-C remains reachable; cable has service slack and cannot enter a moving-part envelope; buttons click and diffuser/LED apertures remain clear.
 
-> Careful: Core placement is REQUIRES_PHYSICAL_VALIDATION. Follow the official Batch 1 instructions and stop at any collision; do not improvise a transform from the CAD envelope.
+> Careful: F01 must be M3 x d4 shoulder screws, not ordinary M3 screws. An ordinary screw clamps in parallel with the elastomer at roughly 35 times its stiffness, so the TPU carries under 3% of the load path and the isolation does nothing at all. If the plate feels rock solid, you have the wrong screws. Core placement is REQUIRES_PHYSICAL_VALIDATION: follow the official Batch 1 instructions and stop at any collision.
 
 ### Step 9 of 9 — Fit the anti-slip ring and complete inspection
 
@@ -423,6 +433,66 @@ version:
 Never use shop air on this enclosure, and never exceed 250 Pa.
 
 Stop using the unit if any check fails. Fix the cause and repeat the test.
+
+---
+
+# Optional — Wrapping the body in speaker cloth
+
+Entirely optional, and purely cosmetic: the enclosure is finished and airtight
+without it. Cloth hides every print seam and layer line, so the body reads as
+one continuous surface. The grille windows stay acoustically open underneath.
+
+**Decide before you print.** The wrap needs the `*_FOR_FABRIC` skin files, which
+are the same three segments with a concealed retention channel inside each roll.
+The standard files have no channel, because on a bare printed finish it reads as
+a horizontal line — exactly what this design exists to remove. You cannot add
+the channel later without reprinting.
+
+## What to buy
+
+- About 0.5 m of **acoustically transparent speaker grille cloth**. Stretch
+  knit intended for loudspeakers is right; upholstery fabric, canvas and
+  blackout linings are not.
+- **The breath test:** hold a single layer over your mouth and breathe out
+  hard. If you feel noticeable resistance, it will audibly dull the treble.
+  Anything you can breathe through freely is fine.
+- A small tube of **contact adhesive**. Not superglue, which wicks and stiffens.
+
+## Steps
+
+1. **Print the fabric variants.** From `PRINT_THESE_FILES/2_ULTRA_PARTS`, use
+   `10F`, `11F` and `12F` in place of `10`, `11` and `12`. Everything else is
+   unchanged.
+2. **Assemble the three segments first**, exactly as in phase 7, and bolt them
+   down. Wrapping before assembly puts a fabric edge inside a lap joint, which
+   will hold the seam open.
+3. **Cut a rectangle** about 30 mm taller than the body and long enough to go
+   right round plus 25 mm of overlap. Cut with the stretch running **around**
+   the body, not up it.
+4. **Find the overlap seam position.** Put it on the rear (+Y) face, which has
+   no grille window. It is the only part of the wrap you will be able to see.
+5. **Tension it evenly.** Work from the seam outward in both directions,
+   keeping the weave straight. A squircle shows tension variation at the corners
+   far more than a cylinder does, so check the weave stays square as it passes
+   each corner rather than pulling into a curve.
+6. **Tuck the top edge** into the channel under the top roll with a blunt
+   plastic tool. Do the whole perimeter before committing any adhesive.
+7. **Tuck the bottom edge** into the lower channel the same way, keeping the
+   vertical tension while you work.
+8. **Glue last, and only inside the channel.** A thin bead in the channel only.
+   Keep adhesive away from the grille windows: it stiffens the cloth locally and
+   changes its acoustic transparency, which you cannot undo.
+9. **Trim the overlap** flush at the rear seam once the adhesive has set.
+
+## Checks
+
+- The weave runs straight and square across all four faces, with no diagonal
+  pull at the corners.
+- All three grille windows are still visibly open cloth, with no adhesive
+  bleed and no stretched-thin patches.
+- The cloth still passes the breath test after wrapping. If tension has closed
+  it up over a window, it is too tight.
+- The anti-slip ring still seats on the base without trapping a fabric edge.
 
 ---
 

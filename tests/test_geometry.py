@@ -42,8 +42,19 @@ def test_manufactured_parts_are_valid_single_solids(name: str) -> None:
 @pytest.mark.geometry
 @pytest.mark.parametrize("name", sorted(PARTS))
 def test_every_part_fits_the_build_volume(name: str) -> None:
-    box = print_oriented(PARTS[name].builder(DEFAULT_PARAMETERS)).BoundingBox()
-    assert max(box.xlen, box.ylen, box.zlen) <= 256.0
+    """Per-axis, testing both in-plane rotations -- see PRINT-001.
+
+    The old form compared max(x, y, z) against a scalar 256, which cannot
+    represent a rectangular bed and passed a 192 x 212 mm shell that did not
+    fit the target machine.
+    """
+    p = DEFAULT_PARAMETERS
+    bed_x, bed_y, bed_z = p.build_volume_mm
+    box = print_oriented(PARTS[name].builder(p)).BoundingBox()
+    fits = (box.xlen <= bed_x and box.ylen <= bed_y) or (box.ylen <= bed_x and box.xlen <= bed_y)
+    assert fits and box.zlen <= bed_z, (
+        f"{name} is {box.xlen:.1f} x {box.ylen:.1f} x {box.zlen:.1f} mm"
+    )
 
 
 @pytest.mark.geometry
@@ -107,13 +118,26 @@ def test_every_clamp_insert_bore_clears_the_component_bore() -> None:
 
 @pytest.mark.geometry
 @pytest.mark.requires_official_assets
-def test_divider_seats_on_the_official_mid_plate_without_interference() -> None:
+def test_official_stack_lands_on_elastomer_not_on_the_divider() -> None:
+    """v2 inverts v1's requirement here, so the test has to invert with it.
+
+    In v1 the divider boss tops seated directly on the official mid-plate. In v2
+    that contact is precisely what must not exist: a rigid path there bypasses
+    the isolation bushings and lets the woofer shake the microphone array. The
+    bushing flanges carry the stack instead, and the divider stands clear.
+    """
     from satellite1_ultra.validation import _min_distance
 
+    p = DEFAULT_PARAMETERS
     divider = pressure_divider()
     mid_plate = load_part(MID_PLATE)
     assert divider.intersect(mid_plate).Volume() < 0.01
-    assert _min_distance(divider, mid_plate) == pytest.approx(0.0, abs=1e-6)
+    standoff = _min_distance(divider, mid_plate)
+    assert standoff >= 1.5, f"divider is only {standoff:.3f} mm below the official seat"
+
+    # The bushing flange top must land exactly on the official seating plane.
+    seat = p.official_interface_z + p.bushing_flange_thickness
+    assert seat == pytest.approx(-6.8, abs=1e-9)
 
 
 @pytest.mark.geometry
@@ -145,11 +169,16 @@ def test_section_matches_the_official_squircle() -> None:
 
     half = 55.0
     q = SECTION_EXPONENT / (SECTION_EXPONENT - 1.0)
-    # Support function of the superellipse, i.e. its extent at each angle.
-    for angle, expected in ((0.0, 55.000), (22.5, 62.699), (45.0, 66.102)):
+    # Support extents measured off the official lock ring at full width. Our
+    # curve must track these to within the documented 0.38 mm fit error; the
+    # corner is where the fit is loosest, which is why the official pocket is
+    # offset from the real outline rather than from this idealisation.
+    for angle, official in ((0.0, 55.000), (22.5, 62.453), (45.0, 66.114)):
         t = radians(angle)
         support = half * (abs(cos(t)) ** q + abs(sin(t)) ** q) ** (1.0 / q)
-        assert abs(support - expected) < 0.05, f"{angle} deg: {support:.3f} vs {expected}"
+        assert abs(support - official) < 0.38, (
+            f"{angle} deg: ours {support:.3f} vs official {official:.3f}"
+        )
 
 
 def test_section_prism_area_is_not_a_rounded_rectangle() -> None:
@@ -157,9 +186,9 @@ def test_section_prism_area_is_not_a_rounded_rectangle() -> None:
     prism = section_prism(152.0, 152.0, 10.0, 0.0)
     area = prism.Volume() / 10.0
     assert abs(area - section_area(76.0, 76.0)) < 1.0
-    # 0.927 of the bounding square for n = 4.13; a 20 mm-radius rounded
+    # 0.931 of the bounding square for n = 4.13; a 20 mm-radius rounded
     # rectangle of the same span would enclose about 0.985.
-    assert 0.92 < area / (152.0 * 152.0) < 0.94
+    assert 0.925 < area / (152.0 * 152.0) < 0.937
 
 
 def test_skin_segments_are_each_one_printable_solid() -> None:

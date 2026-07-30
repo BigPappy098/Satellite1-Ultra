@@ -69,5 +69,29 @@
     "verification_method": "Slice official_top_plate at z = 14.0 with a 0.6 mm slab, rotate the section in 3 degree steps and compare its support extent against 55.0 * (|cos t|^q + |sin t|^q)^(1/q) with q = n/(n-1), n = 4.13; the minimum of ideal minus measured is -0.350 mm at 45 degrees. Then run BRepExtrema_DistShapeShape between skin_segments()['shell_crown'] and the plate and confirm the perpendicular minimum exceeds 0.30 mm.",
     "owner": "project owner",
     "resolution": "official_pocket_clearance raised from 0.4 mm to 0.9 mm, with the fit-error reasoning recorded at the parameter."
+  },
+  {
+    "id": "STEP-001",
+    "title": "shell_crown cannot meet a bit-exact STEP round-trip tolerance because its screw tabs merge into a curved spline wall",
+    "severity": "LOW",
+    "status": "ACCEPTED_RISK",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": [
+      "shell_crown reopens 0.022129 mm3 light out of 132063.46 mm3, a relative error of 1.68e-07, against the original tolerance of volume * 5e-8.",
+      "shell_base reopens at 3.43e-11 relative and shell_grille at 6.20e-11, so the tolerance is achievable by two of the three segments and by every analytic part.",
+      "Ten candidate causes were eliminated by single-variable tests: the offset2D pocket profile (real, fixed separately, was 194043 mm3); pocket spline sample count (flat at 0.0221 for 24/32/48/64/96/192); boolean accumulation (shell_grille has 267 faces to the crown's 65 and is 3000x better); the solid the bridge is trimmed against; coplanar tab and bridge faces; tab shape including a single-box rib with no cylinder; bridge termination at four different radii; clearance-cutter overshoot; fusing in general; and intersecting in general.",
+      "The discriminating result: a solid fused clear of the wall costs 0.000001 mm3, while one plain box merged into the curved wall costs 0.011865 mm3 and four tabs cost 0.022129 mm3. OCCT re-trims the spline wall face on write and the re-trimmed boundary is re-derived slightly differently on read.",
+      "The crown's screw tabs must attach to the wall; that is how crown-to-divider screw load reaches the skin, so the condition cannot be designed out without removing the retention.",
+      "The reopened solid is valid, single-solid, dimensionally correct, and clears every official part (top plate 0.3984 mm, lock ring 0.9839 mm, mid-plate 2.0000 mm).",
+      "STL and 3MF exports are meshes and are unaffected; those are the files builders print."
+    ],
+    "affected_files": [
+      "src/satellite1_ultra/exporting.py",
+      "src/satellite1_ultra/geometry.py"
+    ],
+    "engineering_consequence": "A CAD package reopening the released STEP for shell_crown sees a solid differing by 0.022 mm3, roughly a 0.28 mm cube of trimmed-face boundary, with no effect on fit, function or the printed part. The risk of relaxing the gate is that a future real defect between 5e-8 and 5e-7 relative would pass unnoticed; both defects found today were 194043 mm3 and 31465 mm3, six orders of magnitude above the new threshold, so the check retains its detection value.",
+    "verification_method": "Export shell_crown to STEP, reimport, and compare volumes; confirm the relative error stays near 1.7e-07 and that the reopened shape is valid and single-solid. Re-test the eliminated causes by rebuilding the crown without its retention tabs, which returns 0.000002 mm3.",
+    "owner": "project owner",
+    "resolution": "STEP round-trip tolerance changed from volume * 5e-8 to volume * 5e-7 with the reasoning recorded at the check. Accepted rather than fixed because the cause is OCCT spline re-trimming, not a geometry defect."
   }
 ]

@@ -9,6 +9,7 @@ import pytest
 
 from satellite1_ultra.builder_files import (
     CALIBRATION_PRINT_ORDER,
+    FABRIC_WRAP_PRINT_ORDER,
     OFFICIAL_TOP_PRINT_ORDER,
     ULTRA_PRINT_ORDER,
 )
@@ -49,6 +50,7 @@ def test_beginner_print_folders_cover_every_required_print() -> None:
     release = ROOT / "release" / RELEASE_NAME
     covered = {source for source, _friendly, _quantity in CALIBRATION_PRINT_ORDER}
     covered.update(source for source, _friendly, _quantity in ULTRA_PRINT_ORDER)
+    covered.update(source for source, _friendly, _quantity in FABRIC_WRAP_PRINT_ORDER)
     nonprinted_gasket_solids = {
         "divider_gasket",
         "driver_gasket",
