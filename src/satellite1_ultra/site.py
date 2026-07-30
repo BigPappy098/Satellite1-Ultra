@@ -8,6 +8,7 @@ site cannot drift away from what is actually shipped.
 
 from __future__ import annotations
 
+import json
 import shutil
 from html import escape
 from pathlib import Path
@@ -31,6 +32,26 @@ PAGES = (
     ("parts.html", "3 · Get parts"),
     ("assemble.html", "4 · Build it"),
 )
+
+
+def _printer_limits(root: Path) -> dict[str, float]:
+    """Largest footprint and tallest part, read from the printability report.
+
+    Taken from the gate's own output rather than retyped, so the figure on the
+    site is the figure the release was checked against. Reading the report keeps
+    the site build fast; recomputing would rebuild all 28 B-reps.
+    """
+    report = json.loads(
+        (root / "reports" / "validation" / "printability.json").read_text(encoding="utf-8")
+    )
+    long_mm = short_mm = tall_mm = 0.0
+    for part in report["parts"]:
+        x, y, z = (float(v) for v in part["bounds_mm"])
+        long_side, short_side = max(x, y), min(x, y)
+        if long_side * short_side > long_mm * short_mm:
+            long_mm, short_mm = long_side, short_side
+        tall_mm = max(tall_mm, z)
+    return {"long_mm": long_mm, "short_mm": short_mm, "tallest_mm": tall_mm}
 
 
 def _shell(current: str, title: str, body: str) -> str:
@@ -83,58 +104,87 @@ def _file_table(rows: list[tuple[str, int, str]], folder: str) -> str:
     )
 
 
-def _index() -> str:
-    body = """
-<h1>Let's build your Satellite1 Ultra</h1>
-<p class="lede">A big-sounding speaker for your Satellite1 voice assistant.
-Follow these four steps in order. You only ever download part files.</p>
+def _index(req: dict[str, float]) -> str:
+    body = f"""
+<h1>Let\u2019s build your Satellite1 Ultra</h1>
+<p class="lede">Your Satellite1 keeps its microphones, its buttons and its
+lights. Everything below them gets replaced by a sealed, weighted cabinet with a
+real 3.5&nbsp;inch driver and a passive radiator on each side.</p>
 
 <img src="images/assembly_iso.png" alt="The finished Satellite1 Ultra">
 
-<div class="warn"><strong>Read this one thing first</strong>
-Do not print the big parts yet. Print eight small test pieces first, so we can
-check how your printer really behaves. Skipping this wastes days of filament.</div>
+<p>It is built from the official squircle\u2019s own curve, so the Satellite1 top
+sits flush in a single flat surface rather than perched on a shoulder. Assembled,
+it reads as one object. Nothing is glued \u2014 every part comes back apart with a
+hex key.</p>
 
-<h2>The four steps</h2>
+<div class="warn"><strong>The one thing that matters most</strong>
+<p>Do not print the big parts first. Print the eight small test pieces, measure
+them, and let us size your files to the printer you actually own.</p>
+<p>Skipping this is how people lose four days of ASA to a cabinet that will not
+seal. The test pieces take an evening.</p></div>
 
-<div class="step"><h3><span class="num">1</span>Print eight small test pieces</h3>
-<p>They are small and quick. They tell us exactly how your printer prints.</p>
-<a class="btn" href="print-tests.html">Start step 1</a></div>
+<h2>How this goes</h2>
 
-<div class="step"><h3><span class="num">2</span>Measure them, type in the numbers</h3>
-<p>We show you exactly where to put the calipers, and exactly which box to type
-the number into. No maths for you to do.</p>
-<a class="btn" href="calibrate.html">Go to step 2</a></div>
+<div class="step"><h3><span class="num">01</span>Print eight test pieces</h3>
+<p>Small, quick, and they tell us exactly how your printer lays down plastic \u2014
+holes, inserts, seats, gaskets.</p>
+<a class="btn" href="print-tests.html">Start here</a></div>
 
-<div class="step"><h3><span class="num">3</span>Get your parts</h3>
-<p>If your printer is spot on, you download the normal parts. If it is a little
-off, we make a corrected set that fits <em>your</em> printer.</p>
-<a class="btn" href="parts.html">Go to step 3</a></div>
+<div class="step"><h3><span class="num">02</span>Measure them</h3>
+<p>We show you where to put the calipers and which box to type each number into.
+No arithmetic on your side.</p>
+<a class="btn blue" href="calibrate.html">Measuring guide</a></div>
 
-<div class="step"><h3><span class="num">4</span>Build it</h3>
-<p>Nine steps with a picture for each one. Nothing is glued, so you can always
-open it again.</p>
-<a class="btn" href="assemble.html">Go to step 4</a></div>
+<div class="step"><h3><span class="num">03</span>Get your parts</h3>
+<p>Printer dead on? Download the standard files. A little off? We generate a set
+corrected for <em>your</em> machine.</p>
+<a class="btn blue" href="parts.html">Part files</a></div>
 
-<h2>Before you spend any money</h2>
-<div class="note"><strong>Check these three things</strong>
+<div class="step"><h3><span class="num">04</span>Build it</h3>
+<p>Nine steps, one picture each, in the order that actually works. Wrap it in
+speaker cloth at the end if you want to.</p>
+<a class="btn blue" href="assemble.html">Assembly steps</a></div>
+
+<h2>Before you spend anything</h2>
+<div class="note"><strong>Three things to check</strong>
 <ul>
-<li><b>Your kit:</b> a FutureProofHomes Satellite1 <b>Batch 1</b> (Core rev4.1 and
-HAT rev4.1). Satellite1.1 / Batch 2 does not fit.</li>
-<li><b>Your printer:</b> it must really reach <b>184 &times; 184 mm</b> of bed and
-about <b>150 mm</b> of height. The outer skin is split into three stacked
-segments, so nothing you print is enormous and a failed print costs you one
-segment instead of the whole body.</li>
-<li><b>Your filament:</b> ASA for the hard parts (PETG also works), and TPU 95A
-for two bendy parts.</li>
+<li><b>Your kit.</b> A FutureProofHomes Satellite1 <b>Batch 1</b> \u2014 Core
+rev4.1 with HAT rev4.1. Batch 2 / Satellite1.1 will not fit, and there is no
+workaround in this design.</li>
+<li><b>Your printer.</b> You need <b>{req["long_mm"]:.0f} &times;
+{req["short_mm"]:.0f}&nbsp;mm</b> of usable bed and <b>{req["tallest_mm"]:.0f}&nbsp;mm</b>
+of height. The outer skin is three stacked segments rather than one tall shell,
+so a failed print costs you one segment, not the whole body.</li>
+<li><b>Your filament.</b> ASA for the rigid parts, PETG if you prefer. A little
+TPU 95A for the flexible ones. You want an enclosed printer and dry filament \u2014
+ASA will warp otherwise, and a warped cabinet will not seal.</li>
 </ul></div>
 
-<p>You will also buy one Dayton ND91-4 speaker, two SB Acoustics SB12PACR-00
-passive radiators, M3 screws and heat-set inserts, a sheet of 2&nbsp;mm foam, and
-two steel plates. The full shopping list is in
-<a href="parts.html#shopping">step 3</a>.</p>
+<p>You will also need one Dayton ND91-4 driver, two SB Acoustics SB12PACR-00
+radiators, M3 screws and heat-set inserts, <b>M3&nbsp;&times;&nbsp;\u23004
+shoulder screws with a 16&nbsp;mm shoulder</b>, a sheet of 2&nbsp;mm closed-cell
+foam, and two 6&nbsp;mm steel plates. Full list in
+<a href="parts.html#shopping">step&nbsp;3</a>.</p>
 
-<p class="next"><a class="btn" href="print-tests.html">Start step 1 &rarr;</a></p>
+<div class="warn"><strong>Read this before you order screws</strong>
+<p>The four screws holding the Satellite1 top must be <b>shoulder screws</b>, not
+ordinary M3. The shoulder bottoms out and lets the top float on rubber bushings,
+which keeps the woofer from shaking your microphones.</p>
+<p>With ordinary screws the rubber carries under 3% of the load and does nothing
+at all. If the top feels rock solid, you have the wrong screws.</p></div>
+
+<h2>Where this honestly stands</h2>
+<p>Nobody has built one yet. The geometry, clearances, seals and volumes all pass
+a strict set of automated checks, and every part has been measured against every
+other part \u2014 but no one has printed a whole one, sealed it, and put a
+microphone in front of it.</p>
+<p>So fit, sealing, sound, heat and wake-word behaviour are all still unproven.
+Your checks along the way are not extra credit; they are the first real evidence
+this design works. If something does not fit, that is genuinely useful \u2014 please
+open an issue.</p>
+
+<p class="next"><a class="btn" href="print-tests.html">Print the test pieces</a></p>
 """
     return _shell("index.html", "Start", body)
 
@@ -145,19 +195,22 @@ def _print_tests() -> str:
         for source, filename, quantity in CALIBRATION_PRINT_ORDER
     ]
     body = f"""
-<h1>Step 1 — Print eight small test pieces</h1>
-<p class="lede">These are small and fast. They exist so you find out how your
-printer really behaves <em>before</em> you spend days printing the big parts.</p>
+<h1>Print eight test pieces</h1>
+<p class="lede">Small, fast, and the whole point: you find out how your printer
+behaves before you commit days of filament to a cabinet that has to be airtight.</p>
 
-<div class="warn"><strong>Print these, and only these, right now</strong>
-Do not print the enclosure yet. It will very likely not fit until step 2 is done.</div>
+<div class="warn"><strong>These eight, nothing else, not yet</strong>
+<p>Do not print the enclosure now. Every printer lays down plastic slightly
+differently, and this design has heat-set inserts, gasket lands and press-fit
+seats that all care about a few tenths of a millimetre.</p></div>
 
-<h2>Download and print</h2>
+<h2>The files</h2>
 {_file_table(rows, "1_CALIBRATION_FIRST")}
 
-<div class="step"><h3><span class="num">A</span>Use these printer settings</h3>
-<p>Use the <b>same settings you will use for the real parts</b>. That is the whole
-point: we are measuring your printer, not the file.</p>
+<div class="step"><h3><span class="num">01</span>Use your real settings</h3>
+<p>Print these with the <b>exact settings you will use for the actual parts</b>.
+That is the point — we are measuring your printer, not the file. Change the
+settings later and the measurements stop meaning anything.</p>
 <ul>
 <li>0.4 mm nozzle, 0.20 mm layers</li>
 <li>5 walls, 6 top and 6 bottom layers, 35% gyroid infill</li>
@@ -167,19 +220,21 @@ point: we are measuring your printer, not the file.</p>
 <li>PETG instead: 235–250 °C nozzle, 75–85 °C bed</li>
 </ul></div>
 
-<div class="step"><h3><span class="num">B</span>Print them one at a time</h3>
-<p>One piece per print. The last one on the list is the bendy TPU seal, so load
-TPU for that one.</p></div>
+<div class="step"><h3><span class="num">02</span>One at a time</h3>
+<p>One piece per print, so a failure costs you minutes. The last file on the list
+is the flexible cable seal, so load TPU for that one.</p></div>
 
-<div class="step"><h3><span class="num">C</span>Let them cool, then clean them up</h3>
-<p>Snap off the brim. Remove any stringy bits. <b>Do not sand anything</b> — if a
-piece is wrong we fix it with numbers, not sandpaper.</p></div>
+<div class="step"><h3><span class="num">03</span>Cool, then clean up carefully</h3>
+<p>Snap off the brim and pick off any stringing. Then stop.</p>
+<p><b>Do not sand, file or ream anything.</b> A piece that came out wrong is
+information, and we correct it with numbers. Sand it to fit and you have thrown
+away the measurement — and the real parts will still be wrong.</p></div>
 
-<div class="ok"><strong>When all eight are printed</strong>
-Grab your digital calipers and go to step 2. We will walk you through every
-single measurement.</div>
+<div class="ok"><strong>All eight printed?</strong>
+<p>Get your digital calipers. The next page walks you through every measurement,
+one at a time, and tells you what each one means.</p></div>
 
-<p class="next"><a class="btn" href="calibrate.html">I've printed them — go to step 2 &rarr;</a></p>
+<p class="next"><a class="btn" href="calibrate.html">Measure them</a></p>
 """
     return _shell("print-tests.html", "Test prints", body)
 
@@ -204,13 +259,23 @@ def _measurement_card(
 
 def _calibrate() -> str:
     body = f"""
-<h1>Step 2 — Measure your test pieces</h1>
-<p class="lede">Type each number in the box under its picture. We do the maths.
-Green means good. Red tells you what to fix.</p>
+<h1>Measure your test pieces</h1>
+<p class="lede">Type each number into the box under its picture. We handle the
+arithmetic. Green means that dimension is fine; red tells you exactly what to
+change.</p>
 
-<div class="note"><strong>You need</strong>
-Digital calipers that read to 0.01 mm, one M3 screw, one heat-set insert, your
-real speaker and one radiator, and a strip of your foam sheet.</div>
+<div class="note"><strong>Have these to hand</strong>
+<p>Digital calipers reading to 0.01 mm, one M3 screw, one heat-set insert, your
+actual driver and one radiator, and a strip of your foam sheet.</p>
+<p>Measure the real components, not the numbers on their datasheets. Tolerances
+are why this page exists.</p></div>
+
+<div class="note"><strong>Nothing you type here leaves your browser</strong>
+<p>This page does the whole calculation locally. No account, no upload, no
+tracking; the correction code at the bottom is simply your numbers, encoded.</p>
+<p>One caveat, so it is not a surprise: if step 3 sends you to Colab to generate
+corrected parts, you paste that code into Google\u2019s service at that point. The
+code contains printer measurements and nothing else.</p></div>
 
 {
         _measurement_card(
@@ -374,16 +439,15 @@ def _parts() -> str:
         (filename, quantity, "ASA") for _source, filename, quantity in OFFICIAL_TOP_PRINT_ORDER
     ]
     body = f"""
-<h1>Step 3 — Get your parts</h1>
-<p class="lede">Two ways to get here. Pick the one that matches what step 2 told you.</p>
+<h1>Get your parts</h1>
+<p class="lede">Two routes. Take whichever one the measuring page sent you down.</p>
 
-<div class="step"><h3><span class="num">A</span>Step 2 said your printer is spot on</h3>
-<p>Lucky you. Download the normal parts straight from the tables below and start
-printing. Nothing else to do.</p></div>
+<div class="step"><h3><span class="num">01</span>Your printer came out dead on</h3>
+<p>Then you are done here. Download the standard files below and start printing.</p></div>
 
-<div class="step"><h3><span class="num">B</span>Step 2 gave you a code</h3>
-<p>Your printer needs small corrections, which is completely normal. We will make
-a set of parts sized for <em>your</em> printer. You do not install anything.</p>
+<div class="step"><h3><span class="num">02</span>You have a correction code</h3>
+<p>Normal, and nothing to worry about — most printers need a few tenths. We
+generate a set of parts sized for your machine. You install nothing.</p>
 <ol>
 <li>Click the button below. It opens a free Google Colab page.</li>
 <li>Paste your code into the one box at the top.</li>
@@ -394,28 +458,35 @@ a set of parts sized for <em>your</em> printer. You do not install anything.</p>
 <p class="help">You need a free Google account, because that is what runs the
 calculation. Nothing is installed on your computer.</p></div>
 
-<div class="warn"><strong>Reprint your test pieces</strong>
-If you entered a correction, print the affected test piece again from your new
-files and re-check it before printing anything big.</div>
+<div class="warn"><strong>Check the correction worked</strong>
+<p>If you entered a correction, reprint the test piece it applied to from your
+<em>new</em> files and measure it again. Two minutes now, versus finding out on a
+six-hour cabinet print.</p></div>
 
-<h2>The enclosure parts</h2>
-<p>Print every file here. Only one of them needs printing twice.</p>
+<h2>The enclosure</h2>
+<p>Print everything in this table. The quantity column matters — two of the
+files need printing more than once.</p>
 {_file_table(ultra, "2_ULTRA_ENCLOSURE_PARTS")}
 
-<div class="note"><strong>About the outer skin</strong>
-The skin is three parts that stack: <code>10_OUTER_SKIN_BOTTOM.3mf</code>,
-<code>11_OUTER_SKIN_MIDDLE_WITH_GRILLES.3mf</code> and
-<code>12_OUTER_SKIN_TOP.3mf</code>. They interlock and pull together, and the
-joint shows as a thin shadow line rather than a step. Print all three upright
-except the bottom one, which goes on the bed cut-face down.
-<br><br>
-<strong>Wrapping it in cloth?</strong> Use the <code>10F</code>, <code>11F</code>
-and <code>12F</code> files instead — same parts with a hidden channel to tuck
-the fabric edge into. Decide now: you cannot add the channel later.</div>
+<div class="note"><strong>The outer skin is three parts</strong>
+<p>They stack and interlock: <code>10_OUTER_SKIN_BOTTOM</code>,
+<code>11_OUTER_SKIN_MIDDLE_WITH_GRILLES</code>, <code>12_OUTER_SKIN_TOP</code>.
+Small ribs inside each joint give a firm press fit, so the seam closes to a thin
+shadow line rather than a step you can feel.</p>
+<p>Print the middle and top upright. Print the bottom one <b>inverted</b>, cut
+face down on the bed — that keeps its curved base off the plate.</p></div>
 
-<h2>The Satellite top parts</h2>
-<p>These six are the original Satellite1 top. They are not optional — they hold
-your buttons, lights and microphones.</p>
+<div class="note"><strong>Thinking about wrapping it in cloth?</strong>
+<p>Then print <code>10F</code>, <code>11F</code> and <code>12F</code> instead of
+<code>10</code>, <code>11</code> and <code>12</code>. Same parts, with a hidden
+channel inside each roll to tuck the fabric edge into.</p>
+<p><b>Decide before you print.</b> The channel cannot be added afterwards, and
+the standard files deliberately do not have it — on a bare printed finish it
+reads as a line across the body.</p></div>
+
+<h2>The Satellite1 top</h2>
+<p>These six are the original FutureProofHomes parts, unmodified. Not optional —
+they carry your buttons, your light ring and your microphones.</p>
 {_file_table(official, "3_SQUIRCLE_TOP_PARTS")}
 
 <div class="warn"><strong>Do not print these three old parts</strong>
@@ -465,26 +536,40 @@ def _assemble() -> str:
         if row["id"] != "G04"
     )
     body = f"""
-<h1>Step 4 — Build it</h1>
-<p class="lede">Nine steps, in this order, with a picture for each. Nothing is
-glued — every joint is a screw, so you can open it again later.</p>
+<h1>Build it</h1>
+<p class="lede">In this order, with a picture for each step. Nothing is glued —
+every joint is a screw into a heat-set insert, so you can open it again whenever
+you want.</p>
 
-<div class="note"><strong>How tight?</strong>
-Use the <b>short end</b> of the 2 mm hex key. Stop as soon as the parts meet
-evenly. These are screws going into plastic — over-tightening strips them.
-Never "give it one more turn for luck".</div>
+<div class="note"><strong>How tight is tight enough</strong>
+<p>Hold the <b>short end</b> of the hex key, not the long one. That limits your
+leverage, which is the point. Stop the moment the parts meet evenly.</p>
+<p>These are screws going into brass inserts in plastic. There is no "one more
+turn for luck" — there is only stripping the insert out of the part.</p></div>
 
-<h2>First: cut your three foam seals</h2>
-<p>These are not printed. You cut them from your foam sheet using the printed
-templates. Print each template at <b>exactly 100% scale</b> — turn off
-"fit to page" — then check it against a ruler before cutting.</p>
+<div class="warn"><strong>Four of the screws are special</strong>
+<p>The ones holding the Satellite1 top are <b>M3 × ⌀4 shoulder screws with a
+16 mm shoulder</b>. Tighten those until the shoulder bottoms out firmly — the
+head then stops just clear of the plate, leaving it floating on rubber. That gap
+is deliberate and it is what stops the woofer shaking your microphones.</p>
+<p>If the top ends up rock solid with no give at all, you have ordinary M3 screws
+in there and the isolation is doing nothing.</p></div>
+
+<h2>First, cut your three foam seals</h2>
+<p>These are the only parts you do not print. You cut them from your foam sheet
+using the templates below. Print each template at <b>exactly 100% scale</b> —
+turn off "fit to page", then measure it against a ruler before you cut anything.
+A template printed at 97% will produce a seal that looks fine and leaks.</p>
 <table><tr><th>ID</th><th>Seal</th><th>How many</th><th>Template</th></tr>{gasket_rows}</table>
-<p>Each one must be a <b>single unbroken ring</b>. Do not join pieces together.</p>
+<p>Each seal must be a <b>single unbroken ring</b>. Do not butt two pieces
+together to make up a length — a sealed cabinet is either sealed or it isn't, and
+a join is the place it won't be.</p>
 <img src="images/gasket_placement.png" alt="Where each seal sits">
 
-<h2>Lay everything out first</h2>
-<p>Put every part on a table and check it off. This picture names every single
-piece and tells you which file it came from.</p>
+<h2>Lay it all out first</h2>
+<p>Worth ten minutes: put every part on the table and check it against this
+picture, which names each piece and the file it came from. Finding a missing part
+now is much better than finding it with a cabinet half-sealed.</p>
 <img src="images/exploded_parts_identification.png" alt="Every part, named">
 <p>The screws all look similar, so sort them by length before you start.</p>
 <img src="images/fastener_identification.png" alt="Screw lengths">
@@ -556,7 +641,7 @@ def generate_site(output: Path = ROOT / "site", root: Path = ROOT) -> list[Path]
 
     written: list[Path] = []
     pages = {
-        "index.html": _index(),
+        "index.html": _index(_printer_limits(root)),
         "print-tests.html": _print_tests(),
         "calibrate.html": _calibrate(),
         "parts.html": _parts(),
