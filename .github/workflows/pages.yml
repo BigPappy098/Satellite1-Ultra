@@ -1,0 +1,54 @@
+name: Publish calibration wizard
+
+# Serves wizard/ as a GitHub Pages site so builders can use the calibration
+# wizard without cloning the repository or installing anything.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "wizard/**"
+      # The site is generated from the geometry, the docs and the exports, so a
+      # design change has to redeploy it. Filtering on site.py alone meant a
+      # geometry change could silently leave the published pages describing the
+      # previous design.
+      - "src/satellite1_ultra/**"
+      - "config/**"
+      - "docs/**"
+      - "exports/**"
+      - "reports/renders/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Gmsh runtime library
+        run: sudo apt-get update && sudo apt-get install --yes libglu1-mesa
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --require-hashes -r requirements.lock
+      - run: python -m pip install --no-deps -e .
+      # Assembles the pages and copies in the current renders.
+      - run: python -m satellite1_ultra site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -171,7 +171,24 @@ BATCH2_CORE = OfficialPart(
     placement_evidence="REQUIRES_PHYSICAL_VALIDATION",
 )
 
-UPPER_STACK = (MID_PLATE, MID_PLATE_THREADS, TOP_PLATE, PCB_SPACER, LOCK_RING)
+#: O06 snaps into the single-material top plate.  It is a required print, so it
+#: belongs in the assembly and in every clearance and collision gate; leaving it
+#: out meant builders fitted a part the CAD had never checked in place.
+TOP_PLATE_SNAP_IN_DIFFUSER_RING = OfficialPart(
+    "official_top_plate_snap_in_diffuser_ring",
+    f"{_SQUIRCLE}/STEP/Squircle Top/Top Plate Snap-In Diffuser Ring.step",
+    (0.88, 0.89, 0.91, 1.0),
+    mesh_path=f"{_SQUIRCLE}/STL/Squircle Top/Top Plate Snap-In Diffuser Ring.stl",
+)
+
+UPPER_STACK = (
+    MID_PLATE,
+    MID_PLATE_THREADS,
+    TOP_PLATE,
+    PCB_SPACER,
+    LOCK_RING,
+    TOP_PLATE_SNAP_IN_DIFFUSER_RING,
+)
 
 _SQUIRCLE_STL = f"{_SQUIRCLE}/STL"
 _SQUIRCLE_STEP = f"{_SQUIRCLE}/STEP"

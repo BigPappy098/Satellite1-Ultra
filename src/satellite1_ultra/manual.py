@@ -233,6 +233,46 @@ def _inline(text: str) -> str:
     return escaped
 
 
+#: A Markdown thematic break, which must render as a rule and never as text.
+_RULE = re.compile(r"-{3,}|\*{3,}|_{3,}")
+
+
+def _continued(lines: list[str], index: int, first: str) -> tuple[str, int]:
+    """Join a block's wrapped continuation lines into one paragraph.
+
+    Markdown wraps prose across source lines; without this, every wrapped
+    bullet renders as a bullet followed by an orphan paragraph.
+    """
+    parts = [first]
+    while index + 1 < len(lines):
+        following = lines[index + 1].rstrip()
+        if not following or following.startswith(("#", "|", "!", ">", "```")):
+            break
+        if re.match(r"^[-*] |^\d+\. ", following) or _RULE.fullmatch(following):
+            break
+        parts.append(following)
+        index += 1
+    return " ".join(parts), index
+
+
+def _horizontal_rule() -> Table:
+    """A thin full-width divider between major sections."""
+    return Table(
+        [[""]],
+        colWidths=[176 * mm],
+        rowHeights=[0.4 * mm],
+        style=TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#c8ccd1")),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ]
+        ),
+    )
+
+
 def _page_number(canvas: Any, document: Any) -> None:
     canvas.saveState()
     canvas.setFont("Helvetica", 7.5)
@@ -330,10 +370,18 @@ def _markdown_pdf(source: Path, output: Path, root: Path) -> Path:
             story.append(Paragraph(_inline(line[3:]), styles["h1"]))
         elif line.startswith("### "):
             story.append(Paragraph(_inline(line[4:]), styles["h2"]))
+        elif _RULE.fullmatch(line):
+            story.append(_horizontal_rule())
         elif line.startswith("> "):
+            # Gather the whole quote: one warning is one box, however many
+            # source lines it wraps across.
+            quote = [line[2:]]
+            while index + 1 < len(lines) and lines[index + 1].rstrip().startswith("> "):
+                index += 1
+                quote.append(lines[index].rstrip()[2:])
             story.append(
                 Table(
-                    [[Paragraph(_inline(line[2:]), styles["body"])]],
+                    [[Paragraph(_inline(" ".join(quote)), styles["body"])]],
                     colWidths=[176 * mm],
                     style=TableStyle(
                         [
@@ -348,20 +396,14 @@ def _markdown_pdf(source: Path, output: Path, root: Path) -> Path:
                 )
             )
         elif re.match(r"^[-*] ", line):
-            story.append(Paragraph("• " + _inline(line[2:]), styles["body"]))
+            text, index = _continued(lines, index, line[2:])
+            story.append(Paragraph("• " + _inline(text), styles["body"]))
         elif re.match(r"^\d+\. ", line):
-            story.append(Paragraph(_inline(line), styles["body"]))
+            text, index = _continued(lines, index, line)
+            story.append(Paragraph(_inline(text), styles["body"]))
         elif line:
-            paragraph = [line]
-            while index + 1 < len(lines):
-                following = lines[index + 1].rstrip()
-                if not following or following.startswith(("#", "|", "!", ">", "```")):
-                    break
-                if re.match(r"^[-*] |^\d+\. ", following):
-                    break
-                paragraph.append(following)
-                index += 1
-            story.append(Paragraph(_inline(" ".join(paragraph)), styles["body"]))
+            text, index = _continued(lines, index, line)
+            story.append(Paragraph(_inline(text), styles["body"]))
         else:
             story.append(Spacer(1, 1.5 * mm))
         index += 1
@@ -385,10 +427,10 @@ def build_manuals(
 ) -> list[Path]:
     """Build the complete user-facing PDF set from current generated guides."""
     mapping = {
-        "BEGINNER_BUILD_GUIDE.md": "BUILD_SATELLITE1_ULTRA_FOR_BEGINNERS.pdf",
-        "START_HERE.md": "START_HERE.pdf",
-        "CALIBRATION_GUIDE.md": "START_HERE_CALIBRATION_GUIDE.pdf",
+        "BUILD_BOOK.md": "SATELLITE1_ULTRA_BUILD_BOOK.pdf",
+        "CALIBRATION_GUIDE.md": "CALIBRATION_GUIDE.pdf",
         "PRINTING_GUIDE.md": "PRINTING_GUIDE.pdf",
+        "HARDWARE_AND_MATERIALS_GUIDE.md": "HARDWARE_AND_MATERIALS_GUIDE.pdf",
         "ASSEMBLY_GUIDE.md": "ASSEMBLY_GUIDE.pdf",
         "TESTING_AND_COMMISSIONING_GUIDE.md": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
         "MAINTENANCE_GUIDE.md": "MAINTENANCE_GUIDE.pdf",

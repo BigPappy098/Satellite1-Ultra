@@ -21,17 +21,17 @@ printer, use O05 plus O06 and ignore the optional folder.
 
 ## Minimum printer volume
 
-- Limiting part: `outer_shell.3mf`, exactly 192.0 x 212.0 x 189.0 mm in its
-  required upright orientation.
-- Absolute usable travel: 212 x 192 x 189 mm (X/Y may be swapped).
-- Practical minimum: 220 x 220 x 200 mm only when the full 220 mm is usable;
-  this leaves 4 mm per long-side edge and limits the shell brim to 3 mm.
-- If purge lines, bed clips, firmware exclusions, or a wider shell brim reduce
-  usable travel below 218 mm, use a larger printer. A 230 mm bed is preferable,
-  but it is not the geometric minimum.
-- In-plane rotation cannot fit the shell on a 210 x 210 mm bed. Side printing
-  is unsupported because it creates extensive support contact and degrades
-  slots and cosmetic surfaces.
+- Largest footprint: `shell_base`, 188.0 x
+  188.0 mm in its documented orientation.
+- Tallest part: `main_cabinet`, 182.8 mm.
+- Configured usable travel: 220 x 200 x
+  250 mm, leaving 32.0 mm and
+  12.0 mm of edge margin.
+- These figures are computed from the released B-reps every time this guide is
+  generated, and the printability gate enforces them per axis against both
+  in-plane rotations. Set your own measured travel in `config/default.yaml`
+  under `printing.build_volume_*`.
+- Side printing is unsupported: it places support contact on cosmetic surfaces.
 
 ## Authoritative slicer baseline
 
@@ -53,10 +53,15 @@ printer, use O05 plus O06 and ignore the optional folder.
 | Group | Filename | Qty | Material | Face/orientation | Supports | Brim | Difficulty | Calibration |
 |---|---|---|---|---|---|---|---|---|
 | cosmetic | anti_slip_ring.3mf | 1 | TPU 95A | flat | none | none | 2/5 | yes |
-| cosmetic | outer_shell.3mf | 1 | ASA | upright, base band on the bed | none | 3 mm maximum on a 220 mm bed | 5/5 | yes |
+| cosmetic | shell_base.3mf | 1 | ASA | inverted, cut face on the bed | none | 3 mm | 2/5 | yes |
+| cosmetic | shell_grille.3mf | 1 | ASA | upright, lower cut face on bed | none | 3 mm | 2/5 | yes |
+| cosmetic | shell_crown.3mf | 1 | ASA | upright, flat top uppermost | none | 3 mm | 2/5 | yes |
+| cosmetic | shell_base_fabric.3mf | 1 | ASA | inverted, cut face on the bed | none | 3 mm | 2/5 | yes |
+| cosmetic | shell_grille_fabric.3mf | 1 | ASA | upright, lower cut face on bed | none | 3 mm | 2/5 | yes |
+| cosmetic | shell_crown_fabric.3mf | 1 | ASA | upright, flat top uppermost | none | 3 mm | 2/5 | yes |
 | structural | main_cabinet.3mf | 1 | ASA | upright, acoustic floor on bed | none | 10 mm | 4/5 | yes |
 | structural | pressure_divider.3mf | 1 | ASA | flat, acoustic face on bed | none | none | 2/5 | yes |
-| cosmetic | electronics_shroud.3mf | 1 | ASA | wide divider end on bed | none | none | 2/5 | yes |
+| structural | mic_isolation_bushing.3mf | 4 | TPU 95A | flange face on bed | none | none | 2/5 | yes |
 | structural | active_driver_clamp_ring.3mf | 1 | ASA | lip face on bed | none | none | 2/5 | yes |
 | structural | passive_radiator_clamp_ring.3mf | 2 | ASA | lip face on bed | none | none | 2/5 | yes |
 | calibration | cable_gland.3mf | 1 | TPU 95A | body end on bed | none | 5 mm | 2/5 | first |
@@ -85,13 +90,23 @@ The 3MF files already store millimetres and the documented orientation.
 
 ![anti_slip_ring print orientation](IMAGES/print_orientation_anti_slip_ring.png)
 
-![outer_shell print orientation](IMAGES/print_orientation_outer_shell.png)
+![shell_base print orientation](IMAGES/print_orientation_shell_base.png)
+
+![shell_grille print orientation](IMAGES/print_orientation_shell_grille.png)
+
+![shell_crown print orientation](IMAGES/print_orientation_shell_crown.png)
+
+![shell_base_fabric print orientation](IMAGES/print_orientation_shell_base_fabric.png)
+
+![shell_grille_fabric print orientation](IMAGES/print_orientation_shell_grille_fabric.png)
+
+![shell_crown_fabric print orientation](IMAGES/print_orientation_shell_crown_fabric.png)
 
 ![main_cabinet print orientation](IMAGES/print_orientation_main_cabinet.png)
 
 ![pressure_divider print orientation](IMAGES/print_orientation_pressure_divider.png)
 
-![electronics_shroud print orientation](IMAGES/print_orientation_electronics_shroud.png)
+![mic_isolation_bushing print orientation](IMAGES/print_orientation_mic_isolation_bushing.png)
 
 ![active_driver_clamp_ring print orientation](IMAGES/print_orientation_active_driver_clamp_ring.png)
 

@@ -13,7 +13,7 @@
   "checks": [
     {
       "feature": "active_driver: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 0.9999999999999993,
+      "measured_solid_fraction": 0.999999999999999,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
@@ -37,7 +37,7 @@
     },
     {
       "feature": "pr_-1: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 0.9999999999999979,
+      "measured_solid_fraction": 0.9999999999999982,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
@@ -61,7 +61,7 @@
     },
     {
       "feature": "pr_+1: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 0.9999999999999987,
+      "measured_solid_fraction": 0.9999999999999982,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
@@ -84,8 +84,47 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
+      "feature": "active_driver unused mounting holes are covered by the gasket",
+      "gasket_annulus_radius_mm": [
+        44.25,
+        51.6
+      ],
+      "mounting_hole_footprint_radius_mm": [
+        44.65,
+        48.65
+      ],
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr_-1 unused mounting holes are covered by the gasket",
+      "gasket_annulus_radius_mm": [
+        52.6,
+        61.3
+      ],
+      "mounting_hole_footprint_radius_mm": [
+        53.6,
+        57.9
+      ],
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr_+1 unused mounting holes are covered by the gasket",
+      "gasket_annulus_radius_mm": [
+        52.6,
+        61.3
+      ],
+      "mounting_hole_footprint_radius_mm": [
+        53.6,
+        57.9
+      ],
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
       "feature": "divider gasket land is a continuous closed rim",
-      "measured_solid_fraction": 0.99999999999999,
+      "measured_solid_fraction": 0.9999999999999923,
       "minimum_solid_fraction": 0.999999,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

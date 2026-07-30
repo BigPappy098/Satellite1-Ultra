@@ -44,7 +44,9 @@ PLACEMENTS: dict[str, Placement] = {
     "divider_gasket": Placement((0.0, 0.0, 1.0), 22.0, (0.12, 0.12, 0.12)),
     "pressure_divider": Placement((0.0, 0.0, 1.0), 34.0, (0.25, 0.28, 0.32)),
     "wire_gland": Placement((0.0, 0.0, 1.0), 46.0, (0.12, 0.12, 0.12)),
-    "electronics_shroud": Placement((0.0, 0.0, 1.0), 60.0, (0.22, 0.24, 0.27)),
+    "shell_base": Placement((0.0, 0.0, -1.0), 70.0, (0.22, 0.24, 0.27)),
+    "shell_grille": Placement((0.0, 0.0, 1.0), 30.0, (0.26, 0.28, 0.31)),
+    "shell_crown": Placement((0.0, 0.0, 1.0), 78.0, (0.22, 0.24, 0.27)),
 }
 for _side, _sign in ((-1, -1.0), (1, 1.0)):
     PLACEMENTS[f"pr_{_side:+d}_gasket"] = Placement((_sign, 0.0, 0.0), 55.0, (0.12, 0.12, 0.12))

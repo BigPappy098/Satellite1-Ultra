@@ -11,10 +11,15 @@ until the selected insert/process is pull-tested.
 | Exact part name | Qty | Material |
 |---|---|---|
 | anti_slip_ring | 1 | TPU 95A |
-| outer_shell | 1 | ASA |
+| shell_base | 1 | ASA |
+| shell_grille | 1 | ASA |
+| shell_crown | 1 | ASA |
+| shell_base_fabric | 1 | ASA |
+| shell_grille_fabric | 1 | ASA |
+| shell_crown_fabric | 1 | ASA |
 | main_cabinet | 1 | ASA |
 | pressure_divider | 1 | ASA |
-| electronics_shroud | 1 | ASA |
+| mic_isolation_bushing | 4 | TPU 95A |
 | active_driver_clamp_ring | 1 | ASA |
 | passive_radiator_clamp_ring | 2 | ASA |
 | divider_gasket | 1 | 2 mm closed-cell EPDM |
@@ -48,7 +53,7 @@ until the selected insert/process is pull-tested.
 
 ## Step 2: Install and cold-check all M3 inserts
 
-- Parts: main_cabinet, pressure_divider, base_skirt, ballast_cartridge, outer_shell
+- Parts: main_cabinet, pressure_divider, base_skirt, ballast_cartridge, skin segments
 - Fasteners: H01 inserts
 - Tools: temperature-controlled iron; M3 insert tip; square
 - Gasket/seal: none
@@ -65,18 +70,18 @@ until the selected insert/process is pull-tested.
 - Tools: 2.0 mm hex; crimper or soldering iron; polarity tester
 - Gasket/seal: G02
 - Action: Mark the red conductor positive. Connect red to the terminal marked + and black to -. Face the terminals upward. Center G02, seat the driver from the -Y/front side, fit the clamp ring, and tighten F04 in two diagonal passes to 0.35 N m; never exceed 0.45 N m.
-- Pass: Ring bottoms evenly; gasket is not visible in the bore; cone moves outward on a brief 1.5 V positive polarity pulse.
+- Pass: Ring bottoms evenly; G02 is continuous all the way round and covers all four unused driver mounting holes; cone moves outward on a brief 1.5 V positive polarity pulse.
 - Warning: Use only a brief low-voltage polarity pulse. Never connect a loose driver to the powered HAT.
 
 ![Step 3 - Wire and clamp the active driver](IMAGES/assembly_stage_03_driver.png)
 
 ## Step 4: Mass-match and clamp both passive radiators
 
-- Parts: 2 SB12PACR-00, 2 passive_radiator_gaskets, 2 clamp rings, matched M6 washer stacks
+- Parts: 2 SB12PACR-00, 2 passive_radiator_gaskets, 2 clamp rings, matched tuning masses
 - Fasteners: F05, 8 screws total
 - Tools: 0.01 g scale; 2.0 mm hex
 - Gasket/seal: G03, one per side
-- Action: Weigh two identical tuning stacks to the value in reports/acoustics/summary.json. Secure one to each M6 post. Install radiators on +/-X with matching orientation, then tighten each F05 crosswise to 0.35 N m; never exceed 0.45 N m.
+- Action: Trim and weigh two identical tuning masses to the value in reports/acoustics/summary.json, matching them within 0.02 g. Apply one centred on each radiator mass post. Install radiators on +/-X with matching orientation, then tighten each F05 crosswise to 0.35 N m; never exceed 0.45 N m.
 - Pass: Added masses match within 0.02 g; both rings bottom evenly; surrounds move freely and do not touch the shell keep-out.
 - Warning: Unequal mass defeats reaction-force cancellation. Do not press on either cone.
 
@@ -101,34 +106,34 @@ until the selected insert/process is pull-tested.
 - Tools: 2.0 mm hex; scale
 - Gasket/seal: none
 - Action: Attach the base skirt with F07. Place both deburred dry plates flat in the cartridge; there must be no rocking. Install the lid with F06, insert the cartridge from below, and capture it with the bottom service plate using F08.
-- Pass: Cartridge mass is approximately 1054 g; no plate moves when shaken gently; all four lid screws engage at least 3 mm.
+- Pass: Cartridge mass matches the steel stack listed in BOM.csv; no plate moves when shaken gently; all four lid screws engage at least 3 mm.
 - Warning: The steel stack is heavy. Keep fingers clear and do not operate the unit without the retained lid and service plate.
 
 ![Step 6 - Install the base and retained ballast](IMAGES/assembly_stage_06_ballast.png)
 
-## Step 7: Install and lock the outer shell
+## Step 7: Stack the three outer skin segments
 
-- Parts: outer_shell; lower assembly
-- Fasteners: F09, 4 screws with nylon washers
+- Parts: shell_base, shell_grille, shell_crown; lower assembly
+- Fasteners: F09, 4 screws with nylon washers; F02, 4 screws into the divider
 - Tools: 2.0 mm hex
 - Gasket/seal: none
-- Action: Align FRONT with -Y and slide the shell downward without touching either surround. Invert on a soft mat and install F09 through the bottom service plate into the shell bosses.
-- Pass: Every slot is clear; shell has an even reveal and at least 2 mm moving-part clearance; no wire is visible near a cone.
-- Warning: Stop if the shell contacts a clamp ring or surround. Do not flex the shell over an obstruction.
+- Action: Work bottom to top. Slide shell_base up over the cabinet with FRONT at -Y, invert on a soft mat, and install F09 through the bottom service plate into its four bosses. Stand the unit back up. Press shell_grille down onto the exposed lap until its outer face meets the segment below; the four crush ribs give a firm, even resistance and the joint closes on 0.15 mm of interference, so it should need hand pressure and stay put. Press shell_crown on the same way, then bolt it down onto the divider's four bosses with F02. Check that all three grille windows line up with the driver and both radiators.
+- Pass: Both seams show an even hairline shadow line all round with no step you can catch a fingernail on; no segment rocks or rattles when the body is tapped; at least 2 mm clearance from every clamp ring and surround; no wire visible through a window.
+- Warning: Do not force a segment on if it binds — lift it off and check for a stringing artefact on the lap or a crush rib that printed proud. Never flex a segment over an obstruction. The crown must be bolted to the divider before the official stack goes on, because its tabs sit underneath.
 
-![Step 7 - Install and lock the outer shell](IMAGES/assembly_stage_07_shell.png)
+![Step 7 - Stack the three outer skin segments](IMAGES/assembly_stage_07_shell.png)
 
-## Step 8: Install the shroud and official Batch 1 upper stack
+## Step 8: Fit the mic isolators and the official Batch 1 upper stack
 
-- Parts: electronics_shroud; O01-O06 official prints; Batch 1 HAT/Core
-- Fasteners: F01, F02, F10, and F11; 4 of each
+- Parts: mic_isolation_bushing x4; O01-O06 official prints; Batch 1 HAT/Core
+- Fasteners: F01 (M3 x d4 shoulder screws, 16 mm shoulder), F10, F11; 4 of each
 - Tools: 2.0 mm hex; ESD-safe bench
 - Gasket/seal: none; electronics bay is outside the acoustic chamber
-- Action: Bolt the shroud to its four outboard bosses with F02. Seat O01 on the four measured divider bosses and install F01. Snap O06 into O05 (or use both O07/O08 during a multi-material O05 print; never install O06 and O08 together). Align O03's taller standoffs with the I/O side and locate the HAT. Install the Core/HAT using the official Batch 1 sequence. Align the logos and I/O on O04/O05, engage the snaps, and rotate the lock ring. Align O02's four nubs with O01 and keep I/O toward rear/+Y. Connect the keyed JST-XH speaker plug before closure.
-- Pass: Mid-plate sits on all four bosses; USB-C remains reachable; cable has service slack and cannot enter a moving-part envelope; buttons click and diffuser/LED apertures remain clear.
-- Warning: Core placement is REQUIRES_PHYSICAL_VALIDATION. Follow the official Batch 1 instructions and stop at any collision; do not improvise a transform from the CAD envelope.
+- Action: Press one TPU isolation bushing into each of the four divider counterbores, flange up. Seat O01 on the four bushing flanges — it must rest on elastomer, not on printed plastic. Install F01 and tighten until each shoulder bottoms firmly on the counterbore floor; the screw head then stops 0.3 mm above the plate and the plate stays floating on the TPU. Snap O06 into O05 (or use both O07/O08 during a multi-material O05 print; never install O06 and O08 together). Align O03's taller standoffs with the I/O side and locate the HAT. Install the Core/HAT using the official Batch 1 sequence. Align the logos and I/O on O04/O05, engage the snaps, and rotate the lock ring. Align O02's four nubs with O01 and keep I/O toward rear/+Y. Connect the keyed JST-XH speaker plug before closure.
+- Pass: The official top sits flush with the surrounding flat top — you should feel a hairline, not a step or a lip. The upper stack has a barely perceptible give when pressed, which is the isolation working. USB-C remains reachable; cable has service slack and cannot enter a moving-part envelope; buttons click and diffuser/LED apertures remain clear.
+- Warning: F01 must be M3 x d4 shoulder screws, not ordinary M3 screws. An ordinary screw clamps in parallel with the elastomer at roughly 35 times its stiffness, so the TPU carries under 3% of the load path and the isolation does nothing at all. If the plate feels rock solid, you have the wrong screws. Core placement is REQUIRES_PHYSICAL_VALIDATION: follow the official Batch 1 instructions and stop at any collision.
 
-![Step 8 - Install the shroud and official Batch 1 upper stack](IMAGES/assembly_stage_08_upper.png)
+![Step 8 - Fit the mic isolators and the official Batch 1 upper stack](IMAGES/assembly_stage_08_upper.png)
 
 ## Step 9: Fit the anti-slip ring and complete inspection
 

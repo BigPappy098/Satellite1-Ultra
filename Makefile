@@ -2,7 +2,7 @@ PYTHON ?= .venv/bin/python
 PIP ?= .venv/bin/pip
 
 .PHONY: bootstrap inventory lint format typecheck test test-fast test-deep mutation \
-        build validate acoustics exports renders drawings docs manual docs-check package \
+        build validate acoustics exports renders drawings docs manual docs-check package site \
         calibrated-release check release all clean
 
 bootstrap:
@@ -69,6 +69,9 @@ docs-check:
 
 package:
 	$(PYTHON) -m satellite1_ultra package
+
+site:
+	$(PYTHON) -m satellite1_ultra site
 
 check: lint typecheck build validate acoustics test-fast
 

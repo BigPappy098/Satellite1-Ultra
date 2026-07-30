@@ -9,9 +9,9 @@
   ],
   "bay_z_range_mm": [
     -27.5,
-    -6.8
+    -8.8
   ],
-  "bay_height_mm": 20.7,
+  "bay_height_mm": 18.7,
   "first_free_placement_xy_mm": [
     -2.0,
     -2.0

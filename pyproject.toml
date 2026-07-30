@@ -63,6 +63,7 @@ select = ["E", "F", "I", "B", "UP", "RUF"]
 [tool.ruff.lint.per-file-ignores]
 "src/satellite1_ultra/documentation.py" = ["E501"]
 "src/satellite1_ultra/renders.py" = ["E501", "RUF001"]
+"src/satellite1_ultra/site.py" = ["E501", "RUF001"]
 
 [tool.mypy]
 python_version = "3.12"

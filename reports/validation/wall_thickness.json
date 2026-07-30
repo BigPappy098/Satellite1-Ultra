@@ -133,9 +133,9 @@
   "measured_sections": [
     {
       "feature": "front wall above the driver mount",
-      "measured_mm": 4.0,
+      "measured_mm": 3.999999999999992,
       "minimum_mm": 3.2,
-      "margin_mm": 0.7999999999999998,
+      "margin_mm": 0.7999999999999918,
       "method": "solid-fraction probe on the built B-rep",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -169,9 +169,9 @@
     },
     {
       "feature": "acoustic floor under a base-fastener boss",
-      "measured_mm": 5.2291152795338,
+      "measured_mm": 5.229115279533799,
       "minimum_mm": 5.0,
-      "margin_mm": 0.22911527953379984,
+      "margin_mm": 0.22911527953379895,
       "method": "solid-fraction probe on the built B-rep",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

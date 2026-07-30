@@ -123,7 +123,10 @@ def load_design_parameters(root: Path = ROOT) -> DesignParameters:
         print_clearance=planar(enclosure["print_clearance"]),
         official_mount_x=planar(45.0534),
         official_mount_y=planar(31.5467),
-        official_interface_z=vertical(-6.8),
+        # The official stack seats at -6.8. The divider bosses stop one
+        # bushing-flange lower so the elastomer restores that seat height and
+        # the flat top stays flush with the official top plate.
+        official_interface_z=vertical(-6.8) - vertical(2.0),
         cable_passage_x=planar(enclosure["cable_passage_x"]),
         cable_passage_y=planar(enclosure["cable_passage_y"]),
         cable_passage_diameter=planar(8.0) + cable_offset,
@@ -133,6 +136,12 @@ def load_design_parameters(root: Path = ROOT) -> DesignParameters:
         brace_rib_depth=planar(enclosure["brace_rib_depth"]),
         board_revision=str(default["hardware"]["board_revision"]),
         ballast_mass_g=float(default["ballast"]["target_mass_g"]),
+        # Build volume is a real, per-axis input to the printability gate.  It
+        # is deliberately NOT scaled by the printer-correction factors: it
+        # describes the machine, not the part.
+        build_volume_x=number(default["printing"]["build_volume_x"]),
+        build_volume_y=number(default["printing"]["build_volume_y"]),
+        build_volume_z=number(default["printing"]["build_volume_z"]),
     )
     validate_design_parameters(parameters)
     return parameters

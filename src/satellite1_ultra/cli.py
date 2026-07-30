@@ -8,6 +8,7 @@ import shutil
 import click
 
 from satellite1_ultra.configuration import ROOT, load_design_parameters
+from satellite1_ultra.doc_validation import PDF_GUIDES, USER_GUIDES
 
 GENERATED = (
     ROOT / "exports",
@@ -18,27 +19,16 @@ GENERATED = (
     ROOT / "build",
     ROOT / "release",
 )
+# Derived from the same tuples the generator and validator use, so a renamed or
+# retired guide cannot survive `clean` as a stale file.
 GENERATED_DOCS = (
-    "Satellite1-Ultra-Build-Manual.pdf",
-    "START_HERE.md",
-    "CALIBRATION_GUIDE.md",
-    "PRINTING_GUIDE.md",
-    "HARDWARE_AND_MATERIALS_GUIDE.md",
-    "ASSEMBLY_GUIDE.md",
-    "TESTING_AND_COMMISSIONING_GUIDE.md",
-    "MAINTENANCE_GUIDE.md",
-    "ENGINEERING_APPENDIX.md",
+    *USER_GUIDES,
+    *PDF_GUIDES,
     "BOM.csv",
     "FASTENERS.csv",
     "GASKETS.csv",
     "RISK_REGISTER.csv",
     "source-commit.txt",
-    "START_HERE.pdf",
-    "START_HERE_CALIBRATION_GUIDE.pdf",
-    "PRINTING_GUIDE.pdf",
-    "ASSEMBLY_GUIDE.pdf",
-    "TESTING_AND_COMMISSIONING_GUIDE.pdf",
-    "MAINTENANCE_GUIDE.pdf",
 )
 
 
@@ -165,6 +155,15 @@ def docs_check() -> None:
     )
 
 
+@main.command("site")
+def site_command() -> None:
+    """Generate the illustrated builder website."""
+    from satellite1_ultra.site import generate_site
+
+    written = generate_site()
+    click.echo(f"  site: {len(written)} files")
+
+
 @main.command("package")
 def package_command() -> None:
     """Create the clean user-facing RC1 directory and zip archive."""
@@ -202,6 +201,7 @@ def run_all(context: click.Context) -> None:
         docs,
         manual_command,
         docs_check,
+        site_command,
         package_command,
     ):
         click.echo(f"== {step.name}")

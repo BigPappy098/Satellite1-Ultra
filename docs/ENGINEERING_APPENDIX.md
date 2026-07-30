@@ -1,6 +1,6 @@
 # Engineering Appendix
 
-Source commit at generation: `0ae7c9bbf745f27bdfa5d2d6e62dcb2841d9c2c4`.
+Source commit at generation: `63136dc4eca36bf3ca0e3ae56b015c13c436e326`.
 
 ## Coordinate system
 
@@ -10,10 +10,10 @@ Source commit at generation: `0ae7c9bbf745f27bdfa5d2d6e62dcb2841d9c2c4`.
 
 ## Current digital acoustic model
 
-- Net acoustic volume: 3.518 L,
+- Net acoustic volume: 3.509 L,
   `VERIFIED_DIGITALLY` from the connected OCCT air domain.
 - Tuning: 60.0 Hz.
-- Added mass: 0.78 g per radiator.
+- Added mass: 0.82 g per radiator.
 - Modelled f3: 56.9 Hz.
 - Modelled minimum impedance:
   4.39 ohm.
@@ -30,7 +30,9 @@ All acoustic performance values are `ENGINEERING_ESTIMATE`.
 | clearance | PASS | VERIFIED_DIGITALLY |
 | collision | PASS | VERIFIED_DIGITALLY |
 | core_fit | PASS | VERIFIED_DIGITALLY |
+| documentation | FAIL | VERIFIED_DIGITALLY |
 | fasteners | PASS | VERIFIED_DIGITALLY |
+| mutation_test | PASS | VERIFIED_DIGITALLY |
 | printability | PASS | VERIFIED_DIGITALLY |
 | sealing | PASS | VERIFIED_DIGITALLY |
 | tolerance | PASS | ENGINEERING_ESTIMATE |

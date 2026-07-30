@@ -12,8 +12,8 @@ HAT, or requires an external Wi-Fi antenna, stop: that hardware is unsupported.
 | H01 | insert | CNC Kitchen M3 x 5.7 heat-set insert | M3x0.5 internal thread, 5.7 mm length, 4.6 mm maximum OD | 48 | yes; includes four spares |
 | H02 | speaker cable | 2-pin JST-XH 2.54 mm speaker lead | 22 AWG stranded red/black, each insulated conductor OD <=1.8 mm, 350 mm minimum | 1 | yes |
 | H03 | speaker terminals | 2.8 mm fully insulated female quick-disconnects | for 22-18 AWG wire; verify fit on the purchased ND91-4 before crimping | 2 | recommended; direct solder is acceptable |
-| B01 | ballast | mild-steel plate | 110 x 122 x 5 mm, edges deburred, dry, light oil removed | 2 | yes |
-| B02 | radiator tuning | M6 stainless flat washers | identical stacks totaling 0.78 g per radiator | 2 matched stacks | yes; final mass requires physical tuning |
+| B01 | ballast | mild-steel plate | 100 x 92 x 6 mm, edges deburred, dry, light oil removed | 2 | yes |
+| B02 | radiator tuning | self-adhesive tuning mass, lead-free strip | trimmed to 0.82 g per radiator, the two sets matched within 0.02 g; applied centred on the radiator mass post. A single M6 washer is about 1.0 g, which is coarser than the whole target, so threaded mass cannot hit this figure | 2 matched sets | yes; final mass requires physical tuning |
 | G00 | gasket stock | closed-cell EPDM foam sheet | 2.0 mm nominal, soft, smooth skin, ASTM D1056 2A1 or equivalent | one 300 x 300 mm sheet | yes |
 | D01 | optional acoustic material | polyester acoustic batting | not installed in RC1; reserve for measurement-led development only | 0 | no |
 | O01 | official printed part | official_mid_plate | ASA (PETG alternative); exact file OFFICIAL_PARTS/REQUIRED_SINGLE_MATERIAL/official_mid_plate.stl; preserved official STL | 1 | yes |
@@ -26,10 +26,10 @@ HAT, or requires an external Wi-Fi antenna, stop: that hardware is unsupported.
 | O08 | official printed part | official_top_plate_mm_diffuser_ring | ASA (PETG alternative); exact file OFFICIAL_PARTS/OPTIONAL_MULTI_MATERIAL/official_top_plate_mm_diffuser_ring.stl; preserved official STL | 1 | optional alternative |
 | F01 | fastener | M3 x 6 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes |
 | F02 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes |
-| F03 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 8 | yes |
+| F03 | fastener | M3 x 8 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 8 | yes |
 | F04 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes |
 | F05 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 8 | yes |
-| F06 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes |
+| F06 | fastener | M3 x 6 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes |
 | F07 | fastener | M3 x 10 socket cap screw | ISO 4762, A2-70 stainless, M3x0.5 | 4 | yes |
 | F08 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes |
 | F09 | fastener | M3 x 8 button head screw | ISO 7380-1, A2-70 stainless, M3x0.5 | 4 | yes |
