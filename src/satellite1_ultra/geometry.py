@@ -134,6 +134,10 @@ class DesignParameters:
     shell_flat_top_z: float = 17.09
     shell_top_roll: float = 22.0
     shell_bottom_roll: float = 6.0
+    # A true uniform gap, because the pocket is offset from the official part's
+    # own outline rather than from our fitted superellipse. Dimensioning it
+    # against the fit instead left 0.05 mm of radial gap at the 45 degree
+    # corner, since n = 4.13 only matches the real curve to 0.38 mm.
     official_pocket_clearance: float = 0.4
     official_full_section_z: float = -7.0
     official_plate_top_z: float = 3.2
@@ -1427,6 +1431,55 @@ def _place_pr_disc(shape: cq.Shape, side: int, inner_face_x: float, axis_z: floa
     )
 
 
+@lru_cache(maxsize=8)
+def official_pocket_wire(clearance: float) -> cq.Wire:
+    """The official stack's real outline, offset outward by *clearance*.
+
+    Deliberately not our own superellipse. SECTION_EXPONENT = 4.13 matches the
+    official curve to 0.38 mm, and the real outline runs up to 0.350 mm outside
+    the ideal at the 45 degree corner -- so a pocket built from the fit and
+    given a 0.4 mm allowance actually delivered 0.05 mm there, and the official
+    part fouled its own pocket. Offsetting the measured outline gives a genuinely
+    uniform gap, which is both tighter to look at and correct to assemble.
+    """
+    from satellite1_ultra.official import official_upper_solids
+
+    solids = official_upper_solids()
+    union = (
+        solids["official_top_plate"]
+        .fuse(solids["official_lock_ring"])
+        .fuse(solids["official_mid_plate"])
+    )
+    # z = 14 is inside the band where the stack is at its full 110 mm width.
+    slab = union.intersect(cq.Solid.makeBox(400.0, 400.0, 0.4, cq.Vector(-200.0, -200.0, 14.0)))
+    best: tuple[float, cq.Face] | None = None
+    for face in slab.Faces():
+        if face.geomType() != "PLANE":
+            continue
+        try:
+            area = cq.Face.makeFromWires(face.outerWire()).Area()
+        except Exception:
+            continue
+        if best is None or area > best[0]:
+            best = (area, face)
+    if best is None:
+        raise ValueError("could not find the official stack's full-width outline")
+    return best[1].outerWire().offset2D(clearance)[0]
+
+
+def official_pocket(z0: float, z1: float, clearance: float) -> cq.Shape:
+    """Straight-sided well the official assembly lifts out of."""
+    wire = official_pocket_wire(clearance)
+    face = cq.Face.makeFromWires(wire)
+    base = face.Center().z
+    return cast(
+        cq.Shape,
+        cq.Solid.extrudeLinear(face, cq.Vector(0.0, 0.0, z1 - z0)).translate(
+            cq.Vector(0.0, 0.0, z0 - base)
+        ),
+    )
+
+
 def body_half_at(z: float, parameters: DesignParameters = DEFAULT_PARAMETERS) -> float:
     """Half-size of the visible silhouette at height *z*.
 
@@ -1583,13 +1636,11 @@ def skin_shell(
     )
     shell = outer.cut(inner)
     # Flush pocket the official module drops into, with a hairline all round.
-    pocket = 2.0 * (p.official_half + p.official_pocket_clearance)
     shell = shell.cut(
-        section_prism(
-            pocket,
-            pocket,
-            p.shell_flat_top_z + 2.0 - (p.official_full_section_z - 14.0),
+        official_pocket(
             p.official_full_section_z - 14.0,
+            p.shell_flat_top_z + 2.0,
+            p.official_pocket_clearance,
         )
     )
     shell = shell.cut(acoustic_windows(p))

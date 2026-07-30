@@ -1,5 +1,5 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "clearances": [
     {
@@ -224,7 +224,7 @@
     },
     {
       "feature": "shell_crown to official_mid_plate_threads",
-      "nominal_mm": 18.008053753806916,
+      "nominal_mm": 5.299750715661259,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -232,15 +232,15 @@
     },
     {
       "feature": "shell_crown to official_top_plate",
-      "nominal_mm": 14.000957123905668,
+      "nominal_mm": 0.12497453790960936,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
-      "status": "PASS",
+      "status": "FAIL",
       "evidence": "DERIVED_FROM_OFFICIAL_CAD"
     },
     {
       "feature": "shell_crown to official_pcb_spacer",
-      "nominal_mm": 26.598000248473,
+      "nominal_mm": 12.774025023695716,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -248,7 +248,7 @@
     },
     {
       "feature": "shell_crown to official_lock_ring",
-      "nominal_mm": 14.554428164568405,
+      "nominal_mm": 0.7931665390638737,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -256,7 +256,7 @@
     },
     {
       "feature": "shell_crown to official_top_plate_snap_in_diffuser_ring",
-      "nominal_mm": 24.633775499695098,
+      "nominal_mm": 10.99925422395009,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",
@@ -264,7 +264,7 @@
     },
     {
       "feature": "shell_crown to official_hat_batch1_rev4_1",
-      "nominal_mm": 24.159749628342915,
+      "nominal_mm": 11.689987990486255,
       "minimum_mm": 0.3,
       "note": "exact OCCT minimum distance",
       "status": "PASS",

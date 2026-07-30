@@ -12,7 +12,7 @@
     "evidence": "VERIFIED_DIGITALLY"
   },
   "clearance": {
-    "status": "PASS",
+    "status": "FAIL",
     "evidence": "VERIFIED_DIGITALLY"
   },
   "core_fit": {

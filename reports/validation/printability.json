@@ -3,7 +3,7 @@
   "evidence": "VERIFIED_DIGITALLY",
   "build_volume_mm": {
     "x": 220.0,
-    "y": 190.0,
+    "y": 200.0,
     "z": 250.0
   },
   "method": "print-oriented bounding box of every exported part against a per-axis build volume, testing both in-plane rotations",
@@ -30,14 +30,14 @@
       "largest_dimension_mm": 184.02098314134776,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         35.979,
-        5.996,
+        15.996,
         248.0
       ],
       "status": "PASS",
@@ -55,14 +55,14 @@
       "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         31.979,
-        1.996,
+        11.996,
         200.8
       ],
       "status": "PASS",
@@ -80,14 +80,14 @@
       "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         31.979,
-        1.996,
+        11.996,
         68.0
       ],
       "status": "PASS",
@@ -105,14 +105,14 @@
       "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         31.979,
-        1.996,
+        11.996,
         199.91
       ],
       "status": "PASS",
@@ -130,14 +130,14 @@
       "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         31.979,
-        1.996,
+        11.996,
         200.8
       ],
       "status": "PASS",
@@ -155,14 +155,14 @@
       "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         31.979,
-        1.996,
+        11.996,
         68.0
       ],
       "status": "PASS",
@@ -180,14 +180,14 @@
       "largest_dimension_mm": 188.0214393211054,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         31.979,
-        1.996,
+        11.996,
         199.91
       ],
       "status": "PASS",
@@ -205,14 +205,14 @@
       "largest_dimension_mm": 182.80000010000003,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         60.0,
-        30.0,
+        40.0,
         67.2
       ],
       "status": "PASS",
@@ -230,14 +230,14 @@
       "largest_dimension_mm": 160.0,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         60.0,
-        30.0,
+        40.0,
         227.3
       ],
       "status": "PASS",
@@ -255,14 +255,14 @@
       "largest_dimension_mm": 13.0,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         207.0,
-        177.0,
+        187.0,
         244.3
       ],
       "status": "PASS",
@@ -280,14 +280,14 @@
       "largest_dimension_mm": 118.0,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         102.0,
-        72.0,
+        82.0,
         244.0
       ],
       "status": "PASS",
@@ -305,14 +305,14 @@
       "largest_dimension_mm": 140.0,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         80.0,
-        50.0,
+        60.0,
         244.0
       ],
       "status": "PASS",
@@ -330,14 +330,14 @@
       "largest_dimension_mm": 159.0,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         61.0,
-        31.0,
+        41.0,
         248.0
       ],
       "status": "PASS",
@@ -355,14 +355,14 @@
       "largest_dimension_mm": 103.2,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         116.8,
-        86.8,
+        96.8,
         248.0
       ],
       "status": "PASS",
@@ -380,14 +380,14 @@
       "largest_dimension_mm": 122.6,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         97.4,
-        67.4,
+        77.4,
         248.0
       ],
       "status": "PASS",
@@ -405,14 +405,14 @@
       "largest_dimension_mm": 14.0,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         206.0,
-        176.389,
+        186.389,
         244.5
       ],
       "status": "PASS",
@@ -430,14 +430,14 @@
       "largest_dimension_mm": 17.5,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         206.0,
-        176.0,
+        186.0,
         232.5
       ],
       "status": "PASS",
@@ -455,14 +455,14 @@
       "largest_dimension_mm": 162.4,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         57.6,
-        30.0,
+        40.0,
         228.0
       ],
       "status": "PASS",
@@ -480,14 +480,14 @@
       "largest_dimension_mm": 151.4,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         68.6,
-        38.6,
+        48.6,
         246.0
       ],
       "status": "PASS",
@@ -505,14 +505,14 @@
       "largest_dimension_mm": 121.4,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         98.6,
-        76.6,
+        86.6,
         234.0
       ],
       "status": "PASS",
@@ -530,14 +530,14 @@
       "largest_dimension_mm": 121.4,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         98.6,
-        76.6,
+        86.6,
         246.5
       ],
       "status": "PASS",
@@ -555,14 +555,14 @@
       "largest_dimension_mm": 120.0,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         100.0,
-        70.0,
+        80.0,
         247.0
       ],
       "status": "PASS",
@@ -580,14 +580,14 @@
       "largest_dimension_mm": 126.0000002,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         94.0,
-        64.0,
+        74.0,
         239.8
       ],
       "status": "PASS",
@@ -605,14 +605,14 @@
       "largest_dimension_mm": 144.0,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         76.0,
-        46.0,
+        56.0,
         234.8
       ],
       "status": "PASS",
@@ -630,14 +630,14 @@
       "largest_dimension_mm": 110.0000002,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         110.0,
-        158.0,
+        168.0,
         240.0
       ],
       "status": "PASS",
@@ -655,14 +655,14 @@
       "largest_dimension_mm": 60.0000002,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         160.0,
-        160.0,
+        170.0,
         240.5
       ],
       "status": "PASS",
@@ -680,14 +680,14 @@
       "largest_dimension_mm": 60.0000002,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         160.0,
-        160.0,
+        170.0,
         247.0
       ],
       "status": "PASS",
@@ -705,14 +705,14 @@
       "largest_dimension_mm": 40.0000002,
       "build_volume_mm": [
         220.0,
-        190.0,
+        200.0,
         250.0
       ],
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
         180.0,
-        160.0,
+        170.0,
         246.0
       ],
       "status": "PASS",

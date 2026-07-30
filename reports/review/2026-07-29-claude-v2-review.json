@@ -45,5 +45,29 @@
     "engineering_consequence": "Editing the documented build-volume knob in config/default.yaml changes nothing, so an operator retargeting the design to their own printer gets silent no-ops and a report that still claims a 256 mm envelope. This masks PRINT-001 by giving the appearance of a configurable gate.",
     "verification_method": "Set `printing.maximum_build_dimension: 100.0` in config/default.yaml, regenerate the printability report, and confirm `build_envelope_mm` is still 256.0 and every part still passes. Restore the file afterwards.",
     "owner": "project owner"
+  },
+  {
+    "id": "FIT-001",
+    "title": "A fitted section curve was used as if it were the exact official outline",
+    "severity": "HIGH",
+    "status": "FIXED",
+    "evidence_label": "DERIVED_FROM_OFFICIAL_CAD",
+    "evidence": [
+      "The official squircle was measured as a superellipse with SECTION_EXPONENT = 4.13, and the fit error was recorded at the time as 0.38 mm maximum across the quarter.",
+      "official_pocket_clearance was then set to 0.4 mm against that fitted curve, i.e. a clearance smaller than the known approximation error.",
+      "Sampling the official top plate at z = 14 and z = 16, where it is at its full 110 mm width, shows the real outline lies 0.350 mm OUTSIDE the ideal n = 4.13 superellipse at the 45 degree corner.",
+      "Net radial gap was therefore 0.4 - 0.350 = 0.05 mm. BRepExtrema_DistShapeShape reports a true perpendicular minimum of 0.1250 mm between shell_crown and official_top_plate, against a 0.30 mm requirement.",
+      "The closest points are crown (-46.870, 46.811, 16.695) and plate (-46.781, 46.723, 16.695) -- the 45 degree corner at full width, confirming the outline-deviation cause by a second independent method.",
+      "The defect was latent until the flat top was closed into a deck: while the top was an open trench there was no crown material at that radius to be too close.",
+      "Fixed by raising official_pocket_clearance to 0.9 mm, leaving 0.55 mm of radial gap at the corner after the approximation is absorbed."
+    ],
+    "affected_files": [
+      "src/satellite1_ultra/geometry.py",
+      "reports/validation/clearance.json"
+    ],
+    "engineering_consequence": "The pocket the official Satellite1 stack drops into was locally tighter than the part it receives, so the top could have failed to seat at all, or seated only by forcing and marking a visible cosmetic surface. More generally: any clearance dimensioned against a fitted curve must exceed that curve's fit error before print tolerance is even considered, and the fit error for this section family is 0.38 mm.",
+    "verification_method": "Slice official_top_plate at z = 14.0 with a 0.6 mm slab, rotate the section in 3 degree steps and compare its support extent against 55.0 * (|cos t|^q + |sin t|^q)^(1/q) with q = n/(n-1), n = 4.13; the minimum of ideal minus measured is -0.350 mm at 45 degrees. Then run BRepExtrema_DistShapeShape between skin_segments()['shell_crown'] and the plate and confirm the perpendicular minimum exceeds 0.30 mm.",
+    "owner": "project owner",
+    "resolution": "official_pocket_clearance raised from 0.4 mm to 0.9 mm, with the fit-error reasoning recorded at the parameter."
   }
 ]

@@ -2,24 +2,24 @@
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
   "method": "B-rep volume x material density, plus catalogued component masses",
-  "total_mass_g": 3484.3304995200156,
+  "total_mass_g": 3517.592370305125,
   "center_of_gravity_mm": {
-    "x": -0.03971159538816089,
-    "y": -4.097511593103767,
-    "z": -141.96248407966655
+    "x": -0.03832257274932886,
+    "y": -4.058777960234762,
+    "z": -140.47362698051728
   },
-  "cg_height_above_support_mm": 96.33751592033346,
+  "cg_height_above_support_mm": 97.82637301948273,
   "support_polygon_mm": {
     "x_half": 92.0,
     "y_half": 92.0
   },
   "static_tipping_angles_deg": {
-    "+X": 43.693030254559915,
-    "-X": 43.66832487976588,
-    "+Y": 44.92854093112455,
-    "-Y": 42.37866793928164
+    "+X": 43.25387134009414,
+    "-X": 43.23004972515223,
+    "+Y": 44.477665357114624,
+    "-Y": 41.95402333855581
   },
-  "minimum_tipping_angle_deg": 42.37866793928164,
+  "minimum_tipping_angle_deg": 41.95402333855581,
   "ballast": {
     "material": "two removable 100 x 92 x 6 mm mild-steel plates",
     "mass_g": 866.64,
@@ -112,10 +112,10 @@
     },
     {
       "name": "shell_crown",
-      "mass_g": 107.92863103674438,
-      "x_mm": -0.24272553223962492,
-      "y_mm": -0.0003270904603144571,
-      "z_mm": -7.867680612792081,
+      "mass_g": 141.19050182185347,
+      "x_mm": -0.16029336703384264,
+      "y_mm": -0.0005458732755138163,
+      "z_mm": -2.3648434066983666,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
