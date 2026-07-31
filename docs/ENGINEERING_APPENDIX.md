@@ -1,6 +1,6 @@
 # Engineering Appendix
 
-Source commit at generation: `753cbfc650a8b731dc24d08318a9cc843b22f204`.
+Source commit at generation: `2e02ca2bfb18ef4d5716e94ac0e612bb26e8f800`.
 
 ## Coordinate system
 
@@ -30,8 +30,9 @@ All acoustic performance values are `ENGINEERING_ESTIMATE`.
 | clearance | PASS | VERIFIED_DIGITALLY |
 | collision | PASS | VERIFIED_DIGITALLY |
 | core_fit | PASS | VERIFIED_DIGITALLY |
-| documentation | FAIL | VERIFIED_DIGITALLY |
+| documentation | PASS | VERIFIED_DIGITALLY |
 | fasteners | PASS | VERIFIED_DIGITALLY |
+| mutation_test | PASS | VERIFIED_DIGITALLY |
 | printability | PASS | VERIFIED_DIGITALLY |
 | sealing | PASS | VERIFIED_DIGITALLY |
 | tolerance | PASS | ENGINEERING_ESTIMATE |
