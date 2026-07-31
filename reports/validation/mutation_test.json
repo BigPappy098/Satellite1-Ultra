@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "evidence": "VERIFIED_DIGITALLY",
+  "mutations_exercised": 18,
+  "test_failures": 0,
+  "test_errors": 0,
+  "skipped": 0,
+  "meaning": "Each test injects a deliberate defect and passes only when the corresponding validation gate rejects it."
+}

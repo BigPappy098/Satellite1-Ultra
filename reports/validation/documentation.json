@@ -1,5 +1,5 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "checked_files": [
     "docs/BUILD_BOOK.md",
@@ -15,7 +15,7 @@
     {
       "file": "SATELLITE1_ULTRA_BUILD_BOOK.pdf",
       "pages": 24,
-      "bytes": 9030144
+      "bytes": 9038326
     },
     {
       "file": "CALIBRATION_GUIDE.pdf",
@@ -25,28 +25,30 @@
     {
       "file": "PRINTING_GUIDE.pdf",
       "pages": 26,
-      "bytes": 6699892
+      "bytes": 6700171
     },
     {
       "file": "HARDWARE_AND_MATERIALS_GUIDE.pdf",
       "pages": 4,
-      "bytes": 11214
+      "bytes": 11212
     },
     {
       "file": "ASSEMBLY_GUIDE.pdf",
       "pages": 11,
-      "bytes": 5702102
+      "bytes": 5705114
     },
     {
       "file": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
       "pages": 3,
-      "bytes": 1510762
+      "bytes": 1515900
     },
     {
       "file": "MAINTENANCE_GUIDE.pdf",
       "pages": 1,
-      "bytes": 441206
+      "bytes": 441205
     }
   ],
-  "errors": []
+  "errors": [
+    "unknown BOM ID in guides: H01"
+  ]
 }

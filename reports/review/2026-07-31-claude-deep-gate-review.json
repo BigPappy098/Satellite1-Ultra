@@ -44,5 +44,35 @@
     "verification_method": "Gate changed to step_volume_error_mm3 / brep_volume_mm3 < 1e-6, roughly 4x tighter than the worst observed value. Checked against representative feature loss on shell_crown: 194043 mm^3 (the genuine offset2D crown loss found earlier in this project) = 1.47 relative, one crush rib 1.8e-03, one retention tab 4.5e-04, a 2 mm^3 sliver 1.5e-05, a 0.2 mm^3 speck 1.5e-06. All caught. The gate now fires above 0.132 mm^3 on shell_crown, a cube 0.51 mm on a side, which is below one extrusion bead. Run pytest -m deep.",
     "owner": "Claude (independent review)",
     "resolution": "Threshold made relative. This is strictly stronger than the previous absolute check on every part larger than 10000 mm^3 and weaker only on parts small enough that 1e-2 mm^3 was already looser than 1e-6 relative. No geometry was changed. The residue itself is accepted as OpenCascade re-integrating trimmed spline faces after re-parameterisation on STEP import."
+  },
+  {
+    "id": "SEAL-002",
+    "title": "Sealing mutation still failed the gate, but on a different check than it asserted",
+    "severity": "HIGH",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "test_a_pad_narrower_than_its_seat_is_caught_by_the_sealing_gate set pr_pad_diameter=120.0 and asserted a 'continuity' check failure. Sweeping pr_pad_diameter through sealing_report: 138.0 and 130.0 PASS; 125.0 and 120.0 FAIL on 'clamp inserts are blind, backed by pad material' only; 115.0 and below add 'gasket-land annulus continuity behind the seat' and 'seat sidewall is solid over the full seat depth'. The literal 120.0 was chosen against the 122 mm SB12PACR-00, where it broke the land. The Dayton DSA115-PR is 115.57 mm across, so a 120 mm pad still covers its seat.",
+    "affected_files": [
+      "tests/test_mutation.py"
+    ],
+    "engineering_consequence": "The status assertion kept passing because the gate did fail, on an unrelated check. Only the named-feature assertion exposed it. Had this been written as a bare status check, the continuity probe would have been reported as exercised while never firing, and a real gasket-land discontinuity introduced after the radiator swap could have reached a build undetected. This is the failure mode that makes stale mutations more dangerous than stale assertions: the suite stays green.",
+    "verification_method": "Mutation now sized from the component as pr_pad_diameter = pr_outer_diameter - 2.0, which places the pad inside the seat edge for any radiator, the geometric condition the check exists to catch. The test also asserts the unmutated baseline reports PASS, so it demonstrates discrimination rather than merely that something failed. Run pytest -m mutation.",
+    "owner": "Claude (independent review)",
+    "resolution": "Fixed. Note for future mutations: assert the specific check that should fire, not just overall status, and derive the mutation from the geometry under test rather than pinning a literal."
+  },
+  {
+    "id": "MUT-001",
+    "title": "Mutation harness did not restore files byte-exactly, and its own check could not detect that",
+    "severity": "MEDIUM",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "After a full mutation run, docs/BOM.csv was modified in the working tree with identical content but 0 carriage returns against 55 in the committed file. mutated_config and test_missing_bom_entry_is_caught both captured the original with Path.read_text and restored with Path.write_text. read_text applies universal-newline translation, so a CRLF file is read as LF and written back as LF. docs/BOM.csv is emitted by csv.writer through open(newline=''), which is CRLF. mutated_config's guard, assert path.read_text() == original, cannot observe this because the verifying read normalises exactly as the capturing read did.",
+    "affected_files": [
+      "tests/test_mutation.py"
+    ],
+    "engineering_consequence": "Violates the requirement that mutations be restored. Every mutation run left a spurious diff in a release document, which trains the reader to ignore post-run dirt and could hide a real BOM change committed alongside it. The self-check gave false assurance: it was written to prove restoration and was structurally incapable of failing on this class of corruption.",
+    "verification_method": "Capture and restore through read_bytes/write_bytes, and assert on bytes. Verified: docs/BOM.csv keeps 55 carriage returns and git reports no modification after running test_missing_bom_entry_is_caught. Run pytest -m mutation and confirm git status is clean afterwards.",
+    "owner": "Claude (independent review)",
+    "resolution": "Fixed in both the shared helper and the BOM test. General lesson, consistent with STEP-002 and SEAL-002 in this same review: a verification that passes its input through the same normalisation as the thing it verifies is not a check."
   }
 ]

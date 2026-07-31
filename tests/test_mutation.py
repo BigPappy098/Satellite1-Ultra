@@ -55,15 +55,23 @@ def _failed_features(report: dict[str, Any], *keys: str) -> list[str]:
 
 @contextmanager
 def mutated_config(path: Path, old: str, new: str) -> Iterator[None]:
-    """Temporarily rewrite a checked-in configuration file, then restore it."""
-    original = path.read_text(encoding="utf-8")
+    """Temporarily rewrite a checked-in configuration file, then restore it.
+
+    Restore through bytes.  read_text translates CRLF to LF, so reading a
+    CRLF file and writing the result back rewrites every line ending, and the
+    obvious `read_text() == original` check cannot see it because the second
+    read normalises identically.  docs/BOM.csv is written by csv.writer and is
+    CRLF, and it came back from a mutation run LF-only.
+    """
+    raw = path.read_bytes()
+    original = raw.decode("utf-8")
     assert old in original, f"mutation anchor {old!r} not present in {path}"
     try:
         path.write_text(original.replace(old, new, 1), encoding="utf-8")
         yield
     finally:
-        path.write_text(original, encoding="utf-8")
-        assert path.read_text(encoding="utf-8") == original
+        path.write_bytes(raw)
+        assert path.read_bytes() == raw
 
 
 # ---------------------------------------------------------------------- #
@@ -80,8 +88,25 @@ def test_removing_the_pad_backing_is_caught_by_the_sealing_gate() -> None:
 
 
 def test_a_pad_narrower_than_its_seat_is_caught_by_the_sealing_gate() -> None:
-    """If the pad does not reach past the seat, the gasket land is discontinuous."""
-    mutant = replace(_baseline(), pr_pad_diameter=120.0)
+    """If the pad does not reach past the seat, the gasket land is discontinuous.
+
+    Sized from the radiator rather than pinned to a literal.  This mutation was
+    written as pr_pad_diameter=120.0 against the 122 mm SB12PACR-00, where 120
+    left the land broken.  The Dayton DSA115-PR is 115.57 mm across, so a 120 mm
+    pad still covers its seat: the gate kept failing, but on blind clamp
+    inserts, while the continuity check this test names stayed green.  The
+    status assertion passed and the test quietly stopped proving anything.
+
+    Measured on the current parts: continuity survives at 120 mm and breaks at
+    115 mm and below.  Taking 2 mm off the radiator's own outside diameter puts
+    the pad inside the seat edge for any radiator, which is the geometric
+    condition the check exists to catch.
+    """
+    base = _baseline()
+    healthy = sealing_report(base)
+    assert healthy["status"] == "PASS"
+
+    mutant = replace(base, pr_pad_diameter=base.pr_outer_diameter - 2.0)
     defective = sealing_report(mutant)
     assert defective["status"] == "FAIL"
     assert any("continuity" in feature for feature in _failed_features(defective, "checks"))
@@ -258,14 +283,18 @@ def test_unknown_fastener_id_is_caught() -> None:
 
 def test_missing_bom_entry_is_caught() -> None:
     path = ROOT / "docs" / "BOM.csv"
-    original = path.read_text(encoding="utf-8")
+    # Bytes, not text: this file is CRLF, and restoring via read_text/write_text
+    # silently converted it to LF on every mutation run.
+    raw = path.read_bytes()
+    original = raw.decode("utf-8")
     filtered = "\n".join(line for line in original.splitlines() if not line.startswith("H01,"))
     try:
         path.write_text(filtered + "\n", encoding="utf-8")
         with pytest.raises(ValueError, match="unknown BOM ID"):
             validate_documentation()
     finally:
-        path.write_text(original, encoding="utf-8")
+        path.write_bytes(raw)
+        assert path.read_bytes() == raw
 
 
 def test_changed_export_source_is_caught() -> None:
