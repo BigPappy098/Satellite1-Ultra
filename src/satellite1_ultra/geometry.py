@@ -81,15 +81,19 @@ class DesignParameters:
     driver_pad_diameter: float = 126.0
 
     # --- passive radiators ------------------------------------------------
+    # These mirror the selected radiator in config/components.yaml (currently
+    # the Dayton DSA115-PR) and the mounts derived from it.  They are duplicated
+    # deliberately, and test_checked_in_configuration_matches_authoritative_defaults
+    # fails if a component swap leaves them behind.
     pr_axis_z: float = -136.0
-    pr_cutout_diameter: float = 102.0
-    pr_outer_diameter: float = 122.0
+    pr_cutout_diameter: float = 93.73
+    pr_outer_diameter: float = 115.57
     pr_flange_thickness: float = 4.0
-    pr_depth: float = 38.3
+    pr_depth: float = 29.72
     pr_rear_excursion: float = 9.0
-    pr_clamp_ring_diameter: float = 140.0
-    pr_clamp_bolt_circle: float = 130.0
-    pr_pad_diameter: float = 144.0
+    pr_clamp_ring_diameter: float = 134.0
+    pr_clamp_bolt_circle: float = 124.0
+    pr_pad_diameter: float = 138.0
     pr_ledge_depth: float = 5.0
 
     # --- shared component-mount construction ------------------------------

@@ -9,6 +9,7 @@ import pytest
 from satellite1_ultra.configuration import (
     CALIBRATION_LIMITS,
     load_design_parameters,
+    selected_components,
     validate_physical_calibration,
 )
 from satellite1_ultra.geometry import DEFAULT_PARAMETERS
@@ -26,9 +27,19 @@ def test_checked_in_configuration_matches_authoritative_defaults() -> None:
 
 
 def test_selected_components_drive_mechanical_interfaces() -> None:
+    """The selected component records must reach the mechanical parameters.
+
+    Read the expected cutouts from the selected components rather than pinning
+    literals: this test is about the record reaching the parameter, and hard
+    numbers here only encode which part was selected the day it was written.
+    A component swap then leaves a stale literal that fails for the wrong
+    reason.  Pinning the selection is
+    test_checked_in_configuration_matches_authoritative_defaults' job.
+    """
+    active, passive = selected_components()
     loaded = load_design_parameters()
-    assert loaded.driver_cutout_diameter == pytest.approx(88.5)
-    assert loaded.pr_cutout_diameter == pytest.approx(102.0)
+    assert loaded.driver_cutout_diameter == pytest.approx(active["cutout_diameter_mm"])
+    assert loaded.pr_cutout_diameter == pytest.approx(passive["cutout_diameter_mm"])
     assert loaded.board_revision == "public_batch_1"
 
 
