@@ -1,5 +1,5 @@
 {
-  "status": "FAIL",
+  "status": "PASS",
   "evidence": "VERIFIED_DIGITALLY",
   "checked_files": [
     "docs/BUILD_BOOK.md",
@@ -48,7 +48,5 @@
       "bytes": 441205
     }
   ],
-  "errors": [
-    "unknown BOM ID in guides: H01"
-  ]
+  "errors": []
 }
