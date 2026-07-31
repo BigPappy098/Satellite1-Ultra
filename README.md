@@ -11,7 +11,7 @@ rounded rectangle — so the Satellite1 top sits **flush** in a single flat surf
 instead of perched on a shoulder. Assembled, it reads as one object. Nothing is
 glued; it all comes back apart with a hex key.
 
-![The finished Satellite1 Ultra](reports/renders/v2_review_iso.png)
+![The finished Satellite1 Ultra](reports/renders/assembly_iso.png)
 
 ## Start here
 
