@@ -71,6 +71,23 @@ def test_both_formats_are_offered(site_pages: list[Path]) -> None:
     assert any(link.endswith(".stl") for link in links), "no STL download is offered anywhere"
 
 
+def test_every_printable_part_offers_an_stl_too(site_pages: list[Path]) -> None:
+    """Not everyone slices 3MF, so 3MF-only is not an option for any part.
+
+    The test-print page shipped with no STL at all, because package_release
+    excluded the calibration coupons from the STL folder while the exports had
+    always contained them. That is the first page a builder downloads from.
+    """
+    offered = {Path(link).stem for link in _download_links(site_pages) if link.endswith(".stl")}
+    expected = {
+        source
+        for order in (CALIBRATION_PRINT_ORDER, ULTRA_PRINT_ORDER, FABRIC_WRAP_PRINT_ORDER)
+        for source, _filename, _quantity in order
+    }
+    missing = sorted(expected - offered)
+    assert not missing, "printable parts offered only as 3MF: " + ", ".join(missing)
+
+
 def test_printed_parts_are_labelled_with_the_material_they_export_as(
     site_pages: list[Path],
 ) -> None:

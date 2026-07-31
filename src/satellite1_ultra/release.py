@@ -78,7 +78,12 @@ def package_release(
                 root / "exports" / "step" / f"{part_name}.step",
                 output / STEP_DIR / f"{part_name}.step",
             )
-        if part_name not in CALIBRATION_NAMES | GASKET_SOLIDS:
+        # Everything printable ships in both formats, test pieces included.
+        # The coupons used to be 3MF-only, which left the first page a builder
+        # downloads from with no STL option at all, for no reason: the exports
+        # have always existed. Only the gasket solids are excluded, and those
+        # are cut from foam sheet rather than printed.
+        if part_name not in GASKET_SOLIDS:
             for folder, suffix in (("STL", ".stl"), ("3MF", ".3mf")):
                 _copy(
                     root / "exports" / folder.lower() / f"{part_name}{suffix}",

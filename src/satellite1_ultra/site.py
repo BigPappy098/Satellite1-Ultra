@@ -27,6 +27,7 @@ from satellite1_ultra.release import (
     ENCLOSURE_DIR,
     FABRIC_DIR,
     GASKET_DIR,
+    GASKET_SOLIDS,
     OFFICIAL_DIR,
     RELEASE_NAME,
     STL_DIR,
@@ -37,13 +38,9 @@ REPO = "https://github.com/BigPappy098/Satellite1-Ultra"
 RAW = f"{REPO}/raw/main/release/{RELEASE_NAME}"
 COLAB = "https://colab.research.google.com/github/BigPappy098/Satellite1-Ultra/blob/main/notebooks/make_my_parts.ipynb"
 
-#: Parts that package_release ships an STL for, mirroring its own exclusions.
-_STL_AVAILABLE = {
-    name
-    for name in PARTS
-    if not name.startswith("coupon_")
-    and name not in {"cable_gland", "divider_gasket", "driver_gasket", "passive_radiator_gasket"}
-}
+#: Parts package_release ships an STL for: everything printable.  Only the
+#: gasket solids are absent, and those are cut from foam, not printed.
+_STL_AVAILABLE = {name for name in PARTS if name not in GASKET_SOLIDS}
 
 PAGES = (
     ("index.html", "Start"),
@@ -136,19 +133,27 @@ def _file_table(rows: list[tuple[str, str, int, str]], folder: str) -> str:
     """
     cells = []
     for source, name, quantity, material in rows:
-        stl = (
+        # The official top parts are already STL, so there is no second format
+        # to offer; everything we generate ourselves has both.
+        alternate = (
             f'<a href="{RAW}/{STL_DIR}/{source}.stl">STL</a>'
-            if source in _STL_AVAILABLE
+            if source in _STL_AVAILABLE and not name.lower().endswith(".stl")
+            else '<span class="dim">already STL</span>'
+            if name.lower().endswith(".stl")
             else '<span class="dim">—</span>'
         )
         cells.append(
             f'<tr><td><a href="{RAW}/{folder}/{name}">{escape(name)}</a></td>'
             f'<td class="qty">{quantity}</td>{_material_cell(material)}'
-            f"<td>{stl}</td></tr>"
+            f"<td>{alternate}</td></tr>"
         )
+    # Label the primary column with the format these rows actually are, rather
+    # than assuming 3MF: the official-top table is STL and said "3MF".
+    suffixes = sorted({Path(name).suffix.upper().lstrip(".") for _s, name, _q, _m in rows})
+    primary = " / ".join(suffixes) if suffixes else "file"
     return (
-        '<table class="files"><tr><th>File — click to download (3MF)</th>'
-        "<th>How many</th><th>Print in</th><th>Also as</th></tr>"
+        f'<table class="files"><tr><th>File — click to download ({escape(primary)})</th>'
+        "<th>How many</th><th>Print in</th><th>Also available as</th></tr>"
         f"{''.join(cells)}</table>"
     )
 
