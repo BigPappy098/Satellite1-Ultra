@@ -1,0 +1,48 @@
+[
+  {
+    "id": "CI-001",
+    "title": "Deep and mutation gates never ran on any v2 commit",
+    "severity": "HIGH",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "gh run list --workflow 'Full geometry validation' shows the last success on 2026-07-28 (PR #2, pre-v2). Every run from PR #3 onward failed. PR #3 died in the manual step (BUILD_BOOK.md referenced missing image IMAGES/print_orientation_outer_shell.png); PR #4 through 2026-07-31 died in test-fast on tests/test_configuration.py. make release orders test-fast before test-deep and mutation, so neither stage executed on any commit containing the v2 geometry. Both defects below were therefore latent for the entire v2 design cycle.",
+    "affected_files": [
+      ".github/workflows/validate.yml",
+      "Makefile"
+    ],
+    "engineering_consequence": "Every v2 release-blocking claim that rests on a deep or mutation gate was unverified. The two defects found on first execution (COLLIDE-002, STEP-002) confirm the exposure was real rather than theoretical.",
+    "verification_method": "Run make test-deep and make mutation on a clean checkout of main and confirm both complete. Re-check gh run list for a green 'Full geometry validation'.",
+    "owner": "project owner",
+    "resolution": "Both blocking failures fixed. Note the ordering weakness remains: an early-stage failure still hides every later stage, so a green test-fast is not evidence about deep or mutation."
+  },
+  {
+    "id": "COLLIDE-002",
+    "title": "Collision mutation stopped being a defect after the radiator substitution",
+    "severity": "HIGH",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "test_moving_a_radiator_into_the_driver_is_caught_by_the_collision_gate asserted FAIL for pr_axis_z=-100.0. collision_report returned PASS. Sweeping pr_axis_z over -136, -125, -115, -110, -105, -100 gives 0.0 mm^3 driver-to-radiator envelope intersection at every height including exact alignment. Cause: the Dayton DSA115-PR is 29.72 mm deep and 115.57 mm across, reaching inward only to x = +-46.28 mm, while the driver cylinder spans x = +-44 mm. The superseded SB12PACR-00 was 38.3 mm deep and reached x = +-37.7 mm, which did interfere. The mutation encoded the old part's geometry.",
+    "affected_files": [
+      "tests/test_mutation.py"
+    ],
+    "engineering_consequence": "The collision gate was reported as exercised by a mutation that could no longer fail, so it carried no evidence. A genuine interference regression introduced after the radiator swap would not have been detected by this test.",
+    "verification_method": "Sweep pr_depth through collision_report: PASS at 29.72, 34.0 and 38.3 mm; FAIL with 2 invalid collisions at 42.0 and 46.0 mm. The replacement mutation uses pr_depth=45.0, clear of the measured 38.3-42.0 boundary. Run pytest -m deep.",
+    "owner": "Claude (independent review)",
+    "resolution": "Mutation re-anchored to radiator depth, the parameter that actually governs this interference and the one that moves under component substitution. Measured threshold recorded in the test docstring so a future swap shows up as a boundary shift rather than a silently passing test."
+  },
+  {
+    "id": "STEP-002",
+    "title": "Export round-trip volume gate used an absolute budget, so it was not one standard",
+    "severity": "MEDIUM",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "test_exports_are_current_and_reopen asserted step_volume_error_mm3 < 1e-2 for all 28 exports. shell_crown (0.02213), shell_base_fabric (0.02396) and shell_crown_fabric (0.02214) exceeded it; all 25 other parts were at or below 2e-5. The absolute budget is 1.4e-8 relative on the 703652 mm^3 main_cabinet and 2.1e-6 relative on the 4724 mm^3 anti_slip_ring, so it did not express a single criterion. Worst relative round-trip error across all exports is 2.24e-07. Corresponding step_bounds_error_mm is 3.81e-12 on the failing parts, so extents round-trip essentially exactly.",
+    "affected_files": [
+      "tests/test_validation.py"
+    ],
+    "engineering_consequence": "Three v2 shells failed a release-blocking gate on a measurement artifact. Taken at face value this would have forced changes to approved geometry to satisfy a numerical residue; taken as noise without analysis it would have set the precedent of relaxing a gate to silence it. 0.024 mm^3 is a cube 0.29 mm on a side against a 0.4 mm nozzle and a 0.2 mm layer, and the smallest real feature on those parts is a crush rib of roughly 240 mm^3, four orders of magnitude larger.",
+    "verification_method": "Gate changed to step_volume_error_mm3 / brep_volume_mm3 < 1e-6, roughly 4x tighter than the worst observed value. Checked against representative feature loss on shell_crown: 194043 mm^3 (the genuine offset2D crown loss found earlier in this project) = 1.47 relative, one crush rib 1.8e-03, one retention tab 4.5e-04, a 2 mm^3 sliver 1.5e-05, a 0.2 mm^3 speck 1.5e-06. All caught. The gate now fires above 0.132 mm^3 on shell_crown, a cube 0.51 mm on a side, which is below one extrusion bead. Run pytest -m deep.",
+    "owner": "Claude (independent review)",
+    "resolution": "Threshold made relative. This is strictly stronger than the previous absolute check on every part larger than 10000 mm^3 and weaker only on parts small enough that 1e-2 mm^3 was already looser than 1e-6 relative. No geometry was changed. The residue itself is accepted as OpenCascade re-integrating trimmed spline faces after re-parameterisation on STEP import."
+  }
+]

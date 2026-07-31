@@ -138,8 +138,24 @@ def test_a_thin_cabinet_wall_is_caught_by_the_measured_section_probe() -> None:
 # Collision
 # ---------------------------------------------------------------------- #
 @pytest.mark.deep
-def test_moving_a_radiator_into_the_driver_is_caught_by_the_collision_gate() -> None:
-    mutant = replace(_baseline(), pr_axis_z=-100.0)
+def test_a_radiator_that_intrudes_too_far_is_caught_by_the_collision_gate() -> None:
+    """A radiator deep enough to reach the driver must be caught.
+
+    This mutation used to drop a radiator to the driver's height
+    (pr_axis_z=-100.0), which interfered when the radiator was the 38.3 mm-deep,
+    122 mm SB12PACR-00.  The Dayton DSA115-PR is 29.72 mm deep and 115.57 mm
+    across, so it reaches inward only to x = +-46.28 mm while the driver spans
+    x = +-44 mm: the two never meet at any height, and the gate correctly
+    reported PASS.  The mutation had stopped being a defect, so it tested
+    nothing.
+
+    Depth is the parameter that actually decides this, and it is the one that
+    moves when a radiator is substituted.  Measured on the current layout, the
+    gate is quiet through 38.3 mm and fires from 42.0 mm; 45.0 mm sits clear of
+    that boundary without being so extreme that it would pass through an
+    enclosure of any plausible size.
+    """
+    mutant = replace(_baseline(), pr_depth=45.0)
     report = collision_report(mutant)
     assert report["status"] == "FAIL"
     assert report["invalid_collision_count"] > 0
