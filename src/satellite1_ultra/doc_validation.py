@@ -50,6 +50,65 @@ def _csv_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(source))
 
 
+#: Camera names in renders.VIEWS, which the view-loop file names interpolate.
+VIEW_NAMES = ("iso", "front", "side", "top")
+
+#: Hand-written pages that are published as-is and so must only reference
+#: images the render pass actually produces.
+HAND_WRITTEN_PAGES = ("README.md",)
+
+
+def _hand_written_image_errors(root: Path) -> list[str]:
+    """Check hand-written pages reference renders the pipeline regenerates.
+
+    Existing on disk is not sufficient: a file left behind by a one-off script
+    passes an existence check and then disappears on the next ``clean``.  The
+    reference has to name a render ``generate_renders`` writes.
+    """
+    produced = _rendered_names(root)
+    errors: list[str] = []
+    for page_name in HAND_WRITTEN_PAGES:
+        page = root / page_name
+        if not page.is_file():
+            errors.append(f"missing page: {page_name}")
+            continue
+        for _, ref in re.findall(r"!\[(.*?)\]\((.*?)\)", page.read_text(encoding="utf-8")):
+            if ref.startswith(("http://", "https://")):
+                continue
+            if not (root / ref).is_file():
+                errors.append(f"missing image referenced by {page_name}: {ref}")
+            elif ref.startswith("reports/renders/") and Path(ref).name not in produced:
+                errors.append(
+                    f"{page_name} references {ref}, which the render pass does not "
+                    "produce; it will vanish on the next clean"
+                )
+    return errors
+
+
+def _rendered_names(root: Path) -> set[str]:
+    """File names ``generate_renders`` writes, read from its source.
+
+    Read statically rather than by running the render pass, so the check stays
+    cheap enough to sit in ``docs-check``.
+    """
+    source = (root / "src" / "satellite1_ultra" / "renders.py").read_text(encoding="utf-8")
+    names: set[str] = set()
+    for stem in re.findall(r'output / f?"([^"]+\.png)"', source):
+        expanded = {stem}
+        if "{view.name}" in stem:
+            expanded = {
+                name.replace("{view.name}", view) for name in expanded for view in VIEW_NAMES
+            }
+        if "{suffix}" in stem:
+            expanded = {
+                name.replace("{suffix}", suffix)
+                for name in expanded
+                for suffix in ("", "_exploded")
+            }
+        names |= expanded
+    return names
+
+
 def validate_documentation(root: Path = ROOT) -> dict[str, Any]:
     """Validate generated documentation against current exports and schedules."""
     docs = root / "docs"
@@ -83,6 +142,12 @@ def validate_documentation(root: Path = ROOT) -> dict[str, Any]:
     )
     if duplicates:
         errors.append("duplicate image captions: " + ", ".join(duplicates))
+
+    # The hand-written README is the first thing anyone sees, and it was not
+    # covered above: it pointed at a render produced only by a side script, so
+    # `clean` removed the file and nothing regenerated it.  Its images have to
+    # come from the render pass like everyone else's.
+    errors.extend(_hand_written_image_errors(root))
 
     try:
         bom = _csv_rows(docs / "BOM.csv")

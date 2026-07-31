@@ -7,6 +7,8 @@ no hand-drawn illustration is used anywhere in this project's deliverables.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
@@ -29,16 +31,28 @@ from satellite1_ultra.assemblies import _placement, release_parts
 from satellite1_ultra.configuration import ROOT
 from satellite1_ultra.geometry import (
     DEFAULT_PARAMETERS,
+    SECTION_EXPONENT,
     DesignParameters,
     ballast_plate_extent,
 )
 
+#: Instructional diagrams are small, annotated and numerous, so they tessellate
+#: coarsely to keep the render pass quick.  This is a *drawing* tolerance and has
+#: nothing to do with the meshes builders print: those come from
+#: ``PartDefinition.mesh_tolerance`` (0.02 mm) in exporting.py.
 TESSELLATION_TOLERANCE = 0.35
 ANGULAR_TOLERANCE = 0.35
+
+#: The product shots show the bare superellipse skin, where 0.35 mm of chord
+#: error is plainly visible as flat spots along the corner sweep.  Draw those at
+#: the same tolerance the printed mesh uses, so the picture cannot imply
+#: faceting the part does not have.
+FINE_TESSELLATION_TOLERANCE = 0.02
+FINE_ANGULAR_TOLERANCE = 0.10
 LIGHT = np.array([-0.45, -0.75, 0.49])
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
 _TESSELLATION_CACHE: dict[
-    tuple[int, float, float, float, float],
+    tuple[int, float, float, float, float, float, float],
     tuple[NDArray[np.float64], NDArray[np.int64]],
 ] = {}
 
@@ -139,6 +153,19 @@ BALLOON_FACE = "#12395c"
 ACCENT = "#c2410c"
 
 
+@contextmanager
+def fine_tessellation() -> Iterator[None]:
+    """Draw at the tolerance the printed mesh uses, for bare-surface product shots."""
+    global TESSELLATION_TOLERANCE, ANGULAR_TOLERANCE
+    previous = (TESSELLATION_TOLERANCE, ANGULAR_TOLERANCE)
+    TESSELLATION_TOLERANCE = FINE_TESSELLATION_TOLERANCE
+    ANGULAR_TOLERANCE = FINE_ANGULAR_TOLERANCE
+    try:
+        yield
+    finally:
+        TESSELLATION_TOLERANCE, ANGULAR_TOLERANCE = previous
+
+
 def triangles(shape: cq.Shape) -> tuple[NDArray[np.float64], NDArray[np.int64]]:
     """Tessellate a B-rep solid into vertices and triangle indices."""
     center = shape.Center()
@@ -148,6 +175,11 @@ def triangles(shape: cq.Shape) -> tuple[NDArray[np.float64], NDArray[np.int64]]:
         round(center.x, 5),
         round(center.y, 5),
         round(center.z, 5),
+        # The tolerance has to be part of the key.  Without it a scene drawn
+        # coarsely first would hand its facets straight back to a later fine
+        # pass, and the fine render would silently be the coarse one.
+        TESSELLATION_TOLERANCE,
+        ANGULAR_TOLERANCE,
     )
     cached = _TESSELLATION_CACHE.get(key)
     if cached is not None:
@@ -696,6 +728,11 @@ def render_views(
     colors = _colors(parts)
     written: list[Path] = []
     suffix = "_exploded" if exploded else ""
+    # Deliberately drawn at the coarse preview tolerance.  This is a many-part
+    # assembly diagram where the skin is mostly occluded, and tessellating every
+    # internal solid finely would put roughly half a million polygons through
+    # matplotlib's painter sort for no visible gain.  The smooth-surface job
+    # belongs to render_product_views.
     for view in VIEWS:
         figure = plt.figure(figsize=(7.5, 8.5), dpi=170)
         axis = figure.add_subplot(111, projection="3d")
@@ -1469,12 +1506,64 @@ def render_special_views(output: Path, parameters: DesignParameters) -> list[Pat
     ]
 
 
+#: Product-shot shading.  The assembly diagrams use DOC_PALETTE to separate
+#: adjacent parts; a product shot is the opposite job, so the skin reads as one
+#: continuous graphite object and only the mic isolators pick up the accent.
+PRODUCT_SHADE: dict[str, tuple[float, float, float]] = {
+    "shell_base": (0.29, 0.31, 0.34),
+    "shell_grille": (0.33, 0.35, 0.38),
+    "shell_crown": (0.29, 0.31, 0.34),
+}
+#: Hidden inside the official stack, so they only add clutter to a product shot.
+_PRODUCT_HIDE = ("official_hat_batch1_rev4_1", "official_pcb_spacer")
+
+
+def render_product_views(
+    output: Path = ROOT / "reports" / "renders",
+    parameters: DesignParameters = DEFAULT_PARAMETERS,
+) -> list[Path]:
+    """Render the finished object as a buyer sees it: skin plus the official top.
+
+    This is the image the README and the website lead with.  It lives in the
+    render pass rather than in a side script precisely so ``clean`` cannot leave
+    the published pages pointing at a file nothing regenerates.
+    """
+    from satellite1_ultra.geometry import skin_segments
+    from satellite1_ultra.official import official_upper_solids
+
+    output.mkdir(parents=True, exist_ok=True)
+    parts: dict[str, cq.Shape] = dict(skin_segments(parameters))
+    parts.update({n: s for n, s in official_upper_solids().items() if n not in _PRODUCT_HIDE})
+    colors = {n: PRODUCT_SHADE.get(n, (0.60, 0.62, 0.65)) for n in parts}
+    body = 2.0 * parameters.body_half
+    height = parameters.shell_flat_top_z - parameters.shell_bottom_z
+    note = (
+        f"{body:.0f} x {body:.0f} x {height:.1f} mm   |   "
+        f"superellipse n = {SECTION_EXPONENT}   |   official top flush"
+    )
+    written: list[Path] = []
+    with fine_tessellation():
+        for view in VIEWS:
+            written.append(
+                _scene(
+                    output / f"product_{view.name}.png",
+                    parts,
+                    f"Satellite1 Ultra — {view.name}",
+                    note,
+                    view=view,
+                    colors=colors,
+                )
+            )
+    return written
+
+
 def generate_renders(
     output: Path = ROOT / "reports" / "renders",
     parameters: DesignParameters = DEFAULT_PARAMETERS,
 ) -> list[Path]:
     """Produce the complete render deliverable set."""
-    written = render_views(output, parameters, exploded=False)
+    written = render_product_views(output, parameters)
+    written += render_views(output, parameters, exploded=False)
     written += render_views(output, parameters, exploded=True)
     written += render_cross_sections(output, parameters)
     written.append(render_part_sheet(output, parameters))

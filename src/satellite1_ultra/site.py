@@ -111,7 +111,7 @@ def _index(req: dict[str, float]) -> str:
 lights. Everything below them gets replaced by a sealed, weighted cabinet with a
 real 3.5&nbsp;inch driver and a passive radiator on each side.</p>
 
-<img src="images/assembly_iso.png" alt="The finished Satellite1 Ultra">
+<img src="images/product_iso.png" alt="The finished Satellite1 Ultra">
 
 <p>It is built from the official squircle\u2019s own curve, so the Satellite1 top
 sits flush in a single flat surface rather than perched on a shoulder. Assembled,
@@ -606,6 +606,7 @@ seal you have disturbed, and never cut a wire to get a part out.</div>
 #: Renders the site needs; copied next to the pages so GitHub Pages can serve them.
 SITE_IMAGES = (
     "assembly_iso.png",
+    "product_iso.png",
     "calibration_official_interface.png",
     "calibration_fasteners.png",
     "calibration_driver.png",

@@ -11,7 +11,7 @@ rounded rectangle — so the Satellite1 top sits **flush** in a single flat surf
 instead of perched on a shoulder. Assembled, it reads as one object. Nothing is
 glued; it all comes back apart with a hex key.
 
-![The finished Satellite1 Ultra](reports/renders/assembly_iso.png)
+![The finished Satellite1 Ultra](reports/renders/product_iso.png)
 
 ## Start here
 
@@ -113,12 +113,11 @@ website, and the release package. It fails if anything is missing or stale.
 | `make site` | Build the illustrated website into `site/` |
 | `make clean` | Remove every generated artifact |
 
-Two extra checks worth knowing about, both written after gates missed real
-defects:
+One extra check worth knowing about, written after the gates missed a real
+defect:
 
 ```text
 .venv/bin/python scripts/audit_connections.py   # every bolted joint, from the solids
-.venv/bin/python scripts/render_v2_review.py    # review sheets of the current form
 ```
 
 `audit_connections.py` exists because a fastener can pass a position check and
