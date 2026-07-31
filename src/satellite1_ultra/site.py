@@ -8,6 +8,7 @@ site cannot drift away from what is actually shipped.
 
 from __future__ import annotations
 
+import csv
 import json
 import shutil
 from html import escape
@@ -15,15 +16,34 @@ from pathlib import Path
 
 from satellite1_ultra.builder_files import (
     CALIBRATION_PRINT_ORDER,
+    FABRIC_WRAP_PRINT_ORDER,
     OFFICIAL_TOP_PRINT_ORDER,
     ULTRA_PRINT_ORDER,
 )
 from satellite1_ultra.configuration import ROOT
+from satellite1_ultra.exporting import PARTS
+from satellite1_ultra.release import (
+    CALIBRATION_DIR,
+    ENCLOSURE_DIR,
+    FABRIC_DIR,
+    GASKET_DIR,
+    OFFICIAL_DIR,
+    RELEASE_NAME,
+    STL_DIR,
+)
 
 #: Filled in once the repository is public; every download link hangs off this.
 REPO = "https://github.com/BigPappy098/Satellite1-Ultra"
-RAW = f"{REPO}/raw/main/release/Satellite1-Ultra-RC1"
+RAW = f"{REPO}/raw/main/release/{RELEASE_NAME}"
 COLAB = "https://colab.research.google.com/github/BigPappy098/Satellite1-Ultra/blob/main/notebooks/make_my_parts.ipynb"
+
+#: Parts that package_release ships an STL for, mirroring its own exclusions.
+_STL_AVAILABLE = {
+    name
+    for name in PARTS
+    if not name.startswith("coupon_")
+    and name not in {"cable_gland", "divider_gasket", "driver_gasket", "passive_radiator_gasket"}
+}
 
 PAGES = (
     ("index.html", "Start"),
@@ -91,17 +111,136 @@ Hardware is CERN-OHL-S-2.0. Official Satellite1 parts keep their own licence.
 """
 
 
-def _file_table(rows: list[tuple[str, int, str]], folder: str) -> str:
-    """A download table: what to print, how many, in what material."""
-    body = "".join(
-        f'<tr><td><a href="{RAW}/PRINT_THESE_FILES/{folder}/{name}">{escape(name)}</a></td>'
-        f'<td class="qty">{quantity}</td><td>{escape(material)}</td></tr>'
-        for name, quantity, material in rows
-    )
+def _material(source: str) -> str:
+    """The material a part is actually exported as.
+
+    Read from PARTS rather than written out here.  The page used to hard-code
+    "TPU 95A" for anti_slip_ring and ASA for everything else, which labelled the
+    mic isolators and the leak-test tool -- both TPU -- as ASA. Printing the
+    isolators rigid removes the decoupling they exist to provide.
+    """
+    return str(PARTS[source].material)
+
+
+def _material_cell(material: str) -> str:
+    """Material as a coloured badge, so it cannot be skimmed past."""
+    kind = "tpu" if material.startswith("TPU") else "asa" if material == "ASA" else "other"
+    return f'<td><span class="mat {kind}">{escape(material)}</span></td>'
+
+
+def _file_table(rows: list[tuple[str, str, int, str]], folder: str) -> str:
+    """A download table: what to print, how many, in what material, both formats.
+
+    Every row links into the release package, whose folder names come from
+    release.py so the two cannot drift apart again.
+    """
+    cells = []
+    for source, name, quantity, material in rows:
+        stl = (
+            f'<a href="{RAW}/{STL_DIR}/{source}.stl">STL</a>'
+            if source in _STL_AVAILABLE
+            else '<span class="dim">—</span>'
+        )
+        cells.append(
+            f'<tr><td><a href="{RAW}/{folder}/{name}">{escape(name)}</a></td>'
+            f'<td class="qty">{quantity}</td>{_material_cell(material)}'
+            f"<td>{stl}</td></tr>"
+        )
     return (
-        "<table><tr><th>File — click to download</th><th>How many</th>"
-        f"<th>Material</th></tr>{body}</table>"
+        '<table class="files"><tr><th>File — click to download (3MF)</th>'
+        "<th>How many</th><th>Print in</th><th>Also as</th></tr>"
+        f"{''.join(cells)}</table>"
     )
+
+
+def _material_summary() -> str:
+    """Which filament each part needs, counted from PARTS.
+
+    Stated up front because the split is easy to get wrong: the seals look like
+    the obvious TPU candidates and are not printed at all, while the four parts
+    that genuinely need TPU are easy to miss in a long table.
+    """
+    printed = {
+        name: definition
+        for name, definition in PARTS.items()
+        if name not in {"divider_gasket", "driver_gasket", "passive_radiator_gasket"}
+    }
+    tpu = sorted(n for n, d in printed.items() if str(d.material).startswith("TPU"))
+    asa = [n for n, d in printed.items() if d.material == "ASA"]
+    tpu_total = sum(PARTS[n].quantity for n in tpu)
+    tpu_list = ", ".join(
+        f"{n.replace('_', ' ')}{f' (×{PARTS[n].quantity})' if PARTS[n].quantity > 1 else ''}"
+        for n in tpu
+    )
+    return f"""
+<div class="note"><strong>Which filament goes where</strong>
+<table class="mats">
+<tr>{_material_cell("ASA")}<td><b>{len(asa)} files.</b> The cabinet, the skin, the
+clamp rings, the base, the weight tray, and all eight test pieces. One spool is
+plenty.</td></tr>
+<tr>{_material_cell("TPU 95A")}<td><b>{len(tpu)} files, {tpu_total} pieces:</b>
+{escape(tpu_list)}. These have to flex — printing them rigid defeats the point.</td></tr>
+<tr>{_material_cell("2 mm closed-cell EPDM")}<td><b>3 seals, not printed.</b> You
+cut these from foam sheet using the DXF templates further down this page.</td></tr>
+</table>
+<p class="help">Any TPU around 95A shore works. Softer is fine for the isolators
+and the foot; the cable seal wants the firmer end so it grips the wires.</p></div>
+"""
+
+
+#: How BOM categories are grouped on the shopping page, in buying order.
+_SHOPPING_GROUPS = (
+    ("The electronics and drivers", ("official electronics", "active driver", "passive radiator")),
+    ("Screws, inserts and wiring", ("fastener", "insert", "speaker cable", "speaker terminals")),
+    (
+        "Weight, seals and filament",
+        ("ballast", "radiator tuning", "gasket stock", "optional acoustic material"),
+    ),
+)
+#: Printed upstream parts, listed on the download tables rather than bought.
+_SHOPPING_SKIP_CATEGORIES = {"official printed part"}
+
+
+def _shopping_table() -> str:
+    """The shopping list, generated from BOM.csv so every item carries its link.
+
+    This page used to hold a hand-written nine-row table with no links at all,
+    while BOM.csv already had a US source for all 21 purchasable lines.
+    """
+    with (ROOT / "docs" / "BOM.csv").open(encoding="utf-8", newline="") as source:
+        rows = list(csv.DictReader(source))
+    printed = {"printed part", "calibration part", "service tool"}
+    printed |= _SHOPPING_SKIP_CATEGORIES
+    by_category = {row["id"]: row for row in rows if row["category"] not in printed}
+
+    sections = []
+    placed: set[str] = set()
+    for heading, categories in _SHOPPING_GROUPS:
+        body = []
+        for row in by_category.values():
+            if row["category"] not in categories:
+                continue
+            placed.add(row["id"])
+            link = row.get("buy_link", "")
+            where = (
+                f'<a href="{escape(link)}" target="_blank" rel="noopener">Buy</a>'
+                if link.startswith("http")
+                else escape(link or "—")
+            )
+            body.append(
+                f"<tr><td>{escape(row['item'])}</td>"
+                f'<td class="qty">{escape(row["quantity"])}</td>'
+                f"<td>{escape(row['specification'][:150])}</td><td>{where}</td></tr>"
+            )
+        if body:
+            sections.append(
+                f"<h3>{escape(heading)}</h3><table><tr><th>What</th><th>How many</th>"
+                f"<th>Specification</th><th>Where</th></tr>{''.join(body)}</table>"
+            )
+    missed = [row["id"] for row in by_category.values() if row["id"] not in placed]
+    if missed:
+        raise ValueError(f"BOM rows not shown on the shopping page: {', '.join(sorted(missed))}")
+    return "".join(sections)
 
 
 def _index(req: dict[str, float]) -> str:
@@ -191,7 +330,7 @@ open an issue.</p>
 
 def _print_tests() -> str:
     rows = [
-        (filename, quantity, "ASA" if source != "cable_gland" else "TPU 95A")
+        (source, filename, quantity, _material(source))
         for source, filename, quantity in CALIBRATION_PRINT_ORDER
     ]
     body = f"""
@@ -205,7 +344,7 @@ differently, and this design has heat-set inserts, gasket lands and press-fit
 seats that all care about a few tenths of a millimetre.</p></div>
 
 <h2>The files</h2>
-{_file_table(rows, "1_CALIBRATION_FIRST")}
+{_file_table(rows, CALIBRATION_DIR)}
 
 <div class="step"><h3><span class="num">01</span>Use your real settings</h3>
 <p>Print these with the <b>exact settings you will use for the actual parts</b>.
@@ -432,11 +571,18 @@ make a set of parts that fits your printer exactly.</div>
 
 def _parts() -> str:
     ultra = [
-        (filename, quantity, "TPU 95A" if source == "anti_slip_ring" else "ASA")
+        (source, filename, quantity, _material(source))
         for source, filename, quantity in ULTRA_PRINT_ORDER
     ]
+    fabric = [
+        (source, filename, quantity, _material(source))
+        for source, filename, quantity in FABRIC_WRAP_PRINT_ORDER
+    ]
+    # The official top parts are not in PARTS -- they are preserved upstream
+    # STLs, printed in the same rigid filament as the body.
     official = [
-        (filename, quantity, "ASA") for _source, filename, quantity in OFFICIAL_TOP_PRINT_ORDER
+        (source, filename, quantity, "ASA")
+        for source, filename, quantity in OFFICIAL_TOP_PRINT_ORDER
     ]
     body = f"""
 <h1>Get your parts</h1>
@@ -464,9 +610,10 @@ calculation. Nothing is installed on your computer.</p></div>
 six-hour cabinet print.</p></div>
 
 <h2>The enclosure</h2>
-<p>Print everything in this table. The quantity column matters — two of the
-files need printing more than once.</p>
-{_file_table(ultra, "2_ULTRA_ENCLOSURE_PARTS")}
+{_material_summary()}
+<p>Print everything in this table. The quantity column matters — some files need
+printing more than once, and the <b>Print in</b> column is not decoration.</p>
+{_file_table(ultra, ENCLOSURE_DIR)}
 
 <div class="note"><strong>The outer skin is three parts</strong>
 <p>They stack and interlock: <code>10_OUTER_SKIN_BOTTOM</code>,
@@ -476,36 +623,40 @@ shadow line rather than a step you can feel.</p>
 <p>Print the middle and top upright. Print the bottom one <b>inverted</b>, cut
 face down on the bed — that keeps its curved base off the plate.</p></div>
 
-<div class="note"><strong>Thinking about wrapping it in cloth?</strong>
-<p>Then print <code>10F</code>, <code>11F</code> and <code>12F</code> instead of
-<code>10</code>, <code>11</code> and <code>12</code>. Same parts, with a hidden
-channel inside each roll to tuck the fabric edge into.</p>
-<p><b>Decide before you print.</b> The channel cannot be added afterwards, and
-the standard files deliberately do not have it — on a bare printed finish it
-reads as a line across the body.</p></div>
+<h2>Wrapping it in cloth? Use these three instead</h2>
+<p>Same three skin segments, with a hidden channel inside each roll to tuck the
+fabric edge into. Download these <em>instead of</em> files 10, 11 and 12 above —
+not as well as.</p>
+{_file_table(fabric, FABRIC_DIR)}
+
+<div class="warn"><strong>Decide before you print</strong>
+<p>The channel cannot be added afterwards, and the standard files deliberately
+do not have it — on a bare printed finish it reads as a line across the body.</p></div>
+
+<h2>The three foam seals</h2>
+<p>These are <b>not printed</b>. Print the templates on paper at 100% scale, lay
+them on 2&nbsp;mm closed-cell EPDM foam sheet, and cut the shapes out with a
+sharp knife. That is what makes the cabinet airtight.</p>
+<table class="files"><tr><th>Template — click to download (DXF)</th><th>How many</th><th>Cut from</th></tr>
+<tr><td><a href="{RAW}/{GASKET_DIR}/driver_gasket.dxf">driver_gasket.dxf</a></td><td class="qty">1</td>{_material_cell("2 mm closed-cell EPDM")}</tr>
+<tr><td><a href="{RAW}/{GASKET_DIR}/passive_radiator_gasket.dxf">passive_radiator_gasket.dxf</a></td><td class="qty">2</td>{_material_cell("2 mm closed-cell EPDM")}</tr>
+<tr><td><a href="{RAW}/{GASKET_DIR}/divider_gasket.dxf">divider_gasket.dxf</a></td><td class="qty">1</td>{_material_cell("2 mm closed-cell EPDM")}</tr>
+</table>
 
 <h2>The Satellite1 top</h2>
 <p>These six are the original FutureProofHomes parts, unmodified. Not optional —
 they carry your buttons, your light ring and your microphones.</p>
-{_file_table(official, "3_SQUIRCLE_TOP_PARTS")}
+{_file_table(official, OFFICIAL_DIR)}
 
 <div class="warn"><strong>Do not print these three old parts</strong>
 The original speaker chamber, speaker plate, and rubber ring are replaced by the
 Ultra parts. Printing them wastes filament.</div>
 
 <h2 id="shopping">The shopping list</h2>
-<table>
-<tr><th>What</th><th>How many</th><th>Notes</th></tr>
-<tr><td>Satellite1 Batch 1 kit</td><td class="qty">1</td><td>Core rev4.1 + HAT rev4.1. Batch 2 does not fit.</td></tr>
-<tr><td>Dayton Audio ND91-4 speaker</td><td class="qty">1</td><td>The main speaker.</td></tr>
-<tr><td>Dayton Audio DSA115-PR</td><td class="qty">2</td><td>The two passive radiators on the sides.</td></tr>
-<tr><td>M3 heat-set inserts</td><td class="qty">48</td><td>Buy spares; they are easy to ruin.</td></tr>
-<tr><td>M3 screws</td><td class="qty">52</td><td>Mixed lengths — see <code>FASTENERS.csv</code>.</td></tr>
-<tr><td>2 mm closed-cell EPDM foam</td><td class="qty">1 sheet</td><td>300 &times; 300 mm is plenty.</td></tr>
-<tr><td>Steel plates, 100 &times; 112 &times; 5 mm</td><td class="qty">2</td><td>The weight that stops it toppling.</td></tr>
-<tr><td>Self-adhesive tuning weight</td><td class="qty">2 sets</td><td>Tiny. Trimmed to match on a 0.01 g scale.</td></tr>
-<tr><td>2-pin JST-XH speaker lead</td><td class="qty">1</td><td>Red and black, 22 AWG.</td></tr>
-</table>
+<p>Every line links to somewhere in the US that sells it. These are starting
+points, not endorsements — buy wherever you like, the specification is what
+matters.</p>
+{_shopping_table()}
 
 <p class="next"><a class="btn" href="assemble.html">I have everything — go to step 4 &rarr;</a></p>
 """

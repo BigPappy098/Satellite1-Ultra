@@ -24,6 +24,18 @@ RELEASE_NAME = "Satellite1-Ultra-RC1"
 CALIBRATION_NAMES = {name for name in PARTS if name.startswith("coupon_")} | {"cable_gland"}
 GASKET_SOLIDS = {"divider_gasket", "driver_gasket", "passive_radiator_gasket"}
 
+#: Folder names inside the release package.  The website builds download links
+#: from these, so they are named here rather than written out at both ends: the
+#: published site once pointed at PRINT_THESE_FILES/1_CALIBRATION_FIRST and
+#: friends, none of which have ever existed, and every download 404'd.
+CALIBRATION_DIR = "1_PRINT_THESE_FIRST"
+ENCLOSURE_DIR = "2_ENCLOSURE_PARTS"
+OFFICIAL_DIR = "3_SATELLITE_TOP_PARTS"
+FABRIC_DIR = f"{ENCLOSURE_DIR}/OPTIONAL_FABRIC_WRAP"
+GASKET_DIR = "GASKET_TEMPLATES"
+STL_DIR = "ADVANCED/STL"
+STEP_DIR = "ADVANCED/STEP"
+
 
 def _copy(source: Path, target: Path) -> None:
     if not source.is_file():
@@ -64,7 +76,7 @@ def package_release(
         if part_name not in CALIBRATION_NAMES:
             _copy(
                 root / "exports" / "step" / f"{part_name}.step",
-                output / "ADVANCED" / "STEP" / f"{part_name}.step",
+                output / STEP_DIR / f"{part_name}.step",
             )
         if part_name not in CALIBRATION_NAMES | GASKET_SOLIDS:
             for folder, suffix in (("STL", ".stl"), ("3MF", ".3mf")):
@@ -78,26 +90,26 @@ def package_release(
             output / "ADVANCED" / "CALIBRATION_PARTS" / f"{name}.3mf",
         )
     for path in sorted((root / "exports" / "assembly").glob("*.step")):
-        _copy(path, output / "ADVANCED" / "STEP" / "ASSEMBLIES" / path.name)
+        _copy(path, output / STEP_DIR / "ASSEMBLIES" / path.name)
     for path in sorted((root / "exports" / "gasket_templates").glob("*.dxf")):
-        _copy(path, output / "GASKET_TEMPLATES" / path.name)
+        _copy(path, output / GASKET_DIR / path.name)
     for path in sorted((root / "reports" / "renders").glob("*.png")):
         _copy(path, output / "ADVANCED" / "IMAGES" / path.name)
     for source_name, friendly_name, _quantity in CALIBRATION_PRINT_ORDER:
         _copy(
             root / "exports" / "3mf" / f"{source_name}.3mf",
-            output / "1_PRINT_THESE_FIRST" / friendly_name,
+            output / CALIBRATION_DIR / friendly_name,
         )
     for source_name, friendly_name, _quantity in ULTRA_PRINT_ORDER:
         _copy(
             root / "exports" / "3mf" / f"{source_name}.3mf",
-            output / "2_ENCLOSURE_PARTS" / friendly_name,
+            output / ENCLOSURE_DIR / friendly_name,
         )
     # Swap-in skin segments for builders wrapping the body in speaker cloth.
     for source_name, friendly_name, _quantity in FABRIC_WRAP_PRINT_ORDER:
         _copy(
             root / "exports" / "3mf" / f"{source_name}.3mf",
-            output / "2_ENCLOSURE_PARTS" / "OPTIONAL_FABRIC_WRAP" / friendly_name,
+            output / FABRIC_DIR / friendly_name,
         )
     official_by_name = {part.name: part for part in OFFICIAL_PRINT_PARTS_REQUIRED}
     for part in OFFICIAL_PRINT_PARTS_REQUIRED:
@@ -108,7 +120,7 @@ def package_release(
     for source_name, friendly_name, _quantity in OFFICIAL_TOP_PRINT_ORDER:
         _copy(
             official_by_name[source_name].stl_path,
-            output / "3_SATELLITE_TOP_PARTS" / friendly_name,
+            output / OFFICIAL_DIR / friendly_name,
         )
     for part in OFFICIAL_PRINT_PARTS_OPTIONAL_MM:
         _copy(

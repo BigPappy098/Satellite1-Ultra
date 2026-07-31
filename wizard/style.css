@@ -409,3 +409,15 @@ footer {
   .btn:hover { transform: none; }
   html { scroll-behavior: auto; }
 }
+
+/* Material badges. The filament split is build-critical and was previously
+   buried in a plain text column, so it gets colour and weight of its own. */
+.mat{display:inline-block;padding:.18rem .5rem;border-radius:999px;
+  font-size:.82rem;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+.mat.asa{background:#1e3a5f;color:#cfe3ff}
+.mat.tpu{background:#7c3a06;color:#ffdcb8}
+.mat.other{background:#3c2f4a;color:#e6d6f5}
+table.mats td{vertical-align:top;padding:.45rem .6rem}
+table.mats td:first-child{width:1%;white-space:nowrap}
+table.files td:first-child{font-variant-numeric:tabular-nums}
+.dim{opacity:.45}
