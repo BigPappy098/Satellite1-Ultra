@@ -16,6 +16,7 @@ URLS = {
     "Dayton_DMA105-PR_spec.pdf": "https://www.daytonaudio.com/images/resources/295-590--dayton-audio-dma105-pr-spec-sheet.pdf",
     "Dayton_ND91-4_Klippel.pdf": "https://www.daytonaudio.com/images/resources/290-226--nd91-4-klippel-data.pdf",
     "Dayton_ND91-4_spec_2026-02-26.pdf": "https://www.daytonaudio.com/images/resources/290-226--dayton-audio-nd91-4-specifications.pdf",
+    "Dayton_DSA115-PR_spec.pdf": "https://www.daytonaudio.com/product/1588/dsa115-pr-4-designer-series-aluminum-cone-passive-radiator",
     "SB_Acoustics_SB12PACR-00.pdf": "https://sbacoustics.com/wp-content/uploads/2020/02/SB12PACR-00.pdf",
     "SB_Acoustics_SB12PFCR-00.pdf": "https://sbacoustics.com/wp-content/uploads/2020/02/SB12PFCR-00.pdf",
     "ScanSpeak_10F-4424G00_advanced.pdf": "https://www.scan-speak.dk/datasheet/pdf/10f-4424g00.pdf",

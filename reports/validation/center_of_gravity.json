@@ -223,7 +223,7 @@
       "basis": "DERIVED_FROM_MANUFACTURER_DRAWING"
     },
     {
-      "name": "left SB12PACR-00",
+      "name": "left passive radiator",
       "mass_g": 78.0,
       "x_mm": -70.0,
       "y_mm": 0,
@@ -231,7 +231,7 @@
       "basis": "DERIVED_FROM_MANUFACTURER_DRAWING"
     },
     {
-      "name": "right SB12PACR-00",
+      "name": "right passive radiator",
       "mass_g": 78.0,
       "x_mm": 70.0,
       "y_mm": 0,

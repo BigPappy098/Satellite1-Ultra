@@ -215,6 +215,12 @@ def _bounds_error(
 
 def write_3mf(mesh: trimesh.Trimesh, path: Path, name: str, commit: str) -> None:
     """Write a standards-based, millimetre-unit single-object 3MF package."""
+    # Bind the 3MF core namespace as the DEFAULT namespace, so elements
+    # serialise as <model>, <object>, <triangle> rather than <ns0:model> and
+    # friends. Both are valid XML, but PrusaSlicer, Cura, Orca and Bambu Studio
+    # match unprefixed element names, so a prefixed document opens as an empty
+    # plate -- the file looks fine and slices to nothing.
+    ET.register_namespace("", THREE_MF_NS)
     model = ET.Element(f"{{{THREE_MF_NS}}}model", {"unit": "millimeter", "xml:lang": "en-US"})
     ET.SubElement(model, f"{{{THREE_MF_NS}}}metadata", {"name": "Title"}).text = name
     ET.SubElement(
@@ -263,6 +269,29 @@ def write_3mf(mesh: trimesh.Trimesh, path: Path, name: str, commit: str) -> None
         archive.writestr("[Content_Types].xml", content_types)
         archive.writestr("_rels/.rels", relationships)
         archive.writestr("3D/3dmodel.model", model_xml)
+
+
+def _slicer_readable_3mf(path: Path) -> dict[str, int]:
+    """Parse a 3MF the way a slicer does: by element name, ignoring namespaces.
+
+    read_3mf below is namespace-aware, so it happily read files that every real
+    slicer saw as an empty plate. Writing the core namespace with a prefix is
+    valid XML and valid 3MF, but PrusaSlicer, Cura, Orca and Bambu Studio match
+    unprefixed element names. This is the check that catches that: it counts
+    what a naive parser would find, so "our reader can read it" can never again
+    stand in for "a slicer can open it".
+    """
+    import re
+    import zipfile as _zipfile
+
+    with _zipfile.ZipFile(path) as archive:
+        xml = archive.read("3D/3dmodel.model").decode("utf-8")
+    return {
+        "objects": len(re.findall(r"<object[ >]", xml)),
+        "build_items": len(re.findall(r"<item[ />]", xml)),
+        "vertices": len(re.findall(r"<vertex[ />]", xml)),
+        "triangles": len(re.findall(r"<triangle[ />]", xml)),
+    }
 
 
 def read_3mf(path: Path) -> trimesh.Trimesh:
@@ -380,6 +409,15 @@ def export_parts(
         stl_mesh.remove_unreferenced_vertices()
         stl_result = validate_mesh(stl_mesh, expected_bounds)
         write_3mf(stl_mesh, three_mf_path, name, commit)
+        # A slicer parses by element name, not namespace. Verify the file is
+        # readable that way before trusting the namespace-aware reader below.
+        naive = _slicer_readable_3mf(three_mf_path)
+        if naive["objects"] < 1 or naive["build_items"] < 1 or naive["triangles"] < 4:
+            raise ValueError(
+                f"3MF for {name} would open empty in a slicer: "
+                f"{naive['objects']} objects, {naive['build_items']} build items, "
+                f"{naive['triangles']} triangles found by a namespace-naive parse"
+            )
         three_mf_result = validate_mesh(read_3mf(three_mf_path), expected_bounds)
 
         record: dict[str, object] = {

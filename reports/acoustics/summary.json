@@ -8,7 +8,7 @@
   "required_pr_moving_mass_each_g": 19.64013731713892,
   "added_pr_mass_each_g": 7.94013731713892,
   "added_pr_mass_total_g": 15.88027463427784,
-  "pr_mass_adjustment_interface": "M6 threaded post on each SB12PACR-00",
+  "pr_mass_adjustment_interface": "M5 threaded post on each radiator",
   "minimum_modeled_impedance_ohm": 4.392053869850162,
   "minimum_impedance_frequency_hz": 393.84405109583474,
   "amplifier_minimum_load_ohm": 3.2,

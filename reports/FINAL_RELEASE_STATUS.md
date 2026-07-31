@@ -14,7 +14,7 @@ specimen-dependent claims are explicitly `REQUIRES_PHYSICAL_VALIDATION`.
 | Topic branch | `codex/include-complete-squircle-parts` |
 | Supported electronics | Satellite1 Batch 1: Core rev4.1 and HAT rev4.1 / R2024.12.06 |
 | Active driver | Dayton Audio ND91-4, one |
-| Passive radiators | SB Acoustics SB12PACR-00, two |
+| Passive radiators | Dayton Audio DSA115-PR, two |
 | CAD-derived net acoustic volume | 3.517634704 L |
 | Simulated target tuning | 60.0 Hz |
 | Calculated added mass | 0.7818 g per passive radiator |
