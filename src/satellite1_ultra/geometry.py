@@ -377,6 +377,15 @@ def validate_design_parameters(parameters: DesignParameters) -> None:
         "insert bore must be deeper than the insert",
     )
     require(
+        p.driver_bore_diameter < p.driver_flange_body_diameter,
+        "active-driver bore is wider than the flange body that has to seal against "
+        "it; the driver would fall through the baffle",
+    )
+    require(
+        p.driver_flange_body_diameter <= p.driver_outer_diameter,
+        "active-driver sealing body cannot be wider than the across-ears envelope",
+    )
+    require(
         p.driver_bore_diameter < p.driver_outer_diameter < p.driver_clamp_ring_diameter,
         "active-driver bore, flange, and clamp diameters must increase in that order",
     )

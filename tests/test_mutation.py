@@ -24,6 +24,7 @@ import pytest
 from satellite1_ultra.configuration import (
     ROOT,
     load_design_parameters,
+    selected_components,
     validate_physical_calibration,
 )
 from satellite1_ultra.doc_validation import validate_documentation
@@ -234,12 +235,24 @@ def test_configuration_file_mutation_reaches_the_geometry() -> None:
 
 
 def test_component_data_mutation_reaches_the_mechanical_interface() -> None:
-    """A wrong published cutout diameter must fail before geometry generation."""
+    """A wrong published cutout diameter must fail before geometry generation.
+
+    The anchor is read from the selected component rather than written out.
+    This test previously pinned the literal 88.5, and when that value turned
+    out to be wrong -- it was a frame dimension, not the cutout, leaving the
+    bore wider than the flange it had to seal -- correcting it broke the very
+    test meant to prove component data reaches the geometry. A mutation anchored
+    to a specific value stops working the moment that value is right.
+    """
     path = ROOT / "config" / "components.yaml"
-    with mutated_config(path, "    cutout_diameter_mm: 88.5", "    cutout_diameter_mm: 108.0"):
+    active, _passive = selected_components()
+    current = float(active["cutout_diameter_mm"])
+    anchor = f"    cutout_diameter_mm: {current}"
+    # Wider than the flange body, so the driver could not seal or even stay put.
+    with mutated_config(path, anchor, "    cutout_diameter_mm: 108.0"):
         with pytest.raises(ValueError, match="active-driver bore"):
             load_design_parameters()
-    assert load_design_parameters().driver_cutout_diameter == pytest.approx(88.5)
+    assert load_design_parameters().driver_cutout_diameter == pytest.approx(current)
 
 
 def test_impossible_physical_calibration_is_rejected_before_geometry_build() -> None:
