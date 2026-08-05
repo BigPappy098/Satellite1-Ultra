@@ -1,5 +1,5 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "checked_files": [
     "docs/BUILD_BOOK.md",
@@ -48,5 +48,34 @@
       "bytes": 441257
     }
   ],
-  "errors": []
+  "errors": [
+    "stale export anti_slip_ring: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export shell_base: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export shell_grille: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export shell_crown: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export shell_base_fabric: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export shell_grille_fabric: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export shell_crown_fabric: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export main_cabinet: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export pressure_divider: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export mic_isolation_bushing: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export active_driver_clamp_ring: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export passive_radiator_clamp_ring: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export divider_gasket: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export driver_gasket: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export passive_radiator_gasket: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export cable_gland: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export leak_test_adapter: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export base_skirt: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export bottom_service_plate: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export ballast_cartridge: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export ballast_cartridge_lid: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export coupon_official_interface: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export coupon_active_driver: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export coupon_passive_radiator: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export coupon_heat_set_insert: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export coupon_gasket_base: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export coupon_gasket_cap: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492",
+    "stale export coupon_cable_passage: source inputs changed since 679a30249ae686d3e2d7d4402254696d279be492"
+  ]
 }
