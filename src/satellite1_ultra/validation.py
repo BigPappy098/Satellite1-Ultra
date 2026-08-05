@@ -174,22 +174,40 @@ def acoustic_volume_report(
 # ---------------------------------------------------------------------- #
 # Sealing
 # ---------------------------------------------------------------------- #
+#: Keeps seal probes off surfaces the seat cut created.
+#:
+#: These probes used to start exactly at the seat floor and exactly at the seat
+#: wall.  That was reliable only while the seat was a cylinder, where both the
+#: cut and the probe are analytic and the boolean is exact.  The ND91-4 seat is
+#: a superellipse, and a boolean whose faces are coincident with a spline
+#: leaves residue: the land probe read 0.9999978 instead of 1.0, which is
+#: 0.043 mm^3 reported as a leak path.  Backing off 0.01 mm returns exactly
+#: 1.0, and it stays exactly 1.0 at 0.05, 0.2 and 0.5 mm, so the material is
+#: genuinely solid and the shortfall was entirely the degenerate contact.
+#:
+#: This does not weaken the check.  Both thresholds stay where they were, and a
+#: real bypass spans the full 4.7 mm land depth, not 0.02 mm of it.
+_SEAL_PROBE_STANDOFF = 0.02
+
+
 def _mount_seal_checks(
     cabinet: cq.Shape, mount: MountSpec, p: DesignParameters, name: str
 ) -> list[dict[str, Any]]:
     """Prove the gasket land is continuous and every insert bore is blind."""
     checks: list[dict[str, Any]] = []
+    land_start = mount.seat_depth + _SEAL_PROBE_STANDOFF
+    land_length = mount.pad_depth - land_start
     land = _depth_cylinder(
         mount.seat_diameter / 2.0 + 0.5,
-        mount.seat_depth,
-        mount.pad_depth - mount.seat_depth,
+        land_start,
+        land_length,
         mount.face_point,
         mount.inward,
     ).cut(
         _depth_cylinder(
             mount.bore_diameter / 2.0,
-            mount.seat_depth,
-            mount.pad_depth - mount.seat_depth,
+            land_start,
+            land_length,
             mount.face_point,
             mount.inward,
         )
@@ -210,15 +228,18 @@ def _mount_seal_checks(
     )
     sidewall_start = mount.ledge_depth
     sidewall_length = mount.seat_depth - mount.ledge_depth
+    # Stand the inner wall off the seat surface for the same reason: on a
+    # superellipse seat this radius is tangent to the corners.
+    inner_radius = mount.seat_diameter / 2.0 + _SEAL_PROBE_STANDOFF
     bypass = _depth_cylinder(
-        mount.seat_diameter / 2.0 + 0.5,
+        inner_radius + 0.5,
         sidewall_start,
         sidewall_length,
         mount.face_point,
         mount.inward,
     ).cut(
         _depth_cylinder(
-            mount.seat_diameter / 2.0,
+            inner_radius,
             sidewall_start,
             sidewall_length,
             mount.face_point,

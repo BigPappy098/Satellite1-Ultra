@@ -2,24 +2,24 @@
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
   "method": "B-rep volume x material density, plus catalogued component masses",
-  "total_mass_g": 3548.363759708624,
+  "total_mass_g": 3556.0273747796837,
   "center_of_gravity_mm": {
-    "x": -0.036655334035524526,
-    "y": -4.469603422830595,
-    "z": -140.2423131809345
+    "x": -0.03657935572047881,
+    "y": -4.62712623490044,
+    "z": -140.15481694533045
   },
-  "cg_height_above_support_mm": 98.05768681906551,
+  "cg_height_above_support_mm": 98.14518305466956,
   "support_polygon_mm": {
     "x_half": 92.0,
     "y_half": 92.0
   },
   "static_tipping_angles_deg": {
-    "+X": 43.18582503579664,
-    "-X": 43.16304315302308,
-    "+Y": 44.532258663297526,
-    "-Y": 41.75343580804455
+    "+X": 43.16030244616355,
+    "-X": 43.13756908537073,
+    "+Y": 44.553445312602676,
+    "-Y": 41.67678934139186
   },
-  "minimum_tipping_angle_deg": 41.75343580804455,
+  "minimum_tipping_angle_deg": 41.67678934139186,
   "ballast": {
     "material": "two removable 100 x 92 x 6 mm mild-steel plates",
     "mass_g": 866.64,
@@ -32,10 +32,10 @@
   "mass_elements": [
     {
       "name": "active_driver_clamp_ring",
-      "mass_g": 33.22301698208617,
-      "x_mm": -2.4546461862010754e-13,
-      "y_mm": -82.43043429272166,
-      "z_mm": -100.00000000000011,
+      "mass_g": 33.71473940430345,
+      "x_mm": -2.4938934031556335e-13,
+      "y_mm": -82.38769452151107,
+      "z_mm": -100.00000000000007,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
@@ -72,10 +72,10 @@
     },
     {
       "name": "main_cabinet",
-      "mass_g": 760.7777647379046,
-      "x_mm": 1.8885636358572355e-07,
-      "y_mm": 3.20085806041497,
-      "z_mm": -143.9531431687995,
+      "mass_g": 767.8468604087226,
+      "x_mm": -1.3788849027938584e-05,
+      "y_mm": 2.4582509754329998,
+      "z_mm": -143.54492845638,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
@@ -128,10 +128,10 @@
     },
     {
       "name": "active_driver_gasket",
-      "mass_g": 0.19651821295893335,
-      "x_mm": -1.0361030832392294e-12,
-      "y_mm": -75.24999999999997,
-      "z_mm": -100.0,
+      "mass_g": 0.29931519098338216,
+      "x_mm": -6.91430056418085e-13,
+      "y_mm": -75.25000000000003,
+      "z_mm": -100.00000000000004,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {

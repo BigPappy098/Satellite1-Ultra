@@ -36,7 +36,9 @@ active_drivers:
     # The frame is not a disc: a round sealing body with four mounting ears
     # standing proud of it.  Three diameters matter and they are different.
     outer_diameter_mm: 103.2          # across the ears; what the seat must clear
-    flange_body_diameter_mm: 85.09    # the round body; the ONLY sealing surface
+    flange_body_diameter_mm: 88.5     # across the flats; the sealing surface
+    frame_exponent: 3.593             # rounded square: 103.2/88.5 = 1.166
+    frame_flats_mm: 88.5              # across the flats, from the section view
     cutout_diameter_mm: 76.45         # published baffle cutout, 3.01 in
     bolt_circle_mm: 93.3
     mounting_hole_diameter_mm: 4.0

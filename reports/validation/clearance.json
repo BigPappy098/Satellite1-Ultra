@@ -81,7 +81,7 @@
     },
     {
       "feature": "driver clamp-ring insert land to component seat wall",
-      "nominal_mm": 2.0,
+      "nominal_mm": 1.9506219041559447,
       "minimum_mm": 1.5,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -102,7 +102,7 @@
     },
     {
       "feature": "active-driver gasket land radial width",
-      "nominal_mm": 12.074999999999996,
+      "nominal_mm": 12.124378095844051,
       "minimum_mm": 3.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
@@ -116,7 +116,7 @@
     },
     {
       "feature": "active-driver mounting pad covers its seat",
-      "nominal_mm": 11.100000000000001,
+      "nominal_mm": 11.050621904155946,
       "minimum_mm": 2.4,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

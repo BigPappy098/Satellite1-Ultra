@@ -100,22 +100,22 @@ def package_release(
         _copy(path, output / GASKET_DIR / path.name)
     for path in sorted((root / "reports" / "renders").glob("*.png")):
         _copy(path, output / "ADVANCED" / "IMAGES" / path.name)
-    for source_name, friendly_name, _quantity in CALIBRATION_PRINT_ORDER:
-        _copy(
-            root / "exports" / "3mf" / f"{source_name}.3mf",
-            output / CALIBRATION_DIR / friendly_name,
-        )
-    for source_name, friendly_name, _quantity in ULTRA_PRINT_ORDER:
-        _copy(
-            root / "exports" / "3mf" / f"{source_name}.3mf",
-            output / ENCLOSURE_DIR / friendly_name,
-        )
-    # Swap-in skin segments for builders wrapping the body in speaker cloth.
-    for source_name, friendly_name, _quantity in FABRIC_WRAP_PRINT_ORDER:
-        _copy(
-            root / "exports" / "3mf" / f"{source_name}.3mf",
-            output / FABRIC_DIR / friendly_name,
-        )
+    # Both formats, side by side, under the same builder-facing name.  STLs
+    # used to exist only in ADVANCED/STL under their source names, so the
+    # folder a builder is told to print from was 3MF-only and the STL of the
+    # same part was neither obviously present nor obviously current.
+    for order, folder in (
+        (CALIBRATION_PRINT_ORDER, CALIBRATION_DIR),
+        (ULTRA_PRINT_ORDER, ENCLOSURE_DIR),
+        # Swap-in skin segments for builders wrapping the body in cloth.
+        (FABRIC_WRAP_PRINT_ORDER, FABRIC_DIR),
+    ):
+        for source_name, friendly_name, _quantity in order:
+            _copy(root / "exports" / "3mf" / f"{source_name}.3mf", output / folder / friendly_name)
+            _copy(
+                root / "exports" / "stl" / f"{source_name}.stl",
+                output / folder / f"{Path(friendly_name).stem}.stl",
+            )
     official_by_name = {part.name: part for part in OFFICIAL_PRINT_PARTS_REQUIRED}
     for part in OFFICIAL_PRINT_PARTS_REQUIRED:
         _copy(

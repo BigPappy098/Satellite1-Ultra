@@ -348,11 +348,11 @@
       "material": "2 mm closed-cell EPDM",
       "print_orientation": "flat",
       "bounds_mm": [
-        83.59,
-        83.59,
+        87.0,
+        87.0,
         2.0
       ],
-      "largest_dimension_mm": 83.59,
+      "largest_dimension_mm": 87.0,
       "build_volume_mm": [
         220.0,
         200.0,
@@ -361,8 +361,8 @@
       "footprint_fits_either_rotation": true,
       "height_fits": true,
       "margin_mm": [
-        136.41,
-        116.41,
+        133.0,
+        113.0,
         248.0
       ],
       "status": "PASS",
@@ -575,7 +575,7 @@
       "bounds_mm": [
         126.0000002,
         126.0000002,
-        10.200000099999999
+        10.2000001
       ],
       "largest_dimension_mm": 126.0000002,
       "build_volume_mm": [

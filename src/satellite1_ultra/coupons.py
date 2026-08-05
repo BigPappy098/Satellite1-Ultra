@@ -7,7 +7,12 @@ from typing import cast
 
 import cadquery as cq
 
-from satellite1_ultra.geometry import DEFAULT_PARAMETERS, DesignParameters, rounded_prism
+from satellite1_ultra.geometry import (
+    DEFAULT_PARAMETERS,
+    DesignParameters,
+    rounded_prism,
+    section_prism,
+)
 
 
 def _engrave(
@@ -79,8 +84,18 @@ def _component_seat_coupon(
     ledge_diameter: float,
     ledge_depth: float,
     parameters: DesignParameters,
+    seat_exponent: float = 0.0,
+    seat_half_flat: float = 0.0,
 ) -> cq.Shape:
-    """A one-to-one slice of the real cabinet mount: ledge, seat, bore, inserts."""
+    """A one-to-one slice of the real cabinet mount: ledge, seat, bore, inserts.
+
+    ``seat_exponent`` shapes the seat as a superellipse rather than a circle,
+    because the ND91-4's frame is a rounded square. This coupon exists so a
+    builder can drop the real driver in and feel whether it seats flush and
+    measure its flange thickness against a known recess depth. A round recess
+    wide enough to clear the corners leaves the driver floating with roughly
+    7.6 mm of slop at the flats, which measures nothing.
+    """
     p = parameters
     thickness = max(ledge_depth + p.insert_bore_depth + p.pad_backing, seat_depth + p.pad_backing)
     coupon = cq.Workplane("XY").circle(pad_diameter / 2.0).extrude(thickness)
@@ -90,11 +105,24 @@ def _component_seat_coupon(
             .circle(ledge_diameter / 2.0)
             .extrude(ledge_depth)
         )
-    coupon = coupon.cut(
-        cq.Workplane("XY", origin=(0.0, 0.0, thickness - seat_depth))
-        .circle(seat_diameter / 2.0)
-        .extrude(seat_depth)
-    )
+    if seat_exponent > 0.0:
+        coupon = coupon.cut(
+            cq.Workplane("XY").add(
+                section_prism(
+                    2.0 * seat_half_flat,
+                    2.0 * seat_half_flat,
+                    seat_depth,
+                    thickness - seat_depth,
+                    seat_exponent,
+                )
+            )
+        )
+    else:
+        coupon = coupon.cut(
+            cq.Workplane("XY", origin=(0.0, 0.0, thickness - seat_depth))
+            .circle(seat_diameter / 2.0)
+            .extrude(seat_depth)
+        )
     coupon = coupon.cut(cq.Workplane("XY").circle(bore_diameter / 2.0).extrude(thickness))
     radius = bolt_circle / 2.0
     solid = cast(cq.Shape, coupon.val())
@@ -124,6 +152,8 @@ def active_driver_coupon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
         0.0,
         0.0,
         p,
+        seat_exponent=p.driver_frame_exponent,
+        seat_half_flat=p.driver_frame_flats / 2.0 + p.print_clearance,
     )
     coupon = _engrave(
         coupon,
