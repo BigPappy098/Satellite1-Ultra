@@ -72,8 +72,12 @@ class DesignParameters:
     # cabinet corner -- the driver basket would foul a radiator basket. 36 mm is
     # the least separation that measures exactly zero overlap.
     driver_axis_z: float = -100.0
-    driver_cutout_diameter: float = 88.5
+    driver_cutout_diameter: float = 76.45
+    #: Across the four mounting ears.  Sets what the seat recess must clear.
     driver_outer_diameter: float = 103.2
+    #: The round body between the ears.  This is the only continuous surface
+    #: the gasket can seal against; anything outboard of it is ear or fresh air.
+    driver_flange_body_diameter: float = 85.09
     driver_flange_thickness: float = 3.0
     driver_depth: float = 62.9
     driver_clamp_ring_diameter: float = 118.0
@@ -940,12 +944,19 @@ def _clamp_ring(
 
 
 def active_driver_clamp_ring(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Retains the active driver against its cabinet seat, glue-free."""
+    """Retains the active driver against its cabinet seat, glue-free.
+
+    The lip loads the round flange body directly over the gasket rather than
+    the four ears.  Clamping only the ears puts a bending moment across the
+    flange and leaves compression on the seal depending on frame stiffness;
+    loading it above the gasket reacts the force straight through the joint.
+    The bore still clears the cutout, so nothing shadows the cone.
+    """
     p = parameters
     return _clamp_ring(
         p.driver_clamp_ring_diameter,
-        p.driver_outer_diameter - 7.2,
-        p.driver_outer_diameter - 0.8,
+        p.driver_cutout_diameter + 2.0,
+        p.driver_flange_body_diameter - 1.0,
         p.driver_clamp_bolt_circle,
         p,
     )
@@ -1139,22 +1150,33 @@ def component_gasket_annulus(
     """
     p = parameters
     if component == "active_driver":
-        return (p.driver_cutout_diameter, p.driver_outer_diameter)
+        # Outer edge stops inside the round flange body, NOT at the across-ears
+        # diameter.  Between the ears there is no flange to compress against, so
+        # a gasket taken out to 103.2 mm is uncompressed over most of its
+        # circumference: four leak paths straight out of the chamber.
+        return (p.driver_bore_diameter, p.driver_flange_body_diameter - 1.5)
     if component.startswith("pr"):
-        return (p.pr_bore_diameter + 3.0, p.pr_seat_diameter)
+        # Stop inside the radiator's rim, not at the seat.  The seat is the
+        # flange plus print clearance, so a gasket taken out to it overhangs
+        # the flange edge by that clearance and its outer band is compressed
+        # by nothing.  Still spans the Ø106.93 bolt circle, whose holes pass
+        # through this flange and would otherwise vent the chamber.
+        return (p.pr_bore_diameter + 3.0, p.pr_outer_diameter - 1.0)
     raise ValueError(f"unknown sealed component: {component}")
 
 
 def driver_gasket(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shape:
-    """Seals the full active-driver flange, including its unused bolt circle.
+    """Seals against the round body of the ND91-4 flange.
 
-    The ND91-4 carries four Ø4.0 mounting holes on a Ø93.3 circle that this
-    design does not use, and they sit only 0.4 mm outboard of the cutout edge.
-    An inset gasket leaves those holes opening into the gap under the flange,
-    which vents the chamber straight to atmosphere through the clamp-ring
-    bore.  The gasket therefore spans the whole flange underside: inner edge
-    at the cutout so no gap is left, outer edge at the flange rim so the
-    entire band is compressed.
+    The frame is a Ø85.09 mm sealing body with four ears reaching Ø103.2 mm,
+    and the four Ø4.0 mounting holes on the Ø93.3 mm circle are in those ears.
+    With the correct Ø76.45 mm cutout those holes sit roughly 6 mm outboard of
+    the sealed band, so they open ambient-to-ambient and vent nothing.
+
+    An earlier revision spanned this gasket all the way to Ø103.2 mm to cover
+    those holes, which only made sense while the cutout was wrongly recorded as
+    Ø88.5 mm.  Out there the gasket bridges fresh air between the ears and is
+    compressed nowhere but on them.
     """
     inner, outer = component_gasket_annulus("active_driver", parameters)
     return circular_gasket(outer, inner, parameters.gasket_thickness)

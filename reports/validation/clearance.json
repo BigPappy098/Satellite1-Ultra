@@ -102,7 +102,7 @@
     },
     {
       "feature": "active-driver gasket land radial width",
-      "nominal_mm": 6.049999999999997,
+      "nominal_mm": 12.074999999999996,
       "minimum_mm": 3.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

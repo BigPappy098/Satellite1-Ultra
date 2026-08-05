@@ -33,8 +33,11 @@ active_drivers:
     sensitivity_2v83_db: 85.6
     frequency_min_hz: 65.0
     frequency_max_hz: 17000.0
-    outer_diameter_mm: 103.2
-    cutout_diameter_mm: 88.5
+    # The frame is not a disc: a round sealing body with four mounting ears
+    # standing proud of it.  Three diameters matter and they are different.
+    outer_diameter_mm: 103.2          # across the ears; what the seat must clear
+    flange_body_diameter_mm: 85.09    # the round body; the ONLY sealing surface
+    cutout_diameter_mm: 76.45         # published baffle cutout, 3.01 in
     bolt_circle_mm: 93.3
     mounting_hole_diameter_mm: 4.0
     mounting_holes: 4
@@ -42,6 +45,17 @@ active_drivers:
     flange_thickness_mm: 3.0
     flange_thickness_evidence: ENGINEERING_ESTIMATE
     flange_thickness_note: Not dimensioned on the published drawing; verify on coupon_active_driver before printing the cabinet.
+    cutout_evidence: DERIVED_FROM_MANUFACTURER_DRAWING
+    cutout_note: >-
+      Was 88.5 mm, taken off the dimensioned drawing where 88.5 is a frame
+      dimension, not the cutout.  That made the bore 3.6 mm WIDER than the
+      85.09 mm sealing body, so the driver would have dropped through the
+      baffle and the gasket would have touched nothing.  Parts Express and
+      Dayton both publish Baffle Cutout Diameter 3.01 in = 76.45 mm, and
+      Overall Outside Diameter 3.35 in = 85.09 mm for the round body;
+      loudspeakerdatabase lists nominal 104 mm, matching the 103.2 mm
+      across-ears figure on the drawing.  All three agree once each number is
+      attached to the feature it actually describes.
     vd_cm3: 12.2
     displacement_l: 0.10
     price_usd: 36.99

@@ -13,7 +13,7 @@
   "checks": [
     {
       "feature": "active_driver: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 0.999999999999999,
+      "measured_solid_fraction": 1.0,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
@@ -84,41 +84,77 @@
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "active_driver unused mounting holes are covered by the gasket",
+      "feature": "active_driver unused mounting holes do not vent the chamber",
       "gasket_annulus_radius_mm": [
-        44.25,
-        51.6
+        38.325,
+        41.795
       ],
       "mounting_hole_footprint_radius_mm": [
         44.65,
         48.65
       ],
+      "sealing_body_radius_mm": 42.545,
+      "resolution": "outboard of the seal",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "pr_-1 unused mounting holes are covered by the gasket",
+      "feature": "pr_-1 unused mounting holes do not vent the chamber",
       "gasket_annulus_radius_mm": [
         48.465,
-        58.084999999999994
+        57.285
       ],
       "mounting_hole_footprint_radius_mm": [
         51.315000000000005,
         55.615
       ],
+      "sealing_body_radius_mm": 57.785,
+      "resolution": "spanned by gasket",
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },
     {
-      "feature": "pr_+1 unused mounting holes are covered by the gasket",
+      "feature": "pr_+1 unused mounting holes do not vent the chamber",
       "gasket_annulus_radius_mm": [
         48.465,
-        58.084999999999994
+        57.285
       ],
       "mounting_hole_footprint_radius_mm": [
         51.315000000000005,
         55.615
       ],
+      "sealing_body_radius_mm": 57.785,
+      "resolution": "spanned by gasket",
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "active_driver: gasket seals inside the continuous flange body",
+      "gasket_outer_mm": 83.59,
+      "flange_body_mm": 85.09,
+      "margin_mm": 0.75,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "active_driver: sealing body is wider than the bore it covers",
+      "bore_mm": 76.65,
+      "flange_body_mm": 85.09,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr: gasket seals inside the continuous flange body",
+      "gasket_outer_mm": 114.57,
+      "flange_body_mm": 115.57,
+      "margin_mm": 0.5,
+      "status": "PASS",
+      "evidence": "VERIFIED_DIGITALLY"
+    },
+    {
+      "feature": "pr: sealing body is wider than the bore it covers",
+      "bore_mm": 0.0,
+      "flange_body_mm": 115.57,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"
     },

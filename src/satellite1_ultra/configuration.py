@@ -89,6 +89,7 @@ def load_design_parameters(root: Path = ROOT) -> DesignParameters:
         driver_axis_z=vertical(enclosure["driver_axis_z"]),
         driver_cutout_diameter=planar(active["cutout_diameter_mm"]) + driver_offset,
         driver_outer_diameter=planar(active["outer_diameter_mm"]),
+        driver_flange_body_diameter=planar(active["flange_body_diameter_mm"]),
         driver_flange_thickness=vertical(correction["active_driver_flange_thickness_mm"]),
         driver_depth=planar(active["depth_mm"]),
         driver_clamp_ring_diameter=planar(mounts["driver_clamp_ring_diameter"]),

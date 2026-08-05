@@ -261,12 +261,28 @@ def _mount_seal_checks(
 
 
 def _flange_hole_seal_checks(parameters: DesignParameters) -> list[dict[str, Any]]:
-    """Every unused component mounting hole must be covered by its gasket.
+    """Unused mounting holes must not open a path out of the chamber.
 
     The other sealing gates measure continuity of *cabinet* material only, so
     a purchased component whose own bolt holes straddle the gasket edge vents
     the chamber while every gate still reports PASS.  This models the
     component flange itself.
+
+    Whether a hole needs covering depends on where it sits, and that differs
+    between the two parts here:
+
+    * DSA115-PR - round flange, Ø115.57 rim outboard of its Ø106.93 bolt
+      circle.  The holes pass straight through the sealing surface, so the
+      gasket has to span them.
+    * ND91-4 - Ø85.09 round body with four ears carrying the Ø93.3 bolt
+      circle.  Those holes are outboard of anything the gasket touches, in a
+      recess that is already open to atmosphere on both sides, so covering
+      them is neither possible nor required.
+
+    A hole outboard of the sealing body is therefore a PASS, not a FAIL. The
+    old form of this check demanded coverage unconditionally, which only made
+    sense while the driver cutout was wrongly recorded as Ø88.5 mm and its
+    holes appeared to sit 0.4 mm outboard of the bore.
     """
     components = selected_components()
     sealed = {
@@ -281,14 +297,67 @@ def _flange_hole_seal_checks(parameters: DesignParameters) -> list[dict[str, Any
         inner_d, outer_d = component_gasket_annulus(name, parameters)
         hole_inner = (bolt_circle - hole) / 2.0
         hole_outer = (bolt_circle + hole) / 2.0
+        # Radius of the continuous sealing surface. Past it there is no flange
+        # to seal against, so a hole out there is already on the ambient side.
+        body = float(component.get("flange_body_diameter_mm", component["outer_diameter_mm"]))
+        outboard_of_seal = hole_inner >= body / 2.0
         covered = inner_d / 2.0 <= hole_inner and hole_outer <= outer_d / 2.0
         checks.append(
             {
-                "feature": f"{name} unused mounting holes are covered by the gasket",
+                "feature": f"{name} unused mounting holes do not vent the chamber",
                 "gasket_annulus_radius_mm": [inner_d / 2.0, outer_d / 2.0],
                 "mounting_hole_footprint_radius_mm": [hole_inner, hole_outer],
-                "status": "PASS" if covered else "FAIL",
+                "sealing_body_radius_mm": round(body / 2.0, 3),
+                "resolution": "outboard of the seal" if outboard_of_seal else "spanned by gasket",
+                "status": "PASS" if (covered or outboard_of_seal) else "FAIL",
                 "evidence": EVIDENCE_DIGITAL,
+            }
+        )
+    return checks
+
+
+def _gasket_within_flange_checks(p: DesignParameters) -> list[dict[str, Any]]:
+    """Every gasket must land on flange that exists all the way round.
+
+    A driver frame is not a disc. The ND91-4 has a round Ø85.09 mm sealing body
+    with four ears reaching Ø103.2 mm, and a gasket taken out past the body is
+    compressed only where the ears happen to be: four leak paths, and the gate
+    that measured cabinet-side land continuity could not see it, because the
+    cabinet is fine. This checks the component side.
+
+    It also catches the error that produced this check. The cutout was recorded
+    as Ø88.5 mm off a frame dimension when the published figure is Ø76.45 mm,
+    which made the bore wider than the sealing body: the driver would have
+    dropped through the baffle.
+    """
+    checks: list[dict[str, Any]] = []
+    for name, inner, outer, body in (
+        (
+            "active_driver",
+            *component_gasket_annulus("active_driver", p),
+            p.driver_flange_body_diameter,
+        ),
+        ("pr", *component_gasket_annulus("pr_-1", p), p.pr_outer_diameter),
+    ):
+        margin = (body - outer) / 2.0
+        checks.append(
+            {
+                "feature": f"{name}: gasket seals inside the continuous flange body",
+                "gasket_outer_mm": round(outer, 3),
+                "flange_body_mm": round(body, 3),
+                "margin_mm": round(margin, 3),
+                "status": "PASS" if margin >= 0.5 else "FAIL",
+                "evidence": "VERIFIED_DIGITALLY",
+            }
+        )
+        seats = inner >= p.driver_bore_diameter if name == "active_driver" else True
+        checks.append(
+            {
+                "feature": f"{name}: sealing body is wider than the bore it covers",
+                "bore_mm": round(p.driver_bore_diameter if name == "active_driver" else 0.0, 3),
+                "flange_body_mm": round(body, 3),
+                "status": "PASS" if body > outer and seats else "FAIL",
+                "evidence": "VERIFIED_DIGITALLY",
             }
         )
     return checks
@@ -302,6 +371,7 @@ def sealing_report(parameters: DesignParameters) -> dict[str, Any]:
     for name, mount in acoustic_mounts(p).items():
         checks.extend(_mount_seal_checks(cabinet, mount, p, name))
     checks.extend(_flange_hole_seal_checks(p))
+    checks.extend(_gasket_within_flange_checks(p))
 
     # Divider gasket land continuity on the acoustic top rim.
     land = rounded_prism(

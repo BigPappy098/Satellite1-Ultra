@@ -1,0 +1,46 @@
+[
+  {
+    "id": "FIT-002",
+    "title": "Driver bore was wider than the driver's sealing flange",
+    "severity": "CRITICAL",
+    "status": "FIXED",
+    "evidence_label": "DERIVED_FROM_MANUFACTURER_DRAWING",
+    "evidence": "config/components.yaml recorded dayton_nd91_4.cutout_diameter_mm = 88.5, giving driver_bore_diameter = 88.70 mm. The ND91-4's continuous sealing flange is 85.09 mm across (Dayton and Parts Express both publish Overall Outside Diameter 3.35 in). The bore was therefore 3.61 mm wider than the flange it had to seal against. The published Baffle Cutout Diameter is 3.01 in = 76.45 mm, stated identically by Parts Express and Dayton. 88.5 is a frame dimension on references/manufacturer/Dayton_ND91-4_spec_2026-02-26.pdf, not the cutout; the drawing also carries 103.2 mm, which loudspeakerdatabase.com corroborates as the nominal 104 mm across the four mounting ears. All three sources agree once each figure is attached to the feature it describes. Reported by the project owner, who noticed the circular coupon did not match the eared frame in the product photograph.",
+    "affected_files": [
+      "config/components.yaml",
+      "src/satellite1_ultra/geometry.py",
+      "src/satellite1_ultra/configuration.py",
+      "src/satellite1_ultra/validation.py"
+    ],
+    "engineering_consequence": "The driver would have dropped through its baffle opening, supported only by its four mounting ears, with the gasket compressed against nothing. The enclosure is a sealed design whose entire acoustic behaviour depends on that boundary, so the build would have been unusable and the fault only discoverable after a roughly 45-hour cabinet print. The driver seat, gasket land and clamp ring are all cut into main_cabinet, so no lesser part could have been reprinted to recover it.",
+    "verification_method": "Cutout corrected to 76.45 mm and a distinct flange_body_diameter_mm = 85.09 introduced, because this frame has three different governing diameters (cutout, continuous sealing body, across-ears envelope) where the model carried two. Gasket annulus moved onto the sealing body at Ø76.65-83.59 with 0.75 mm of flange beyond it. Clamp lip moved off the ears to Ø78.45-84.09 so clamping load reacts through the seal instead of bending the flange. All eleven validation gates pass; acoustics unchanged at 3.520 L net, 60.0 Hz tuning, f3 59.0 Hz.",
+    "owner": "Claude (independent review)",
+    "resolution": "Fixed. Root cause is a dimension read off a drawing and never cross-checked against the vendor's published specification. New gate _gasket_within_flange_checks models the component flange, which no previous gate did."
+  },
+  {
+    "id": "SEAL-003",
+    "title": "Radiator gasket overhung its flange rim by 0.3 mm",
+    "severity": "MEDIUM",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "component_gasket_annulus returned (pr_bore + 3.0, pr_seat_diameter) for the passive radiators. pr_seat_diameter is the flange plus twice the print clearance, 116.17 mm, against a DSA115-PR flange of 115.57 mm. The outer 0.3 mm per side of the gasket therefore sat over the seat's clearance gap with no flange above it. Found by the new _gasket_within_flange_checks gate on its first execution, not by inspection.",
+    "affected_files": ["src/satellite1_ultra/geometry.py"],
+    "engineering_consequence": "Lower severity than FIT-002 because the inboard band still compresses and seals. The overhang wastes gasket width, can roll or pinch into the clearance gap during assembly, and makes the compressed area smaller than the design intends. Two radiators, so two occurrences.",
+    "verification_method": "Gasket outer moved to pr_outer_diameter - 1.0 = 114.57 mm, retaining 0.5 mm of flange beyond it and still spanning the Ø106.93 bolt circle whose holes pass through this flange. Sealing gate passes with zero failures.",
+    "owner": "Claude (independent review)",
+    "resolution": "Fixed."
+  },
+  {
+    "id": "SEAL-004",
+    "title": "Mounting-hole seal check encoded the incorrect cutout",
+    "severity": "MEDIUM",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "_flange_hole_seal_checks required every component mounting hole to be spanned by its gasket, unconditionally. That requirement was written while the driver cutout was wrongly recorded as Ø88.5 mm, which placed its Ø93.3 mm bolt circle apparently 0.4 mm outboard of the bore. With the correct Ø76.45 mm cutout those holes sit at radius 44.65-48.65 mm, outboard of the Ø85.09 mm sealing body, and the check began failing a design that is correct. The two selected parts genuinely differ: the DSA115-PR is a round flange whose Ø115.57 mm rim lies outboard of its Ø106.93 mm bolt circle, so its holes pierce the sealing surface and must be spanned; the ND91-4's holes are in ears beyond any sealing surface and open to atmosphere on both faces.",
+    "affected_files": ["src/satellite1_ultra/validation.py"],
+    "engineering_consequence": "Left unchanged it would have blocked the FIT-002 fix, or invited the fix to be reverted to satisfy a gate that was itself wrong. It is the same hazard as a stale mutation: a check that asserts a condition which stopped being true.",
+    "verification_method": "Check made shape-aware. A hole whose inner edge lies at or beyond the sealing body radius resolves as 'outboard of the seal' and passes; a hole within the sealing surface must still be spanned by the gasket and resolves as 'spanned by gasket'. Both radiators report 'spanned by gasket', the driver reports 'outboard of the seal'.",
+    "owner": "Claude (independent review)",
+    "resolution": "Fixed. Component flange geometry now drives the requirement rather than a fixed rule inferred from one part."
+  }
+]
