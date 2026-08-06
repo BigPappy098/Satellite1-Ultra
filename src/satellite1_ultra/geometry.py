@@ -78,11 +78,11 @@ class DesignParameters:
     #: The frame between the corners.  This is the continuous surface the
     #: gasket seals against; the corners carry the mounting holes.
     driver_flange_body_diameter: float = 88.5
-    #: The ND91-4 frame is a rounded square, 88.5 across the flats and 103.2
-    #: across the corners. That ratio, 1.166, solves to this superellipse
-    #: exponent; a circle would be 1.0 and a true square 1.414.
-    driver_frame_exponent: float = 3.593
+    #: The ND91-4 frame is a square with large corner radii: 88.5 mm across
+    #: the flats, 103.2 across the corners carrying the mounting holes, which
+    #: leaves 35.5 mm of straight side per edge.
     driver_frame_flats: float = 88.5
+    driver_frame_corner_radius: float = 26.505
     driver_flange_thickness: float = 3.0
     driver_depth: float = 62.9
     driver_clamp_ring_diameter: float = 118.0
@@ -301,12 +301,14 @@ class DesignParameters:
         figure left the probes testing a ring the recess intrudes into and
         reporting a leak that is really four corner slivers.
         """
-        if self.driver_frame_exponent <= 0.0:
+        if self.driver_frame_corner_radius <= 0.0:
             # A round seat, for a component whose flange really is a disc.
             return self.driver_outer_diameter + 2.0 * self.print_clearance
-        half_flat = self.driver_frame_flats / 2.0 + self.print_clearance
-        corner = half_flat * sqrt(2.0) * 2.0 ** (-1.0 / self.driver_frame_exponent)
-        return float(2.0 * corner)
+        a = self.driver_frame_flats / 2.0
+        r = self.driver_frame_corner_radius
+        # Offsetting the profile outward by the clearance grows the corner
+        # reach by exactly that clearance, so the envelope is D + 2c.
+        return float(2.0 * (r + sqrt(2.0) * (a - r) + self.print_clearance))
 
     @property
     def driver_seat_depth(self) -> float:
@@ -598,41 +600,34 @@ def _depth_cylinder(
     return _radial_cylinder(radius, length, _offset(face_point, inward, depth_from_face), inward)
 
 
-def _depth_superellipse(
+def _depth_rounded_square(
     half_flat: float,
-    exponent: float,
+    corner_radius: float,
     depth_from_face: float,
     length: float,
     face_point: Vector3,
     inward: Vector3,
-    count: int = 192,
 ) -> cq.Shape:
-    """A superellipse prism driven into a mount face, like _depth_cylinder.
+    """A rounded square driven into a mount face, like _depth_cylinder.
 
-    The ND91-4's frame is a rounded square, not a disc: 88.5 mm across the
-    flats and 103.2 mm across the corners that carry the mounting holes. A
-    circular recess big enough to clear the corners leaves roughly 7.6 mm of
-    slop at the flats, so the driver floats instead of seating. That matters
-    most on the coupon, whose entire purpose is to let a builder feel whether
-    the flange lands flush and measure its thickness against a known depth.
+    The ND91-4 frame is a square with large corner radii: straight sides, not
+    a curve that bulges between the corners.  88.5 mm across the flats, 103.2
+    across the corners that carry the mounting holes, which puts the corner
+    radius at 26.5 mm and leaves 35.5 mm of straight side.
+
+    A superellipse fitted through those same two dimensions is up to 0.66 mm
+    narrower in between, at around 30 degrees.  Against 0.3 mm of seat
+    clearance the driver binds on all four corners, so the profile has to be
+    the real one rather than a curve that merely agrees at the extremes.
     """
     u, v = _mount_basis(inward)
     start = _offset(face_point, inward, depth_from_face)
-    points = []
-    for index in range(count):
-        theta = 2.0 * pi * index / count
-        c, s = cos(theta), sin(theta)
-        du = half_flat * copysign(abs(c) ** (2.0 / exponent), c)
-        dv = half_flat * copysign(abs(s) ** (2.0 / exponent), s)
-        points.append(
-            cq.Vector(
-                start[0] + u[0] * du + v[0] * dv,
-                start[1] + u[1] * du + v[1] * dv,
-                start[2] + u[2] * du + v[2] * dv,
-            )
-        )
-    wire = cq.Wire.assembleEdges([cq.Edge.makeSpline(points, periodic=True)])
-    return cast(cq.Shape, cq.Solid.extrudeLinear(wire, [], cq.Vector(*inward) * length))
+    plane = cq.Plane(origin=cq.Vector(*start), xDir=cq.Vector(*u), normal=cq.Vector(*inward))
+    block = cq.Workplane(plane).rect(2.0 * half_flat, 2.0 * half_flat).extrude(length)
+    rounded = block.edges(cq.selectors.ParallelDirSelector(cq.Vector(*inward))).fillet(
+        corner_radius
+    )
+    return cast(cq.Shape, rounded.val())
 
 
 # ---------------------------------------------------------------------- #
@@ -652,11 +647,11 @@ class MountSpec:
     seat_depth: float
     bore_diameter: float
     bolt_circle: float
-    #: Superellipse exponent of the component frame. 0.0 keeps the seat round,
-    #: which is right for the DSA115-PR's circular flange. The ND91-4 is a
-    #: rounded square and needs its own shape or it cannot seat.
-    seat_exponent: float = 0.0
-    #: Half the across-flats width, used only when seat_exponent is set.
+    #: Corner radius of the component frame. 0.0 keeps the seat round, which
+    #: is right for the DSA115-PR's circular flange. The ND91-4 is a rounded
+    #: square and needs its own profile or it cannot seat.
+    seat_corner_radius: float = 0.0
+    #: Half the across-flats width, used only when seat_corner_radius is set.
     seat_half_flat: float = 0.0
 
 
@@ -673,7 +668,7 @@ def driver_mount(parameters: DesignParameters = DEFAULT_PARAMETERS) -> MountSpec
         seat_depth=p.driver_seat_depth,
         bore_diameter=p.driver_bore_diameter,
         bolt_circle=p.driver_clamp_bolt_circle,
-        seat_exponent=p.driver_frame_exponent,
+        seat_corner_radius=p.driver_frame_corner_radius + p.print_clearance,
         seat_half_flat=p.driver_frame_flats / 2.0 + p.print_clearance,
     )
 
@@ -732,11 +727,11 @@ def _apply_mount(
                 inward,
             )
         )
-    if mount.seat_exponent > 0.0:
+    if mount.seat_corner_radius > 0.0:
         cabinet = cabinet.cut(
-            _depth_superellipse(
+            _depth_rounded_square(
                 mount.seat_half_flat,
-                mount.seat_exponent,
+                mount.seat_corner_radius,
                 -1.0,
                 mount.seat_depth + 1.0,
                 face,
@@ -2077,9 +2072,9 @@ def driver_keepout(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shap
     # the corners.  Modelling it as a Ø103.2 disc overstates it by about
     # 3400 mm^3 once the seat is cut to the real profile, which reads as an
     # interference with the cabinet that no physical driver would have.
-    flange = _depth_superellipse(
+    flange = _depth_rounded_square(
         p.driver_frame_flats / 2.0,
-        p.driver_frame_exponent,
+        p.driver_frame_corner_radius,
         -p.driver_flange_thickness,
         p.driver_flange_thickness,
         face,
