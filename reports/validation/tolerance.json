@@ -50,8 +50,8 @@
     },
     {
       "interface": "insert land between clamp bore and component seat",
-      "nominal_land_mm": 1.9997803356894295,
-      "worst_land_mm": 1.6997803356894294,
+      "nominal_land_mm": 2.0,
+      "worst_land_mm": 1.7,
       "limit": ">= 1.2 mm",
       "status": "PASS",
       "evidence": "ENGINEERING_ESTIMATE",

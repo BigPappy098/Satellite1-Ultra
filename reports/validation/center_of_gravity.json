@@ -2,24 +2,24 @@
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
   "method": "B-rep volume x material density, plus catalogued component masses",
-  "total_mass_g": 3555.6682863347787,
+  "total_mass_g": 3558.7365845358436,
   "center_of_gravity_mm": {
-    "x": -0.036580019636827145,
-    "y": -4.619371917872974,
-    "z": -140.1596420838341
+    "x": -0.036548254501706956,
+    "y": -4.681992994737947,
+    "z": -140.1250171712984
   },
-  "cg_height_above_support_mm": 98.14035791616593,
+  "cg_height_above_support_mm": 98.17498282870162,
   "support_polygon_mm": {
     "x_half": 92.0,
     "y_half": 92.0
   },
   "static_tipping_angles_deg": {
-    "+X": 43.16170821010944,
-    "-X": 43.138974364563886,
-    "+Y": 44.552554797202575,
-    "-Y": 41.68071365807357
+    "+X": 43.15161377234759,
+    "-X": 43.1289001866432,
+    "+Y": 44.56100959640245,
+    "-Y": 41.650277732431285
   },
-  "minimum_tipping_angle_deg": 41.68071365807357,
+  "minimum_tipping_angle_deg": 41.650277732431285,
   "ballast": {
     "material": "two removable 100 x 92 x 6 mm mild-steel plates",
     "mass_g": 866.64,
@@ -72,10 +72,10 @@
     },
     {
       "name": "main_cabinet",
-      "mass_g": 767.487771963818,
-      "x_mm": 2.4343478660004126e-07,
-      "y_mm": 2.497490761812543,
-      "z_mm": -143.56886882715375,
+      "mass_g": 770.5560701648825,
+      "x_mm": 1.2876068059745463e-06,
+      "y_mm": 2.1799427161429294,
+      "z_mm": -143.39538181895716,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {

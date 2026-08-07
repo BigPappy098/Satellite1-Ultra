@@ -7,7 +7,12 @@ from typing import cast
 
 import cadquery as cq
 
-from satellite1_ultra.geometry import DEFAULT_PARAMETERS, DesignParameters, rounded_prism
+from satellite1_ultra.geometry import (
+    DEFAULT_PARAMETERS,
+    DesignParameters,
+    _depth_traced_profile,
+    rounded_prism,
+)
 
 
 def _engrave(
@@ -79,14 +84,12 @@ def _component_seat_coupon(
     ledge_diameter: float,
     ledge_depth: float,
     parameters: DesignParameters,
-    seat_corner_radius: float = 0.0,
-    seat_half_flat: float = 0.0,
+    seat_profile: tuple[float, ...] = (),
 ) -> cq.Shape:
     """A one-to-one slice of the real cabinet mount: ledge, seat, bore, inserts.
 
-    ``seat_corner_radius`` cuts the seat as the rounded square the ND91-4's
-    frame actually is: straight sides with 26.5 mm corner radii, not a circle
-    and not a curve that bulges between the corners. This coupon exists so a
+    ``seat_profile`` cuts the seat to the ND91-4's real outline, traced from
+    the manufacturer's photograph: a circular body carrying four tabs. This coupon exists so a
     builder can drop the real driver in, feel whether it seats flush, and
     measure its flange thickness against a known recess depth. A round recess
     wide enough to clear the corners leaves the driver floating with roughly
@@ -101,15 +104,17 @@ def _component_seat_coupon(
             .circle(ledge_diameter / 2.0)
             .extrude(ledge_depth)
         )
-    if seat_corner_radius > 0.0:
+    if seat_profile:
         coupon = coupon.cut(
             cq.Workplane("XY").add(
-                rounded_prism(
-                    2.0 * seat_half_flat,
-                    2.0 * seat_half_flat,
+                _depth_traced_profile(
+                    seat_profile,
+                    (seat_diameter - 2.0 * parameters.print_clearance) / 2.0,
+                    -(thickness - seat_depth),
                     seat_depth,
-                    thickness - seat_depth,
-                    seat_corner_radius,
+                    (0.0, 0.0, thickness),
+                    (0.0, 0.0, -1.0),
+                    clearance=parameters.print_clearance,
                 )
             )
         )
@@ -148,8 +153,7 @@ def active_driver_coupon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
         0.0,
         0.0,
         p,
-        seat_corner_radius=p.driver_frame_corner_radius + p.print_clearance,
-        seat_half_flat=p.driver_frame_flats / 2.0 + p.print_clearance,
+        seat_profile=p.driver_frame_profile,
     )
     coupon = _engrave(
         coupon,

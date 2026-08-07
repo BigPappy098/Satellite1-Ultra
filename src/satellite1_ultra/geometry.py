@@ -33,7 +33,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from functools import lru_cache
-from math import copysign, cos, gamma, pi, sin, sqrt
+from math import copysign, cos, degrees, gamma, pi, sin, sqrt
 from typing import cast
 
 import cadquery as cq
@@ -78,11 +78,48 @@ class DesignParameters:
     #: The frame between the corners.  This is the continuous surface the
     #: gasket seals against; the corners carry the mounting holes.
     driver_flange_body_diameter: float = 88.5
-    #: The ND91-4 frame is a square with large corner radii: 88.5 mm across
-    #: the flats, 103.2 across the corners carrying the mounting holes, which
-    #: leaves 35.5 mm of straight side per edge.
-    driver_frame_flats: float = 88.5
-    driver_frame_corner_radius: float = 26.505
+    #: One quadrant of the frame outline at 5 degree steps, normalised to the
+    #: tab radius, traced from the product photograph. The frame is a circular
+    #: body with four tabs, not a disc and not a straight-sided square.
+    driver_frame_profile: tuple[float, ...] = (
+        1.0000,
+        0.9924,
+        0.9729,
+        0.9507,
+        0.9315,
+        0.9156,
+        0.9014,
+        0.8890,
+        0.8791,
+        0.8716,
+        0.8655,
+        0.8608,
+        0.8583,
+        0.8578,
+        0.8579,
+        0.8577,
+        0.8573,
+        0.8573,
+        0.8573,
+        0.8573,
+        0.8573,
+        0.8577,
+        0.8579,
+        0.8578,
+        0.8583,
+        0.8608,
+        0.8655,
+        0.8716,
+        0.8791,
+        0.8890,
+        0.9014,
+        0.9156,
+        0.9315,
+        0.9507,
+        0.9729,
+        0.9924,
+        1.0000,
+    )
     driver_flange_thickness: float = 3.0
     driver_depth: float = 62.9
     driver_clamp_ring_diameter: float = 118.0
@@ -301,14 +338,9 @@ class DesignParameters:
         figure left the probes testing a ring the recess intrudes into and
         reporting a leak that is really four corner slivers.
         """
-        if self.driver_frame_corner_radius <= 0.0:
-            # A round seat, for a component whose flange really is a disc.
-            return self.driver_outer_diameter + 2.0 * self.print_clearance
-        a = self.driver_frame_flats / 2.0
-        r = self.driver_frame_corner_radius
-        # Offsetting the profile outward by the clearance grows the corner
-        # reach by exactly that clearance, so the envelope is D + 2c.
-        return float(2.0 * (r + sqrt(2.0) * (a - r) + self.print_clearance))
+        # The tabs are the widest part, so the circumscribing diameter is the
+        # component's outer diameter plus clearance on each side.
+        return self.driver_outer_diameter + 2.0 * self.print_clearance
 
     @property
     def driver_seat_depth(self) -> float:
@@ -600,34 +632,76 @@ def _depth_cylinder(
     return _radial_cylinder(radius, length, _offset(face_point, inward, depth_from_face), inward)
 
 
-def _depth_rounded_square(
-    half_flat: float,
-    corner_radius: float,
+def _profile_radius(profile: tuple[float, ...], theta: float) -> float:
+    """Normalised frame radius at ``theta``, from the traced quadrant.
+
+    The table covers 0 to 90 degrees; the frame is four-fold symmetric, so any
+    angle folds into that range and is linearly interpolated between samples.
+    """
+    deg = degrees(theta) % 90.0
+    step = 90.0 / (len(profile) - 1)
+    index = int(deg / step)
+    if index >= len(profile) - 1:
+        return profile[-1]
+    span = (deg - index * step) / step
+    return profile[index] * (1.0 - span) + profile[index + 1] * span
+
+
+def _depth_traced_profile(
+    profile: tuple[float, ...],
+    tab_radius: float,
     depth_from_face: float,
     length: float,
     face_point: Vector3,
     inward: Vector3,
+    count: int = 288,
+    clearance: float = 0.0,
 ) -> cq.Shape:
-    """A rounded square driven into a mount face, like _depth_cylinder.
+    """The component's real outline driven into a mount face.
 
-    The ND91-4 frame is a square with large corner radii: straight sides, not
-    a curve that bulges between the corners.  88.5 mm across the flats, 103.2
-    across the corners that carry the mounting holes, which puts the corner
-    radius at 26.5 mm and leaves 35.5 mm of straight side.
-
-    A superellipse fitted through those same two dimensions is up to 0.66 mm
-    narrower in between, at around 30 degrees.  Against 0.3 mm of seat
-    clearance the driver binds on all four corners, so the profile has to be
-    the real one rather than a curve that merely agrees at the extremes.
+    Built from the outline traced off the manufacturer's photograph rather than
+    a curve fitted through two dimensions. Fitting is what went wrong twice
+    here: a superellipse through 88.5 and 103.2 agrees at exactly those two
+    angles and runs 0.66 mm narrow at 30 degrees, and a straight-sided rounded
+    square has flats the frame does not have. The frame is a circular body
+    carrying four tabs, and only the traced outline captures that.
     """
-    u, v = _mount_basis(inward)
+    # Own basis rather than _mount_basis, which rejects vertical directions by
+    # design: the cabinet mounts are all on walls, but the coupon is built
+    # looking down the Z axis.
+    normal = cq.Vector(*inward).normalized()
+    seed = cq.Vector(0.0, 0.0, 1.0)
+    if abs(normal.z) > 0.9:
+        seed = cq.Vector(1.0, 0.0, 0.0)
+    u_vec = normal.cross(seed).normalized()
+    v_vec = normal.cross(u_vec).normalized()
+    u = (u_vec.x, u_vec.y, u_vec.z)
+    v = (v_vec.x, v_vec.y, v_vec.z)
     start = _offset(face_point, inward, depth_from_face)
-    plane = cq.Plane(origin=cq.Vector(*start), xDir=cq.Vector(*u), normal=cq.Vector(*inward))
-    block = cq.Workplane(plane).rect(2.0 * half_flat, 2.0 * half_flat).extrude(length)
-    rounded = block.edges(cq.selectors.ParallelDirSelector(cq.Vector(*inward))).fillet(
-        corner_radius
-    )
-    return cast(cq.Shape, rounded.val())
+    points = []
+    for index in range(count):
+        theta = 2.0 * pi * index / count
+        # Added, not scaled: scaling the profile would shrink the gap on the
+        # body in proportion to its smaller radius, leaving 0.26 mm where the
+        # tabs get 0.30.
+        r = tab_radius * _profile_radius(profile, theta) + clearance
+        du, dv = r * cos(theta), r * sin(theta)
+        points.append(
+            cq.Vector(
+                start[0] + u[0] * du + v[0] * dv,
+                start[1] + u[1] * du + v[1] * dv,
+                start[2] + u[2] * du + v[2] * dv,
+            )
+        )
+    # A polyline, not a periodic spline. A closed spline forced through this
+    # many points across the concave tab transitions produces a solid whose
+    # booleans fail silently: the seat looked right, but intersecting it with
+    # the seal probe returned an empty shape, which the gate read as "no
+    # cabinet material" and reported as a leak. At 288 segments the sagitta is
+    # 0.003 mm, 130 times finer than a 0.4 mm extrusion bead, so nothing is
+    # lost by describing the curve as straight runs.
+    wire = cq.Wire.makePolygon([*points, points[0]])
+    return cast(cq.Shape, cq.Solid.extrudeLinear(wire, [], cq.Vector(*inward) * length))
 
 
 # ---------------------------------------------------------------------- #
@@ -647,12 +721,12 @@ class MountSpec:
     seat_depth: float
     bore_diameter: float
     bolt_circle: float
-    #: Corner radius of the component frame. 0.0 keeps the seat round, which
-    #: is right for the DSA115-PR's circular flange. The ND91-4 is a rounded
-    #: square and needs its own profile or it cannot seat.
-    seat_corner_radius: float = 0.0
-    #: Half the across-flats width, used only when seat_corner_radius is set.
-    seat_half_flat: float = 0.0
+    #: Traced outline of the component frame, one quadrant normalised to the
+    #: tab radius. Empty keeps the seat round, which is right for the
+    #: DSA115-PR's circular flange.
+    seat_profile: tuple[float, ...] = ()
+    #: Radius the tabs reach, including clearance.
+    seat_tab_radius: float = 0.0
 
 
 def driver_mount(parameters: DesignParameters = DEFAULT_PARAMETERS) -> MountSpec:
@@ -668,8 +742,8 @@ def driver_mount(parameters: DesignParameters = DEFAULT_PARAMETERS) -> MountSpec
         seat_depth=p.driver_seat_depth,
         bore_diameter=p.driver_bore_diameter,
         bolt_circle=p.driver_clamp_bolt_circle,
-        seat_corner_radius=p.driver_frame_corner_radius + p.print_clearance,
-        seat_half_flat=p.driver_frame_flats / 2.0 + p.print_clearance,
+        seat_profile=p.driver_frame_profile,
+        seat_tab_radius=p.driver_outer_diameter / 2.0,
     )
 
 
@@ -727,15 +801,16 @@ def _apply_mount(
                 inward,
             )
         )
-    if mount.seat_corner_radius > 0.0:
+    if mount.seat_profile:
         cabinet = cabinet.cut(
-            _depth_rounded_square(
-                mount.seat_half_flat,
-                mount.seat_corner_radius,
+            _depth_traced_profile(
+                mount.seat_profile,
+                mount.seat_tab_radius,
                 -1.0,
                 mount.seat_depth + 1.0,
                 face,
                 inward,
+                clearance=p.print_clearance,
             )
         )
     else:
@@ -2072,9 +2147,9 @@ def driver_keepout(parameters: DesignParameters = DEFAULT_PARAMETERS) -> cq.Shap
     # the corners.  Modelling it as a Ø103.2 disc overstates it by about
     # 3400 mm^3 once the seat is cut to the real profile, which reads as an
     # interference with the cabinet that no physical driver would have.
-    flange = _depth_rounded_square(
-        p.driver_frame_flats / 2.0,
-        p.driver_frame_corner_radius,
+    flange = _depth_traced_profile(
+        p.driver_frame_profile,
+        p.driver_outer_diameter / 2.0,
         -p.driver_flange_thickness,
         p.driver_flange_thickness,
         face,

@@ -37,8 +37,20 @@ active_drivers:
     # standing proud of it.  Three diameters matter and they are different.
     outer_diameter_mm: 103.2          # across the ears; what the seat must clear
     flange_body_diameter_mm: 88.5     # across the flats; the sealing surface
-    frame_flats_mm: 88.5              # across the flats, from the section view
-    frame_corner_radius_mm: 26.505    # straight sides, 35.5 mm run, big radii
+    # Outline traced from the manufacturer's top-down product photograph, one
+    # quadrant at 2.5 degree steps, normalised to the tab radius, forced
+    # symmetric about 45 and low-pass filtered to the harmonics the frame's
+    # four-fold symmetry allows, which removes about 0.27 mm of pixel jitter.  A circular body carrying four tabs: constant radius
+    # through the middle of each edge, rising to the tabs that hold the
+    # mounting holes.  Its own body/tab ratio is 0.8586 against 88.5/103.2 =
+    # 0.8576 from the dimensioned drawing, agreeing to 0.12 percent, so the
+    # shape comes from the photograph and the scale from the drawing.
+    frame_profile:
+      [1.0000, 0.9924, 0.9729, 0.9507, 0.9315, 0.9156, 0.9014, 0.8890,
+       0.8791, 0.8716, 0.8655, 0.8608, 0.8583, 0.8578, 0.8579, 0.8577,
+       0.8573, 0.8573, 0.8573, 0.8573, 0.8573, 0.8577, 0.8579, 0.8578,
+       0.8583, 0.8608, 0.8655, 0.8716, 0.8791, 0.8890, 0.9014, 0.9156,
+       0.9315, 0.9507, 0.9729, 0.9924, 1.0000]
     cutout_diameter_mm: 76.45         # published baffle cutout, 3.01 in
     bolt_circle_mm: 93.3
     mounting_hole_diameter_mm: 4.0
