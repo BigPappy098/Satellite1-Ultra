@@ -1,6 +1,6 @@
 # Engineering Appendix
 
-Source commit at generation: `7f011c522f93b4addfceb2aec57a17a95b0d14e8`.
+Source commit at generation: `aceaa4b95133bbfa9ec26932bb2509aea245c363`.
 
 ## Coordinate system
 
@@ -10,10 +10,10 @@ Source commit at generation: `7f011c522f93b4addfceb2aec57a17a95b0d14e8`.
 
 ## Current digital acoustic model
 
-- Net acoustic volume: 3.518 L,
+- Net acoustic volume: 3.517 L,
   `VERIFIED_DIGITALLY` from the connected OCCT air domain.
 - Tuning: 60.0 Hz.
-- Added mass: 7.98 g per radiator.
+- Added mass: 7.99 g per radiator.
 - Modelled f3: 59.0 Hz.
 - Modelled minimum impedance:
   4.39 ohm.

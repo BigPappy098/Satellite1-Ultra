@@ -1,5 +1,5 @@
 Satellite1 Ultra RC1
-Generated from source commit 7f011c522f93b4addfceb2aec57a17a95b0d14e8
+Generated from source commit aceaa4b95133bbfa9ec26932bb2509aea245c363
 
 Status: DIGITAL_PROTOTYPE_READY. No physical unit has been built and measured.
 Fit, sealing, acoustic performance, thermal margin, Wi-Fi, microphones, LEDs,
