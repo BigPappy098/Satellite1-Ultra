@@ -421,3 +421,54 @@ table.mats td{vertical-align:top;padding:.45rem .6rem}
 table.mats td:first-child{width:1%;white-space:nowrap}
 table.files td:first-child{font-variant-numeric:tabular-nums}
 .dim{opacity:.45}
+
+/* Calibration tabs.  Calibration used to sit across two pages with notes
+   telling a builder to fill in the first two boxes, leave, print, and come
+   back.  That instruction is easy to miss and expensive to miss: every later
+   measurement reads a feature the printer's scale error has already moved.
+   The rounds are now tabs on one page, so a step can simply not show inputs
+   that do not belong to it yet. */
+.tabs {
+  display: flex; flex-wrap: wrap; gap: .35rem;
+  list-style: none; margin: 1.6rem 0 0; padding: 0;
+  border-bottom: 2px solid var(--rule);
+}
+.tabs button {
+  appearance: none; background: none; border: 0;
+  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  padding: .65rem .85rem; cursor: pointer;
+  font: inherit; font-size: .95rem; color: var(--ink-faint);
+  display: flex; align-items: baseline; gap: .45rem;
+}
+.tabs button .n {
+  font-variant-numeric: tabular-nums; font-weight: 700; font-size: .8rem;
+  padding: .1rem .42rem; border-radius: 999px;
+  background: var(--sunken); color: var(--ink-faint);
+}
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] {
+  color: var(--ink); border-bottom-color: var(--signal);
+}
+.tabs button[aria-selected="true"] .n { background: var(--signal); color: #fff; }
+.tabs button.done .n::after { content: " ✓"; }
+.tabs button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+.panel { padding-top: .4rem; }
+.panel[hidden] { display: none; }
+
+/* Moving between rounds is the whole point, so the control that does it is
+   the most prominent thing on each panel. */
+.tab-nav {
+  display: flex; flex-wrap: wrap; gap: .6rem; align-items: center;
+  margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
+}
+.tab-nav .spacer { flex: 1 1 auto; }
+
+/* Shown when a round-one number changes after later rounds were filled in. */
+.stale { display: none; }
+.stale.on { display: block; }
+
+@media (max-width: 34rem) {
+  .tabs button { padding: .55rem .5rem; font-size: .88rem; }
+  .tabs button .n { font-size: .74rem; }
+}

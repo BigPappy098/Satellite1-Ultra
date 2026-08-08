@@ -164,3 +164,95 @@ def test_the_hole_sizes_offered_are_the_ones_the_coupon_prints() -> None:
     }
     assert offered, "the wizard offered no hole sizes"
     assert offered <= printed, f"offered but never printed: {sorted(offered - printed)}"
+
+
+def _wizard_round_one(xy: float, z: float) -> tuple[str, dict[str, float]]:
+    """Run the shipped wizard.js and return its round-one code and values."""
+    inputs = {
+        "xy": xy,
+        "z": z,
+        "clear": 3.4,
+        "bore": 4.2,
+        "dcut": 0.0,
+        "pcut": 0.0,
+        "cable": 0.0,
+        "sheet": 2.0,
+        "gap": 1.5,
+        "dflange": 3.0,
+        "pflange": 4.0,
+    }
+    stub = (
+        "const node = (id) => ({ value: String(INPUTS[id]), textContent: '',"
+        " innerHTML: '', className: '', addEventListener() {}, classList:"
+        " { add() {}, remove() {}, toggle() {} }, setAttribute() {}, focus() {},"
+        " dataset: {} });"
+    )
+    harness = f"""
+const INPUTS = {json.dumps(inputs)};
+{stub}
+global.navigator = {{ clipboard: {{ writeText: async () => {{}} }} }};
+global.document = {{
+  getElementById: (id) => (id.endsWith("_v") ? null : node(id)),
+  querySelectorAll: () => [],
+  addEventListener() {{}},
+}};
+{WIZARD.read_text(encoding="utf-8")}
+const values = scaleOnly();
+process.stdout.write(JSON.stringify({{
+  code: encode(values, PREFIX_ROUND_ONE), values: values,
+}}));
+"""
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as handle:
+        handle.write(harness)
+        path = handle.name
+    try:
+        out = subprocess.run(["node", path], capture_output=True, text=True, timeout=30, check=True)
+    finally:
+        os.unlink(path)
+    payload = json.loads(out.stdout)
+    return payload["code"], payload["values"]
+
+
+def test_round_one_code_carries_scale_and_nothing_else() -> None:
+    """Round one must not smuggle in values the builder has not measured yet.
+
+    The seven round-two coupons are regenerated from this code. If it carried
+    anything but scale, it would bake in an assumption about a feature the
+    builder is about to measure, and the coupon would confirm the assumption
+    rather than test it.
+    """
+    design = load_design_parameters()
+    code, values = _wizard_round_one(110.6 * 0.991, 3.0)
+
+    assert code.startswith("S1U1-"), (
+        f"round one emitted {code[:6]!r}; the notebook branches on that prefix to "
+        "decide whether to return test pieces or the whole enclosure"
+    )
+    assert values["xy_scale_correction_fraction"] == pytest.approx(1 / 0.991 - 1, abs=1e-6)
+    assert values["z_scale_correction_fraction"] == pytest.approx(0.0, abs=1e-6)
+
+    for key in CALIBRATION_LIMITS:
+        if key.endswith("_scale_correction_fraction"):
+            continue
+        if key.endswith("_offset_mm"):
+            assert values[key] == 0.0, f"round one pre-set an unmeasured offset: {key}"
+    # The three non-offset fields carry design nominals rather than zero, so
+    # they must be the design's nominals and not a number typed twice.
+    for key, nominal in (
+        ("gasket_sheet_thickness_mm", design.gasket_thickness),
+        ("active_driver_flange_thickness_mm", design.driver_flange_thickness),
+        ("passive_radiator_flange_thickness_mm", design.pr_flange_thickness),
+    ):
+        assert values[key] == pytest.approx(nominal, abs=1e-6), (
+            f"round one sends {key}={values[key]} where the design says {nominal}; "
+            "the round-two coupons would be built to a value nobody measured"
+        )
+
+
+def test_round_one_and_final_codes_are_distinguishable() -> None:
+    """Same numbers, different request: the prefixes must not collide."""
+    round_one, _ = _wizard_round_one(110.6, 3.0)
+    final = _wizard_values(110.6, 3.0)
+    assert round_one.startswith("S1U1-")
+    assert not round_one[5:].startswith("S1U")
+    assert isinstance(final, dict)

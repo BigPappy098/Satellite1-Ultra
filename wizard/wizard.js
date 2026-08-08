@@ -145,9 +145,18 @@ function isStandard(values) {
 }
 
 /* Compact, typo-resistant code: the eleven values in fixed order. */
-function encode(values) {
+/* Round one and the final code carry different prefixes on purpose. Both are
+   the same eleven numbers, but they ask the generator for different things:
+   round one wants the seven remaining test pieces rebuilt at the measured
+   scale, the final code wants the enclosure. Sharing a prefix would leave the
+   generator guessing from the values, and "every field happens to be nominal"
+   is a state a real printer can legitimately reach. */
+const PREFIX_ROUND_ONE = "S1U1-";
+const PREFIX_FINAL = "S1U-";
+
+function encode(values, prefix = PREFIX_FINAL) {
   const packed = KEYS.map((k) => values[k]).join(",");
-  return "S1U-" + btoa(packed).replace(/=+$/, "");
+  return prefix + btoa(packed).replace(/=+$/, "");
 }
 
 /* Round one: scale only, everything else left nominal.
@@ -183,7 +192,7 @@ function refreshStageOne() {
   const values = scaleOnly();
   const node = el("stage1_code");
   if (!node) return;
-  stageOneCode = values ? encode(values) : "";
+  stageOneCode = values ? encode(values, PREFIX_ROUND_ONE) : "";
   const ready = Boolean(values);
   el("stage1_out").classList.toggle("hide", !ready);
   if (!ready) return;
@@ -224,8 +233,8 @@ function refresh() {
       ? "All eight checks passed, and your printer needs no corrections at all."
       : "All eight checks passed. Your printer needs a few small corrections.";
   el("go").textContent = perfect
-    ? "Go to step 3 and download the parts →"
-    : "Go to step 3 with my code →";
+    ? "Go to step 2 and download the parts →"
+    : "Go to step 2 with my code →";
 }
 
 document.querySelectorAll("input, select").forEach((node) => {
@@ -259,4 +268,95 @@ if (copyButton) {
   });
 }
 
+/* ---------------------------------------------------------------------------
+   Tabs, persistence, and the stale-scale warning.
+
+   Calibration is two rounds separated by a print that takes hours, so a
+   builder will close this tab in between. Losing their round-one numbers would
+   send them back to the calipers for no reason, so entries are kept on the
+   device. Nothing is sent anywhere: this is localStorage, same origin, same
+   machine.
+--------------------------------------------------------------------------- */
+
+const STORE = "s1u.calibration.v1";
+const SCALE_FIELDS = ["xy", "z"];
+
+function fields() {
+  return Array.from(document.querySelectorAll("input, select"));
+}
+
+function save() {
+  const state = {};
+  fields().forEach((node) => { state[node.id] = node.value; });
+  const active = document.querySelector('.tabs button[aria-selected="true"]');
+  if (active) state.__tab = active.dataset.tab;
+  state.__scaleAtEntry = scaleSignature();
+  try { localStorage.setItem(STORE, JSON.stringify(state)); } catch { /* private mode */ }
+}
+
+function scaleSignature() {
+  return SCALE_FIELDS.map((id) => (el(id) ? el(id).value : "")).join("|");
+}
+
+/* The signature captured when the later measurements were last touched. A
+   builder who corrects a round-one typo afterwards is holding seven pieces
+   printed to the old scale, and every one of those readings is now wrong. That
+   is silent damage unless we say so. */
+let scaleWhenMeasured = null;
+
+function markStale() {
+  const warn = el("stale_warn");
+  if (!warn) return;
+  const changed = scaleWhenMeasured !== null && scaleWhenMeasured !== scaleSignature();
+  warn.classList.toggle("on", changed);
+}
+
+function restore() {
+  let state;
+  try { state = JSON.parse(localStorage.getItem(STORE) || "null"); } catch { state = null; }
+  if (!state) return;
+  fields().forEach((node) => {
+    if (typeof state[node.id] === "string") node.value = state[node.id];
+  });
+  if (typeof state.__scaleAtEntry === "string") scaleWhenMeasured = state.__scaleAtEntry;
+  if (state.__tab) showTab(state.__tab, false);
+}
+
+function showTab(key, remember = true) {
+  const buttons = Array.from(document.querySelectorAll(".tabs button"));
+  if (!buttons.length) return;
+  const known = buttons.some((button) => button.dataset.tab === key);
+  if (!known) return;
+  buttons.forEach((button) => {
+    const on = button.dataset.tab === key;
+    button.setAttribute("aria-selected", on ? "true" : "false");
+    const panel = el("panel-" + button.dataset.tab);
+    if (panel) panel.hidden = !on;
+  });
+  if (key === "measure") {
+    /* Entering the measuring round is the moment those readings become tied to
+       a particular scale, so that is when the signature is taken. */
+    scaleWhenMeasured = scaleSignature();
+  }
+  markStale();
+  if (remember) {
+    save();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
+
+document.querySelectorAll(".tabs button").forEach((button) => {
+  button.addEventListener("click", () => showTab(button.dataset.tab));
+});
+document.querySelectorAll("[data-goto]").forEach((button) => {
+  button.addEventListener("click", () => showTab(button.dataset.goto));
+});
+
+fields().forEach((node) => {
+  node.addEventListener("input", () => { save(); markStale(); });
+  node.addEventListener("change", () => { save(); markStale(); });
+});
+
+restore();
 refresh();
+markStale();

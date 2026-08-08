@@ -46,10 +46,9 @@ _STL_AVAILABLE = {name for name in PARTS if name not in GASKET_SOLIDS}
 
 PAGES = (
     ("index.html", "Start"),
-    ("print-tests.html", "1 · Test prints"),
-    ("calibrate.html", "2 · Measure"),
-    ("parts.html", "3 · Get parts"),
-    ("assemble.html", "4 · Build it"),
+    ("calibrate.html", "1 · Calibrate"),
+    ("parts.html", "2 · Get parts"),
+    ("assemble.html", "3 · Build it"),
 )
 
 
@@ -275,7 +274,7 @@ seal. The test pieces take an evening.</p></div>
 <div class="step"><h3><span class="num">01</span>Print eight test pieces</h3>
 <p>Small, quick, and they tell us exactly how your printer lays down plastic \u2014
 holes, inserts, seats, gaskets.</p>
-<a class="btn" href="print-tests.html">Start here</a></div>
+<a class="btn" href="calibrate.html">Start here</a></div>
 
 <div class="step"><h3><span class="num">02</span>Measure them</h3>
 <p>We show you where to put the calipers and which box to type each number into.
@@ -330,84 +329,77 @@ Your checks along the way are not extra credit; they are the first real evidence
 this design works. If something does not fit, that is genuinely useful \u2014 please
 open an issue.</p>
 
-<p class="next"><a class="btn" href="print-tests.html">Print the test pieces</a></p>
+<p class="next"><a class="btn" href="calibrate.html">Calibrate your printer</a></p>
 """
     return _shell("index.html", "Start", body)
 
 
-def _print_tests() -> str:
-    first = [
-        (source, filename, quantity, _material(source))
-        for source, filename, quantity in CALIBRATION_STAGE_ONE
-    ]
-    rest = [
-        (source, filename, quantity, _material(source))
-        for source, filename, quantity in CALIBRATION_STAGE_TWO
-        if source != "coupon_official_interface"
-    ]
-    body = f"""
-<h1>Print one piece, then seven more</h1>
-<p class="lede">Calibration runs in two rounds. The first tells us how your
-printer scales; the second is regenerated at that scale and tells us everything
-else. Skipping to round two measures both errors at once and separates
-neither.</p>
-
-<div class="warn"><strong>Do not print all eight at once</strong>
-<p>Every piece in round two measures something your printer's scale error has
-already moved — hole diameters, seat widths, the gasket gap, the cable bore. On
-an uncorrected print those readings mix the two errors together, and you cannot
-tell which is which.</p>
-<p>This is not hypothetical. A builder printed the speaker-fit piece straight
-from the shipped files on a printer running 0.9% small, found the driver would
-not seat, and reasonably concluded the seat was the wrong shape. It was the
-right shape, 0.34&nbsp;mm too small.</p></div>
-
-<h2>Round one — this one file</h2>
-<p>It carries a marked slot and a flat edge. Print it, measure both, and the
-website works out your XY and Z scale.</p>
-{_file_table(first, CALIBRATION_DIR)}
-
-<div class="note"><strong>Then regenerate round two</strong>
-<p>Take the code the measuring page gives you and generate the remaining seven
-pieces at your printer's scale. The copies in the download folder are the
-uncorrected originals — they are there so you can see what you are getting, not
-so you can print them as-is.</p>
-<a class="btn blue" href="calibrate.html">Go and measure it &rarr;</a></div>
-
-<h2>Round two — the remaining seven</h2>
-<p>Print these <em>after</em> round one, from <em>your</em> regenerated files.</p>
-{_file_table(rest, CALIBRATION_STAGE_TWO_DIR)}
-
+def _print_settings() -> str:
+    """Shared by both printing rounds: the settings are identical, and the
+    reason they must not change between rounds is the whole point."""
+    return """
 <div class="step"><h3><span class="num">01</span>Use your real settings</h3>
-<p>Print these with the <b>exact settings you will use for the actual parts</b>.
-That is the point — we are measuring your printer, not the file. Change the
-settings later and the measurements stop meaning anything.</p>
+<p>Print with the <b>exact settings you will use for the actual parts</b>. That
+is the point &mdash; we are measuring your printer, not the file. Change the
+settings later and every measurement stops meaning anything.</p>
 <ul>
 <li>0.4 mm nozzle, 0.20 mm layers</li>
 <li>5 walls, 6 top and 6 bottom layers, 35% gyroid infill</li>
 <li><b>No supports</b></li>
 <li>5 mm brim on the hard (ASA) pieces</li>
-<li>ASA: 250–260 °C nozzle, 100–110 °C bed, printer enclosed</li>
-<li>PETG instead: 235–250 °C nozzle, 75–85 °C bed</li>
+<li>ASA: 250&ndash;260 &deg;C nozzle, 100&ndash;110 &deg;C bed, printer enclosed</li>
+<li>PETG instead: 235&ndash;250 &deg;C nozzle, 75&ndash;85 &deg;C bed</li>
 </ul></div>
 
-<div class="step"><h3><span class="num">02</span>One at a time</h3>
-<p>One piece per print, so a failure costs you minutes. The last file on the list
-is the flexible cable seal, so load TPU for that one.</p></div>
-
-<div class="step"><h3><span class="num">03</span>Cool, then clean up carefully</h3>
+<div class="step"><h3><span class="num">02</span>Cool, then clean up carefully</h3>
 <p>Snap off the brim and pick off any stringing. Then stop.</p>
 <p><b>Do not sand, file or ream anything.</b> A piece that came out wrong is
 information, and we correct it with numbers. Sand it to fit and you have thrown
-away the measurement — and the real parts will still be wrong.</p></div>
-
-<div class="ok"><strong>All eight printed?</strong>
-<p>Get your digital calipers. The next page walks you through every measurement,
-one at a time, and tells you what each one means.</p></div>
-
-<p class="next"><a class="btn" href="calibrate.html">Measure them</a></p>
+away the measurement &mdash; and the real parts will still be wrong.</p></div>
 """
-    return _shell("print-tests.html", "Test prints", body)
+
+
+#: The calibration rounds, in order.  Titles live here so the tab strip and the
+#: panels cannot drift apart, which is what happened when the same flow was
+#: described separately on two pages.
+CALIBRATION_TABS = (
+    ("print1", "Print this one part"),
+    ("scale", "Your printer's scale"),
+    ("print2", "Print the other seven"),
+    ("measure", "Measure those seven"),
+    ("done", "Get your parts"),
+)
+
+
+def _tab_strip() -> str:
+    buttons = "".join(
+        f'<button role="tab" id="tab-{key}" aria-controls="panel-{key}" '
+        f'aria-selected="{"true" if index == 0 else "false"}" '
+        f'data-tab="{key}"><span class="n">{index + 1}</span>{escape(label)}</button>'
+        for index, (key, label) in enumerate(CALIBRATION_TABS)
+    )
+    return f'<div class="tabs" role="tablist">{buttons}</div>'
+
+
+def _panel(key: str, body: str, back: str = "", forward: str = "") -> str:
+    """One calibration round.  A panel shows only what its own round needs."""
+    index = [name for name, _ in CALIBRATION_TABS].index(key)
+    nav = ['<div class="tab-nav">']
+    if back:
+        previous = CALIBRATION_TABS[index - 1][0]
+        nav.append(
+            f'<button class="btn ghost" data-goto="{previous}">&larr; {escape(back)}</button>'
+        )
+    nav.append('<span class="spacer"></span>')
+    if forward:
+        following = CALIBRATION_TABS[index + 1][0]
+        nav.append(f'<button class="btn" data-goto="{following}">{escape(forward)} &rarr;</button>')
+    nav.append("</div>")
+    hidden = "" if index == 0 else " hidden"
+    return (
+        f'<section class="panel" role="tabpanel" id="panel-{key}" '
+        f'aria-labelledby="tab-{key}"{hidden}>{body}{"".join(nav)}</section>'
+    )
 
 
 def _measurement_card(
@@ -429,192 +421,272 @@ def _measurement_card(
 
 
 def _calibrate() -> str:
+    """The whole calibration, as five tabs on one page.
+
+    This used to be two pages -- a printing page and a measuring page -- joined
+    by notes telling a builder to fill in the first two boxes, leave, print
+    seven more parts, and come back to box three. That instruction is easy to
+    miss and expensive to miss, because measurements 3 onward all read features
+    the printer's scale error has already moved. A tab simply does not show the
+    inputs that do not belong to its round yet, which is a structure the builder
+    cannot skim past.
+    """
+    stage_one = [
+        (source, filename, quantity, _material(source))
+        for source, filename, quantity in CALIBRATION_STAGE_ONE
+    ]
+    stage_two = [
+        (source, filename, quantity, _material(source))
+        for source, filename, quantity in CALIBRATION_STAGE_TWO
+        if source != "coupon_official_interface"
+    ]
+
+    print1 = _panel(
+        "print1",
+        f"""
+<h2>Print this one part</h2>
+<p class="lede">One file. Nothing to type yet and nothing to measure yet. It
+carries a marked slot and a flat edge, and those two features are what tell us
+how your printer scales.</p>
+{_file_table(stage_one, CALIBRATION_DIR)}
+{_print_settings()}
+<div class="warn"><strong>Only this one, for now</strong>
+<p>There are seven more test pieces and they are deliberately not on this tab.
+Every one of them measures something your printer&rsquo;s scale error has
+already moved &mdash; hole diameters, seat widths, the gasket gap, the cable
+bore. Print them before we know your scale and each reading mixes two errors
+together with no way to separate them.</p>
+<p>This is not hypothetical. A builder printed the speaker-fit piece straight
+from the shipped files on a printer running 0.9% small, found the driver would
+not seat, and reasonably concluded the seat was the wrong shape. It was the
+right shape, 0.34&nbsp;mm too small.</p></div>
+""",
+        forward="I printed it",
+    )
+
+    scale = _panel(
+        "scale",
+        f"""
+<h2>Your printer&rsquo;s scale</h2>
+<p class="lede">Two measurements, both off the part you just printed. Nothing
+else is asked for on this tab.</p>
+{
+            (
+                _measurement_card(
+                    "1",
+                    "How wide is the marked slot?",
+                    "calibration_official_interface.png",
+                    "the piece marked <code>01_CHECK_SATELLITE_TOP_FIT</code>",
+                    "Find the engraved words <b>MEASURE XY 110.60</b>. Put the <b>small inside "
+                    "jaws</b> of your calipers inside that slot and open them until they touch. "
+                    "Do it at three different heights and use the middle answer.",
+                    '<div class="field"><label class="q" for="xy">Type what the calipers say (mm)</label>'
+                    '<div class="help">If your printer is perfect this reads 110.60.</div>'
+                    '<input type="number" id="xy" step="0.01" value="110.60">'
+                    '<div class="verdict" id="xy_v"></div></div>',
+                ),
+                _measurement_card(
+                    "2",
+                    "How thick is the flat edge?",
+                    "calibration_official_interface.png",
+                    "the same piece",
+                    "Use the <b>big outside jaws</b> on a clean flat edge of the same piece. "
+                    "Measure at four corners and use the middle answer.",
+                    '<div class="field"><label class="q" for="z">Type what the calipers say (mm)</label>'
+                    '<div class="help">If your printer is perfect this reads 3.00.</div>'
+                    '<input type="number" id="z" step="0.01" value="3.00">'
+                    '<div class="verdict" id="z_v"></div></div>',
+                ),
+            )
+        }
+<div class="note" id="stage1_out"><strong>Round one done &mdash; your scale</strong>
+<p id="stage1_pct" class="mono"></p>
+<p>Take this code to the generator. It rebuilds the remaining seven test pieces
+at your printer&rsquo;s scale, and <em>those</em> are the ones to print.</p>
+<pre class="code" id="stage1_code"></pre>
+<div class="btn-row">
+<button class="btn" id="stage1_copy" type="button">Copy my round one code</button>
+<a class="btn blue" href="{COLAB}" target="_blank" rel="noopener">Generate the other seven</a>
+</div>
+</div>
+""",
+        back="Back to printing",
+        forward="I have my seven files",
+    )
+
+    print2 = _panel(
+        "print2",
+        f"""
+<h2>Print the other seven</h2>
+<p class="lede">Print <em>your</em> regenerated files from the previous tab
+&mdash; not the copies below. Those are the uncorrected originals, listed so you
+can see what you are getting.</p>
+{_file_table(stage_two, CALIBRATION_STAGE_TWO_DIR)}
+<div class="note"><strong>One at a time</strong>
+<p>One piece per print, so a failure costs minutes rather than hours. The last
+file on the list is the flexible cable seal, so load TPU for that one.</p>
+<p>Same settings as round one. If you changed anything, go back and reprint the
+first part too &mdash; your scale measurement no longer describes this
+printer.</p></div>
+""",
+        back="Back to your scale",
+        forward="They are printed",
+    )
+
+    measure = _panel(
+        "measure",
+        f"""
+<h2>Measure those seven</h2>
+<p class="lede">These read your regenerated prints, so what is left is the
+error your printer has <em>beyond</em> its scale.</p>
+<div class="warn stale" id="stale_warn"><strong>Your scale changed</strong>
+<p>You edited a round-one measurement after filling these in. If the seven
+pieces in front of you were printed from the older code, they no longer match
+&mdash; regenerate and reprint them before trusting anything below.</p></div>
+{
+            (
+                _measurement_card(
+                    "3",
+                    "Which hole does an M3 screw drop through?",
+                    "calibration_fasteners.png",
+                    "the piece marked <code>02_CHECK_SCREWS_AND_INSERTS</code>",
+                    "There are three holes, labelled 3.4, 3.5 and 3.6. Try your M3 screw in each. "
+                    "Pick the <b>smallest</b> one it falls through <b>on its own, with no pushing</b>.",
+                    '<div class="field"><label class="q" for="clear">Pick the hole</label>'
+                    '<select id="clear"><option value="3.4" selected>3.4 — the smallest one</option>'
+                    '<option value="3.5">3.5 — the middle one</option>'
+                    '<option value="3.6">3.6 — the biggest one</option></select></div>',
+                ),
+                _measurement_card(
+                    "4",
+                    "Which hole holds a heat-set insert best?",
+                    "calibration_fasteners.png",
+                    "the same piece",
+                    "Melt an insert into the 4.0, 4.1, 4.2 and 4.3 holes. Pick the one where it "
+                    "went in <b>straight and level with the surface</b>, did not crack the plastic, "
+                    "and does not spin.",
+                    '<div class="field"><label class="q" for="bore">Pick the hole</label>'
+                    '<select id="bore"><option value="4.0">4.0</option><option value="4.1">4.1</option>'
+                    '<option value="4.2" selected>4.2</option><option value="4.3">4.3</option></select></div>',
+                ),
+                _measurement_card(
+                    "5",
+                    "Does your speaker drop in?",
+                    "calibration_driver.png",
+                    "the piece marked <code>03_CHECK_SPEAKER_FIT</code>",
+                    "Put your real Dayton ND91-4 into the ring. It should drop in <b>by hand</b> "
+                    "and sit flat. Leave the box at 0 if it does. If it is too tight, type a small "
+                    "positive number to make the hole bigger (try 0.2). If it is sloppy, type a "
+                    "small negative number.",
+                    '<div class="field"><label class="q" for="dcut">Change the hole size by (mm)</label>'
+                    '<div class="help">0 means "it was fine". Most people leave this at 0.</div>'
+                    '<input type="number" id="dcut" step="0.05" value="0">'
+                    '<div class="verdict" id="dcut_v"></div></div>'
+                    '<div class="field"><label class="q" for="dflange">How thick is the speaker\'s metal rim? (mm)</label>'
+                    '<div class="help">Measure the flat outer lip of the speaker in four places.</div>'
+                    '<input type="number" id="dflange" step="0.01" value="3.00">'
+                    '<div class="verdict" id="dflange_v"></div></div>',
+                ),
+                _measurement_card(
+                    "6",
+                    "Does your radiator drop in?",
+                    "calibration_radiator.png",
+                    "the piece marked <code>04_CHECK_RADIATOR_FIT</code>",
+                    "Same idea, with one passive radiator.",
+                    '<div class="field"><label class="q" for="pcut">Change the hole size by (mm)</label>'
+                    '<div class="help">0 means "it was fine".</div>'
+                    '<input type="number" id="pcut" step="0.05" value="0">'
+                    '<div class="verdict" id="pcut_v"></div></div>'
+                    '<div class="field"><label class="q" for="pflange">How thick is the radiator\'s rim? (mm)</label>'
+                    '<input type="number" id="pflange" step="0.01" value="4.00">'
+                    '<div class="verdict" id="pflange_v"></div></div>',
+                ),
+                _measurement_card(
+                    "7",
+                    "How much does your foam squash?",
+                    "calibration_gasket.png",
+                    "the two pieces marked <code>05_GASKET_TEST_BASE</code> and <code>06_GASKET_TEST_TOP</code>",
+                    "Measure your foam sheet on its own first. Then put a strip between the two "
+                    "pieces and screw them together until they <b>stop</b> — until the two hard "
+                    "edges touch. Measure the gap that is left.",
+                    '<div class="field"><label class="q" for="sheet">Foam thickness on its own (mm)</label>'
+                    '<input type="number" id="sheet" step="0.01" value="2.00">'
+                    '<div class="verdict" id="sheet_v"></div></div>'
+                    '<div class="field"><label class="q" for="gap">Gap once fully tightened (mm)</label>'
+                    '<input type="number" id="gap" step="0.01" value="1.50">'
+                    '<div class="verdict" id="gap_v"></div></div>',
+                ),
+                _measurement_card(
+                    "8",
+                    "Do the wires fit the rubber seal?",
+                    "calibration_cable.png",
+                    "the piece marked <code>07_CHECK_CABLE_HOLE</code> and the bendy TPU seal",
+                    "Push your two real speaker wires through the seal, then push the seal into "
+                    "the hole. It should take <b>firm finger pressure</b> and then stay put. Leave "
+                    "the box at 0 if that worked.",
+                    '<div class="field"><label class="q" for="cable">Change the hole size by (mm)</label>'
+                    '<div class="help">0 means "it was fine".</div>'
+                    '<input type="number" id="cable" step="0.05" value="0">'
+                    '<div class="verdict" id="cable_v"></div></div>',
+                ),
+            )
+        }
+""",
+        back="Back to printing",
+        forward="Show my result",
+    )
+
+    done = _panel(
+        "done",
+        """
+<h2>Get your parts</h2>
+<div class="step" id="summary">
+<p class="lede" id="status">Fill in the boxes on the earlier tabs.</p>
+<div id="perfect" class="ok hide"><strong>Great news &mdash; your printer is spot on</strong>
+Nothing needs changing. You can download the normal parts and start printing.</div>
+<div id="needs" class="note hide"><strong>Your printer needs small corrections</strong>
+That is completely normal. Copy the code below and take it to the generator,
+which makes a set of parts that fits your printer exactly.</div>
+<div id="code" class="code-big hide"></div>
+<div id="problems" class="warn hide"></div>
+<div class="btn-row">
+<button class="btn" id="copy">Copy my code</button>
+<a class="btn blue" id="go" href="parts.html">Go to step 2 &rarr;</a>
+</div>
+</div>
+""",
+        back="Back to measuring",
+    )
+
     body = f"""
-<h1>Measure your test pieces</h1>
-<p class="lede">Two rounds. Measurements 1 and 2 come from the single piece you
-printed first and give your printer's scale. The rest come from the seven
-pieces you regenerate at that scale.</p>
+<h1>Calibrate your printer</h1>
+<p class="lede">Two rounds of test prints. Round one measures how your printer
+scales; round two is regenerated at that scale and measures everything else.
+Work the tabs in order &mdash; each shows only what that round needs.</p>
 
-<div class="warn"><strong>Round one first, and on its own</strong>
-<p>Fill in measurements 1 and 2, take the code, and regenerate the remaining
-seven test pieces before you print them. Measurements 3 onward all read
-features your scale error has already moved, so taking them from uncorrected
-prints folds the two errors together and neither can be recovered.</p></div>
-
-<div class="note"><strong>Have these to hand</strong>
+<div class="note"><strong>Have these to hand from round two onward</strong>
 <p>Digital calipers reading to 0.01 mm, one M3 screw, one heat-set insert, your
 actual driver and one radiator, and a strip of your foam sheet.</p>
 <p>Measure the real components, not the numbers on their datasheets. Tolerances
 are why this page exists.</p></div>
 
 <div class="note"><strong>Nothing you type here leaves your browser</strong>
-<p>This page does the whole calculation locally. No account, no upload, no
-tracking; the correction code at the bottom is simply your numbers, encoded.</p>
-<p>One caveat, so it is not a surprise: if step 3 sends you to Colab to generate
-corrected parts, you paste that code into Google\u2019s service at that point. The
+<p>The whole calculation runs locally. No account, no upload, no tracking; the
+correction code is simply your numbers, encoded. Entries are remembered on this
+device, so you can close the tab between rounds.</p>
+<p>One caveat, so it is not a surprise: generating corrected parts opens Google
+Colab, and you paste the code into Google&rsquo;s service at that point. The
 code contains printer measurements and nothing else.</p></div>
 
-{
-        _measurement_card(
-            "1",
-            "How wide is the marked slot?",
-            "calibration_official_interface.png",
-            "the piece marked <code>01_CHECK_SATELLITE_TOP_FIT</code>",
-            "Find the engraved words <b>MEASURE XY 110.60</b>. Put the <b>small inside "
-            "jaws</b> of your calipers inside that slot and open them until they touch. "
-            "Do it at three different heights and use the middle answer.",
-            '<div class="field"><label class="q" for="xy">Type what the calipers say (mm)</label>'
-            '<div class="help">If your printer is perfect this reads 110.60.</div>'
-            '<input type="number" id="xy" step="0.01" value="110.60">'
-            '<div class="verdict" id="xy_v"></div></div>',
-        )
-    }
-
-{
-        _measurement_card(
-            "2",
-            "How thick is the flat edge?",
-            "calibration_official_interface.png",
-            "the same piece",
-            "Use the <b>big outside jaws</b> on a clean flat edge of the same piece. "
-            "Measure at four corners and use the middle answer.",
-            '<div class="field"><label class="q" for="z">Type what the calipers say (mm)</label>'
-            '<div class="help">If your printer is perfect this reads 3.00.</div>'
-            '<input type="number" id="z" step="0.01" value="3.00">'
-            '<div class="verdict" id="z_v"></div></div>',
-        )
-    }
-
-<div class="note" id="stage1_out"><strong>Round one done — your printer's scale</strong>
-<p id="stage1_pct" class="mono"></p>
-<p>Paste this into the generator to rebuild the remaining seven test pieces at
-your scale. Print <em>those</em>, then come back and carry on from measurement
-3.</p>
-<pre class="code" id="stage1_code"></pre>
-<button class="btn" id="stage1_copy" type="button">Copy my round one code</button>
-<a class="btn blue" href="{COLAB}" target="_blank" rel="noopener">Regenerate round two</a>
-</div>
-
-{
-        _measurement_card(
-            "3",
-            "Which hole does an M3 screw drop through?",
-            "calibration_fasteners.png",
-            "the piece marked <code>02_CHECK_SCREWS_AND_INSERTS</code>",
-            "There are three holes, labelled 3.4, 3.5 and 3.6. Try your M3 screw in each. "
-            "Pick the <b>smallest</b> one it falls through <b>on its own, with no pushing</b>.",
-            '<div class="field"><label class="q" for="clear">Pick the hole</label>'
-            '<select id="clear"><option value="3.4" selected>3.4 — the smallest one</option>'
-            '<option value="3.5">3.5 — the middle one</option>'
-            '<option value="3.6">3.6 — the biggest one</option></select></div>',
-        )
-    }
-
-{
-        _measurement_card(
-            "4",
-            "Which hole holds a heat-set insert best?",
-            "calibration_fasteners.png",
-            "the same piece",
-            "Melt an insert into the 4.0, 4.1, 4.2 and 4.3 holes. Pick the one where it "
-            "went in <b>straight and level with the surface</b>, did not crack the plastic, "
-            "and does not spin.",
-            '<div class="field"><label class="q" for="bore">Pick the hole</label>'
-            '<select id="bore"><option value="4.0">4.0</option><option value="4.1">4.1</option>'
-            '<option value="4.2" selected>4.2</option><option value="4.3">4.3</option></select></div>',
-        )
-    }
-
-{
-        _measurement_card(
-            "5",
-            "Does your speaker drop in?",
-            "calibration_driver.png",
-            "the piece marked <code>03_CHECK_SPEAKER_FIT</code>",
-            "Put your real Dayton ND91-4 into the ring. It should drop in <b>by hand</b> "
-            "and sit flat. Leave the box at 0 if it does. If it is too tight, type a small "
-            "positive number to make the hole bigger (try 0.2). If it is sloppy, type a "
-            "small negative number.",
-            '<div class="field"><label class="q" for="dcut">Change the hole size by (mm)</label>'
-            '<div class="help">0 means "it was fine". Most people leave this at 0.</div>'
-            '<input type="number" id="dcut" step="0.05" value="0">'
-            '<div class="verdict" id="dcut_v"></div></div>'
-            '<div class="field"><label class="q" for="dflange">How thick is the speaker\'s metal rim? (mm)</label>'
-            '<div class="help">Measure the flat outer lip of the speaker in four places.</div>'
-            '<input type="number" id="dflange" step="0.01" value="3.00">'
-            '<div class="verdict" id="dflange_v"></div></div>',
-        )
-    }
-
-{
-        _measurement_card(
-            "6",
-            "Does your radiator drop in?",
-            "calibration_radiator.png",
-            "the piece marked <code>04_CHECK_RADIATOR_FIT</code>",
-            "Same idea, with one passive radiator.",
-            '<div class="field"><label class="q" for="pcut">Change the hole size by (mm)</label>'
-            '<div class="help">0 means "it was fine".</div>'
-            '<input type="number" id="pcut" step="0.05" value="0">'
-            '<div class="verdict" id="pcut_v"></div></div>'
-            '<div class="field"><label class="q" for="pflange">How thick is the radiator\'s rim? (mm)</label>'
-            '<input type="number" id="pflange" step="0.01" value="4.00">'
-            '<div class="verdict" id="pflange_v"></div></div>',
-        )
-    }
-
-{
-        _measurement_card(
-            "7",
-            "How much does your foam squash?",
-            "calibration_gasket.png",
-            "the two pieces marked <code>05_GASKET_TEST_BASE</code> and <code>06_GASKET_TEST_TOP</code>",
-            "Measure your foam sheet on its own first. Then put a strip between the two "
-            "pieces and screw them together until they <b>stop</b> — until the two hard "
-            "edges touch. Measure the gap that is left.",
-            '<div class="field"><label class="q" for="sheet">Foam thickness on its own (mm)</label>'
-            '<input type="number" id="sheet" step="0.01" value="2.00">'
-            '<div class="verdict" id="sheet_v"></div></div>'
-            '<div class="field"><label class="q" for="gap">Gap once fully tightened (mm)</label>'
-            '<input type="number" id="gap" step="0.01" value="1.50">'
-            '<div class="verdict" id="gap_v"></div></div>',
-        )
-    }
-
-{
-        _measurement_card(
-            "8",
-            "Do the wires fit the rubber seal?",
-            "calibration_cable.png",
-            "the piece marked <code>07_CHECK_CABLE_HOLE</code> and the bendy TPU seal",
-            "Push your two real speaker wires through the seal, then push the seal into "
-            "the hole. It should take <b>firm finger pressure</b> and then stay put. Leave "
-            "the box at 0 if that worked.",
-            '<div class="field"><label class="q" for="cable">Change the hole size by (mm)</label>'
-            '<div class="help">0 means "it was fine".</div>'
-            '<input type="number" id="cable" step="0.05" value="0">'
-            '<div class="verdict" id="cable_v"></div></div>',
-        )
-    }
-
-<h2 id="result">Your result</h2>
-<div class="step" id="summary">
-<p class="lede" id="status">Fill in the boxes above.</p>
-<div id="perfect" class="ok hide"><strong>Great news — your printer is spot on</strong>
-Nothing needs changing. You can download the normal parts and start printing.</div>
-<div id="needs" class="note hide"><strong>Your printer needs small corrections</strong>
-That is completely normal. Copy the code below and take it to step 3, where we
-make a set of parts that fits your printer exactly.</div>
-<div id="code" class="code-big hide"></div>
-<div id="problems" class="warn hide"></div>
-<div class="btn-row">
-<button class="btn" id="copy">Copy my code</button>
-<a class="btn blue" id="go" href="parts.html">Go to step 3 &rarr;</a>
-</div>
-</div>
+{_tab_strip()}
+{print1}
+{scale}
+{print2}
+{measure}
+{done}
 <script src="wizard.js"></script>
 """
-    return _shell("calibrate.html", "Measure", body)
+    return _shell("calibrate.html", "Calibrate", body)
 
 
 def _parts() -> str:
@@ -706,7 +778,7 @@ points, not endorsements — buy wherever you like, the specification is what
 matters.</p>
 {_shopping_table()}
 
-<p class="next"><a class="btn" href="assemble.html">I have everything — go to step 4 &rarr;</a></p>
+<p class="next"><a class="btn" href="assemble.html">I have everything — go to step 3 &rarr;</a></p>
 """
     return _shell("parts.html", "Get parts", body)
 
@@ -842,7 +914,6 @@ def generate_site(output: Path = ROOT / "site", root: Path = ROOT) -> list[Path]
     written: list[Path] = []
     pages = {
         "index.html": _index(_printer_limits(root)),
-        "print-tests.html": _print_tests(),
         "calibrate.html": _calibrate(),
         "parts.html": _parts(),
         "assemble.html": _assemble(),
