@@ -4,7 +4,7 @@
 
 ## System
 
-- Net acoustic volume: **3.517 L** (exact B-rep, `VERIFIED_DIGITALLY`)
+- Net acoustic volume: **3.518 L** (exact B-rep, `VERIFIED_DIGITALLY`)
 - Architecture: one active driver, 2 opposed passive radiators
 - Target tuning: 60.0 Hz
 - Required moving mass per radiator: **19.69 g**

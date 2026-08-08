@@ -69,7 +69,7 @@ until the selected insert/process is pull-tested.
 - Fasteners: F04, 4 screws
 - Tools: 2.0 mm hex; crimper or soldering iron; polarity tester
 - Gasket/seal: G02
-- Action: Mark the red conductor positive. Connect red to the terminal marked + and black to -. Face the terminals upward. Center G02, seat the driver from the -Y/front side, fit the clamp ring, and tighten F04 in two diagonal passes to 0.35 N m; never exceed 0.45 N m.
+- Action: Mark the red conductor positive. Connect red to the terminal marked + and black to -. Look into the driver opening before you fit anything: at the top, in line with the topmost corner of the recess, the wall is notched wider. The driver's terminals sit in line with one of its four corner tabs and stand proud enough that the basket will not pass the opening anywhere else, so rotate the driver until its terminals point straight up into that notch. It only goes in one way round, and that is also the way the wire needs to leave to reach the cable passage in the divider above. Center G02, seat the driver from the -Y/front side, fit the clamp ring, and tighten F04 in two diagonal passes to 0.35 N m; never exceed 0.45 N m.
 - Pass: Ring bottoms evenly; G02 is continuous all the way round and covers all four unused driver mounting holes; cone moves outward on a brief 1.5 V positive polarity pulse.
 - Warning: Use only a brief low-voltage polarity pulse. Never connect a loose driver to the powered HAT.
 

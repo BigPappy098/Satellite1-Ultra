@@ -1,5 +1,5 @@
 {
-  "status": "FAIL",
+  "status": "PASS",
   "evidence": "VERIFIED_DIGITALLY",
   "checked_files": [
     "docs/BUILD_BOOK.md",
@@ -15,67 +15,38 @@
     {
       "file": "SATELLITE1_ULTRA_BUILD_BOOK.pdf",
       "pages": 24,
-      "bytes": 9143118
+      "bytes": 9151247
     },
     {
       "file": "CALIBRATION_GUIDE.pdf",
       "pages": 6,
-      "bytes": 1567965
+      "bytes": 1569762
     },
     {
       "file": "PRINTING_GUIDE.pdf",
       "pages": 26,
-      "bytes": 6732704
+      "bytes": 6732658
     },
     {
       "file": "HARDWARE_AND_MATERIALS_GUIDE.pdf",
-      "pages": 4,
-      "bytes": 11214
+      "pages": 5,
+      "bytes": 13203
     },
     {
       "file": "ASSEMBLY_GUIDE.pdf",
       "pages": 11,
-      "bytes": 5723476
+      "bytes": 5724567
     },
     {
       "file": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
       "pages": 3,
-      "bytes": 1529144
+      "bytes": 1534568
     },
     {
       "file": "MAINTENANCE_GUIDE.pdf",
       "pages": 1,
-      "bytes": 441278
+      "bytes": 440999
     }
   ],
-  "errors": [
-    "stale export anti_slip_ring: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export shell_base: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export shell_grille: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export shell_crown: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export shell_base_fabric: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export shell_grille_fabric: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export shell_crown_fabric: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export main_cabinet: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export pressure_divider: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export mic_isolation_bushing: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export active_driver_clamp_ring: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export passive_radiator_clamp_ring: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export divider_gasket: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export driver_gasket: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export passive_radiator_gasket: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export cable_gland: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export leak_test_adapter: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export base_skirt: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export bottom_service_plate: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export ballast_cartridge: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export ballast_cartridge_lid: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export coupon_official_interface: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export coupon_active_driver: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export coupon_passive_radiator: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export coupon_heat_set_insert: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export coupon_gasket_base: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export coupon_gasket_cap: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212",
-    "stale export coupon_cable_passage: source inputs changed since 170b95d5d8bd7d5a130f0bd5350de7401c53d212"
-  ]
+  "errors": []
 }
