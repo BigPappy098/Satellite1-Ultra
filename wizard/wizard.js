@@ -150,9 +150,58 @@ function encode(values) {
   return "S1U-" + btoa(packed).replace(/=+$/, "");
 }
 
+/* Round one: scale only, everything else left nominal.
+   The remaining coupons each measure a feature the scale error already moved --
+   hole diameters, seat widths, the gasket gap, the cable bore -- so they have
+   to be regenerated at the corrected scale before they mean anything. Reading
+   them off an uncorrected print mixes the global shrink into every figure. */
+function scaleOnly() {
+  const xy = num("xy"), z = num("z");
+  if (!Number.isFinite(xy) || xy <= 0 || !Number.isFinite(z) || z <= 0) return null;
+  const values = {};
+  for (const key of KEYS) values[key] = 0.0;
+  Object.assign(values, NOMINAL);
+  values.xy_scale_correction_fraction = round(110.6 / xy - 1, 7);
+  values.z_scale_correction_fraction = round(3.0 / z - 1, 7);
+  for (const key of ["xy_scale_correction_fraction", "z_scale_correction_fraction"]) {
+    const [low, high] = LIMITS[key];
+    if (values[key] < low || values[key] > high) return null;
+  }
+  return values;
+}
+
+/* True when the printer is dead on and round two can be printed as shipped. */
+function scaleIsNegligible(values) {
+  return Math.abs(values.xy_scale_correction_fraction) <= NEGLIGIBLE.xy_scale_correction_fraction
+    && Math.abs(values.z_scale_correction_fraction) <= NEGLIGIBLE.z_scale_correction_fraction;
+}
+
 let currentCode = "";
+let stageOneCode = "";
+
+function refreshStageOne() {
+  const values = scaleOnly();
+  const node = el("stage1_code");
+  if (!node) return;
+  stageOneCode = values ? encode(values) : "";
+  const ready = Boolean(values);
+  el("stage1_out").classList.toggle("hide", !ready);
+  if (!ready) return;
+  if (scaleIsNegligible(values)) {
+    el("stage1_out").innerHTML = "<strong>Your printer is dead on</strong>"
+      + "<p>No scale correction needed. Print the round two pieces exactly as"
+      + " they came in the download.</p>";
+    return;
+  }
+  const xy = values.xy_scale_correction_fraction * 100;
+  const z = values.z_scale_correction_fraction * 100;
+  node.textContent = stageOneCode;
+  el("stage1_pct").textContent =
+    `XY ${xy >= 0 ? "+" : ""}${xy.toFixed(2)}%, Z ${z >= 0 ? "+" : ""}${z.toFixed(2)}%`;
+}
 
 function refresh() {
+  refreshStageOne();
   const { values, problems } = compute();
   const ok = problems.length === 0;
   const perfect = ok && isStandard(values);
@@ -183,6 +232,19 @@ document.querySelectorAll("input, select").forEach((node) => {
   node.addEventListener("input", refresh);
   node.addEventListener("change", refresh);
 });
+
+const stageOneCopy = el("stage1_copy");
+if (stageOneCopy) {
+  stageOneCopy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(stageOneCode);
+      stageOneCopy.textContent = "Copied";
+      setTimeout(() => { stageOneCopy.textContent = "Copy my round one code"; }, 1600);
+    } catch {
+      stageOneCopy.textContent = "Select the code above and copy it";
+    }
+  });
+}
 
 const copyButton = el("copy");
 if (copyButton) {

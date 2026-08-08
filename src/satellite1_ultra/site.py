@@ -15,7 +15,8 @@ from html import escape
 from pathlib import Path
 
 from satellite1_ultra.builder_files import (
-    CALIBRATION_PRINT_ORDER,
+    CALIBRATION_STAGE_ONE,
+    CALIBRATION_STAGE_TWO,
     FABRIC_WRAP_PRINT_ORDER,
     OFFICIAL_TOP_PRINT_ORDER,
     ULTRA_PRINT_ORDER,
@@ -24,6 +25,7 @@ from satellite1_ultra.configuration import ROOT
 from satellite1_ultra.exporting import PARTS
 from satellite1_ultra.release import (
     CALIBRATION_DIR,
+    CALIBRATION_STAGE_TWO_DIR,
     ENCLOSURE_DIR,
     FABRIC_DIR,
     GASKET_DIR,
@@ -334,22 +336,47 @@ open an issue.</p>
 
 
 def _print_tests() -> str:
-    rows = [
+    first = [
         (source, filename, quantity, _material(source))
-        for source, filename, quantity in CALIBRATION_PRINT_ORDER
+        for source, filename, quantity in CALIBRATION_STAGE_ONE
+    ]
+    rest = [
+        (source, filename, quantity, _material(source))
+        for source, filename, quantity in CALIBRATION_STAGE_TWO
+        if source != "coupon_official_interface"
     ]
     body = f"""
-<h1>Print eight test pieces</h1>
-<p class="lede">Small, fast, and the whole point: you find out how your printer
-behaves before you commit days of filament to a cabinet that has to be airtight.</p>
+<h1>Print one piece, then seven more</h1>
+<p class="lede">Calibration runs in two rounds. The first tells us how your
+printer scales; the second is regenerated at that scale and tells us everything
+else. Skipping to round two measures both errors at once and separates
+neither.</p>
 
-<div class="warn"><strong>These eight, nothing else, not yet</strong>
-<p>Do not print the enclosure now. Every printer lays down plastic slightly
-differently, and this design has heat-set inserts, gasket lands and press-fit
-seats that all care about a few tenths of a millimetre.</p></div>
+<div class="warn"><strong>Do not print all eight at once</strong>
+<p>Every piece in round two measures something your printer's scale error has
+already moved — hole diameters, seat widths, the gasket gap, the cable bore. On
+an uncorrected print those readings mix the two errors together, and you cannot
+tell which is which.</p>
+<p>This is not hypothetical. A builder printed the speaker-fit piece straight
+from the shipped files on a printer running 0.9% small, found the driver would
+not seat, and reasonably concluded the seat was the wrong shape. It was the
+right shape, 0.34&nbsp;mm too small.</p></div>
 
-<h2>The files</h2>
-{_file_table(rows, CALIBRATION_DIR)}
+<h2>Round one — this one file</h2>
+<p>It carries a marked slot and a flat edge. Print it, measure both, and the
+website works out your XY and Z scale.</p>
+{_file_table(first, CALIBRATION_DIR)}
+
+<div class="note"><strong>Then regenerate round two</strong>
+<p>Take the code the measuring page gives you and generate the remaining seven
+pieces at your printer's scale. The copies in the download folder are the
+uncorrected originals — they are there so you can see what you are getting, not
+so you can print them as-is.</p>
+<a class="btn blue" href="calibrate.html">Go and measure it &rarr;</a></div>
+
+<h2>Round two — the remaining seven</h2>
+<p>Print these <em>after</em> round one, from <em>your</em> regenerated files.</p>
+{_file_table(rest, CALIBRATION_STAGE_TWO_DIR)}
 
 <div class="step"><h3><span class="num">01</span>Use your real settings</h3>
 <p>Print these with the <b>exact settings you will use for the actual parts</b>.
@@ -404,9 +431,15 @@ def _measurement_card(
 def _calibrate() -> str:
     body = f"""
 <h1>Measure your test pieces</h1>
-<p class="lede">Type each number into the box under its picture. We handle the
-arithmetic. Green means that dimension is fine; red tells you exactly what to
-change.</p>
+<p class="lede">Two rounds. Measurements 1 and 2 come from the single piece you
+printed first and give your printer's scale. The rest come from the seven
+pieces you regenerate at that scale.</p>
+
+<div class="warn"><strong>Round one first, and on its own</strong>
+<p>Fill in measurements 1 and 2, take the code, and regenerate the remaining
+seven test pieces before you print them. Measurements 3 onward all read
+features your scale error has already moved, so taking them from uncorrected
+prints folds the two errors together and neither can be recovered.</p></div>
 
 <div class="note"><strong>Have these to hand</strong>
 <p>Digital calipers reading to 0.01 mm, one M3 screw, one heat-set insert, your
@@ -451,6 +484,16 @@ code contains printer measurements and nothing else.</p></div>
             '<div class="verdict" id="z_v"></div></div>',
         )
     }
+
+<div class="note" id="stage1_out"><strong>Round one done — your printer's scale</strong>
+<p id="stage1_pct" class="mono"></p>
+<p>Paste this into the generator to rebuild the remaining seven test pieces at
+your scale. Print <em>those</em>, then come back and carry on from measurement
+3.</p>
+<pre class="code" id="stage1_code"></pre>
+<button class="btn" id="stage1_copy" type="button">Copy my round one code</button>
+<a class="btn blue" href="{COLAB}" target="_blank" rel="noopener">Regenerate round two</a>
+</div>
 
 {
         _measurement_card(

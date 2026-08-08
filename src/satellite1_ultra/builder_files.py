@@ -2,8 +2,22 @@
 
 from __future__ import annotations
 
-CALIBRATION_PRINT_ORDER = (
-    ("coupon_official_interface", "01_CHECK_SATELLITE_TOP_FIT.3mf", 1),
+#: Stage one. One part, printed from the shipped nominal files, whose only job
+#: is to reveal the printer's XY and Z scale.
+#:
+#: It has to come first and alone. Everything in stage two measures a feature
+#: whose size the scale error already moved -- hole diameters, seat widths, the
+#: gasket gap, the cable bore -- so reading them off an uncorrected print
+#: conflates the global shrink with the feature-specific error each coupon
+#: exists to isolate. A builder measured a seat 0.9 percent small and
+#: reasonably concluded the shape was wrong.
+CALIBRATION_STAGE_ONE = (("coupon_official_interface", "01_MEASURE_YOUR_PRINTER.3mf", 1),)
+
+#: Stage two, regenerated with the stage-one scale applied. Whatever remains
+#: out is genuinely feature-specific: elephant foot in a hole, squish on a
+#: first layer, the real thickness of a purchased flange.
+CALIBRATION_STAGE_TWO = (
+    ("coupon_official_interface", "01_MEASURE_YOUR_PRINTER.3mf", 1),
     ("coupon_heat_set_insert", "02_CHECK_SCREWS_AND_INSERTS.3mf", 1),
     ("coupon_active_driver", "03_CHECK_SPEAKER_FIT.3mf", 1),
     ("coupon_passive_radiator", "04_CHECK_RADIATOR_FIT.3mf", 1),
@@ -12,6 +26,9 @@ CALIBRATION_PRINT_ORDER = (
     ("coupon_cable_passage", "07_CHECK_CABLE_HOLE.3mf", 1),
     ("cable_gland", "08_FLEXIBLE_CABLE_SEAL_TPU.3mf", 1),
 )
+
+#: Every calibration part, for packaging and coverage checks.
+CALIBRATION_PRINT_ORDER = CALIBRATION_STAGE_TWO
 
 ULTRA_PRINT_ORDER = (
     ("main_cabinet", "01_MAIN_SPEAKER_BODY.3mf", 1),

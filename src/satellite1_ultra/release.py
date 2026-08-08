@@ -7,7 +7,8 @@ import shutil
 from pathlib import Path
 
 from satellite1_ultra.builder_files import (
-    CALIBRATION_PRINT_ORDER,
+    CALIBRATION_STAGE_ONE,
+    CALIBRATION_STAGE_TWO,
     FABRIC_WRAP_PRINT_ORDER,
     OFFICIAL_TOP_PRINT_ORDER,
     ULTRA_PRINT_ORDER,
@@ -28,9 +29,10 @@ GASKET_SOLIDS = {"divider_gasket", "driver_gasket", "passive_radiator_gasket"}
 #: from these, so they are named here rather than written out at both ends: the
 #: published site once pointed at PRINT_THESE_FILES/1_CALIBRATION_FIRST and
 #: friends, none of which have ever existed, and every download 404'd.
-CALIBRATION_DIR = "1_PRINT_THESE_FIRST"
-ENCLOSURE_DIR = "2_ENCLOSURE_PARTS"
-OFFICIAL_DIR = "3_SATELLITE_TOP_PARTS"
+CALIBRATION_DIR = "1_PRINT_THIS_FIRST"
+CALIBRATION_STAGE_TWO_DIR = "2_PRINT_THESE_NEXT"
+ENCLOSURE_DIR = "3_ENCLOSURE_PARTS"
+OFFICIAL_DIR = "4_SATELLITE_TOP_PARTS"
 FABRIC_DIR = f"{ENCLOSURE_DIR}/OPTIONAL_FABRIC_WRAP"
 GASKET_DIR = "GASKET_TEMPLATES"
 STL_DIR = "ADVANCED/STL"
@@ -105,7 +107,8 @@ def package_release(
     # folder a builder is told to print from was 3MF-only and the STL of the
     # same part was neither obviously present nor obviously current.
     for order, folder in (
-        (CALIBRATION_PRINT_ORDER, CALIBRATION_DIR),
+        (CALIBRATION_STAGE_ONE, CALIBRATION_DIR),
+        (CALIBRATION_STAGE_TWO, CALIBRATION_STAGE_TWO_DIR),
         (ULTRA_PRINT_ORDER, ENCLOSURE_DIR),
         # Swap-in skin segments for builders wrapping the body in cloth.
         (FABRIC_WRAP_PRINT_ORDER, FABRIC_DIR),
@@ -143,13 +146,22 @@ picture for each step. It is much easier to follow than these folders.
 If you would rather work offline, open GUIDES/SATELLITE1_ULTRA_BUILD_BOOK.pdf
 and follow it from front to back.
 
-WHAT IS IN HERE
----------------
-1_PRINT_THESE_FIRST   Eight small test pieces. Print these before anything else.
-2_ENCLOSURE_PARTS     The enclosure. Print every file, after the test pieces pass.
+CALIBRATION RUNS IN TWO ROUNDS
+-----------------------------
+1_PRINT_THIS_FIRST    One part. Print it, measure the marked slot and the flat
+                      edge, and type both into the website. That gives your
+                      printer's XY and Z scale.
+2_PRINT_THESE_NEXT    The remaining test pieces, REGENERATED with your scale
+                      already applied. Do not print the copies in this folder
+                      as shipped; download your own from the website after
+                      round one. Every one of them measures a feature your
+                      scale error already moved, so reading them off an
+                      uncorrected print mixes the two together and tells you
+                      nothing you can act on.
+3_ENCLOSURE_PARTS     The enclosure. Print after both rounds pass.
                       OPTIONAL_FABRIC_WRAP holds three alternative skin
                       segments, for wrapping the body in speaker cloth.
-3_SATELLITE_TOP_PARTS The original Satellite1 top. Print all six.
+4_SATELLITE_TOP_PARTS The original Satellite1 top. Print all six.
 GASKET_TEMPLATES      Print at 100% scale and cut three foam seals from them.
 GUIDES                The full manuals as PDFs.
 SHOPPING_LIST         What to buy: parts, screws, and seals.
@@ -157,8 +169,9 @@ ADVANCED              Source CAD, images, checksums. Ignore unless you need them
 
 THE ONE RULE
 ------------
-Do not print the big parts until the eight test pieces pass. That check is what
-makes everything else fit, and skipping it wastes days of filament.
+Round one, then round two, then the big parts. Skipping straight to the test
+pieces in folder 2 is how a builder ends up measuring a seat that is 0.9
+percent small and concluding the shape is wrong.
 
 Do not print the old Satellite1 speaker chamber, speaker plate, or rubber ring.
 The Ultra parts replace all three.

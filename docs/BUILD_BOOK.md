@@ -109,7 +109,7 @@ time, using the exact settings you will use for the enclosure:
 
 | File | Print this many | Material |
 |---|---|---|
-| 01_CHECK_SATELLITE_TOP_FIT.3mf | 1 | ASA |
+| 01_MEASURE_YOUR_PRINTER.3mf | 1 | ASA |
 | 02_CHECK_SCREWS_AND_INSERTS.3mf | 1 | ASA |
 | 03_CHECK_SPEAKER_FIT.3mf | 1 | ASA |
 | 04_CHECK_RADIATOR_FIT.3mf | 1 | ASA |

@@ -1,0 +1,58 @@
+[
+  {
+    "id": "FIT-003",
+    "title": "Driver seat was fitted to a curve rather than taken from the component outline",
+    "severity": "HIGH",
+    "status": "FIXED",
+    "evidence_label": "DERIVED_FROM_MANUFACTURER_DRAWING",
+    "evidence": "The ND91-4 frame is a circular body carrying four tabs. The seat was cut as a circle, then as a superellipse fitted through the drawing's 88.5 mm across-flats and 103.2 mm across-corners, then as a straight-sided rounded square. Each was derived from dimensions rather than from the manufacturer's top-down photograph, which shows the outline directly. The superellipse is exact at 0 and 45 degrees by construction and runs 0.54 mm narrow at 22.5 and 0.66 mm at 30, against 0.30 mm of seat clearance. The rounded square has flat sides the frame does not have. The outline was finally obtained by thresholding the photograph and extracting the silhouette radius in 720 directions: the profile holds constant radius from roughly 27 to 63 degrees, which is a circular arc, then rises to the tabs.",
+    "affected_files": [
+      "config/components.yaml",
+      "src/satellite1_ultra/geometry.py",
+      "src/satellite1_ultra/coupons.py"
+    ],
+    "engineering_consequence": "A seat narrower than the frame binds on all four corners and the driver cannot seat, which is only discoverable after printing. The circular version was the opposite failure: wide enough to clear the tabs, it left about 7.6 mm of slop at the body, so the driver floated and the coupon could not establish the seat depth it exists to measure. Flange thickness is still an ENGINEERING_ESTIMATE that gates the cabinet print, and it is measured against that depth.",
+    "verification_method": "Outline traced from the photograph, low-pass filtered to the harmonics four-fold symmetry permits, which removes about 0.27 mm of pixel jitter at 0.089 mm per pixel. Stored as 37 samples per quadrant at 2.5 degrees and scaled so the tabs reach the published 103.2 mm. Cross-checked against an independent source: the filtered outline's own body/tab ratio is 0.8567 against 88.5/103.2 = 0.8576 from the dimensioned drawing, agreeing to 0.1 percent. The cut seat was then probed out of the solid and clears the traced outline by 0.300 to 0.396 mm at every angle, minimum exactly at the intended clearance.",
+    "owner": "Claude (independent review)",
+    "resolution": "Fixed. The general lesson is that a curve fitted through two dimensions agrees at those two angles and is unconstrained everywhere else. Where a photograph of the component exists, the outline is data and should be measured, not inferred. Clearance is now added to the profile rather than scaling it, because scaling made the gap proportional to radius and left 0.26 mm on the body where the tabs received 0.30."
+  },
+  {
+    "id": "GEOM-001",
+    "title": "A failed boolean is indistinguishable from missing material",
+    "severity": "HIGH",
+    "status": "OPEN",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "The seat profile was first extruded from a closed periodic spline through 288 points including the concave tab transitions. The resulting solid looked correct and passed a bounding-box check, but intersecting it with the sealing probe returned an empty shape. _material_fraction divides intersection volume by probe volume, so the gate reported measured_solid_fraction = 0.0 and failed with 'a radial path bypasses the component gasket and vents the chamber to ambient'. Direct point-in-solid sampling at fifteen positions across the same region found solid cabinet material at every one. The cabinet was correct; the boolean had failed silently.",
+    "affected_files": ["src/satellite1_ultra/validation.py"],
+    "engineering_consequence": "Every gate built on _material_fraction shares this: an OpenCascade failure and a genuine hole in the pressure boundary produce the same number. It currently fails safe, raising a false alarm rather than passing a real defect, but a 0.0 reading carries no information about which occurred, and diagnosing it required hand-probing the solid. A future change that makes the boolean fail in the other direction, returning the probe volume rather than nothing, would report a defective part as sound.",
+    "verification_method": "Reproduce by extruding a seat profile from a periodic spline rather than a polyline and running sealing_report; the driver checks return exactly 0.0 while point sampling shows solid material. The guard should assert that an empty intersection is corroborated by point sampling before being reported as missing material, and should distinguish a boolean that returned nothing from material that is genuinely absent.",
+    "owner": "project owner",
+    "resolution": "Not yet addressed. The immediate cause was removed by extruding from a polyline instead, whose sagitta at 288 segments is 0.003 mm, 130 times finer than a 0.4 mm extrusion bead. The underlying ambiguity in _material_fraction remains."
+  },
+  {
+    "id": "COUPON-001",
+    "title": "Calibration coupons were shipped to builders with no dimensional validation",
+    "severity": "HIGH",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "The driver coupon shipped with a 0.80 mm seat against a 5.50 mm design, because the recess was cut from an offset that began 4.7 mm above the part so only its tail landed in material. All eleven gates passed, because they model the cabinet. The only coupon test asserted that the result was a valid single solid with volume above 100 mm3, which a 0.80 mm recess satisfies. Reported by the project owner after printing it.",
+    "affected_files": ["src/satellite1_ultra/coupons.py", "tests/test_coupons.py"],
+    "engineering_consequence": "The coupon set is the mechanism that protects a builder from committing filament to a 45 hour cabinet print. A builder establishes flange thickness, still an ENGINEERING_ESTIMATE, by seating the driver against this recess and measuring the step. A coupon that misreports that depth by 4.7 mm produces a confidently wrong correction, which then propagates into every generated part. A coupon that lies is worse than no coupon, because it is trusted.",
+    "verification_method": "tests/test_coupons.py now probes the built solid for the seat floor depth at two angles on both component coupons and asserts it matches the cabinet's seat depth to 0.05 mm, and separately asserts the driver seat spans meaningfully more at a tab than mid-edge so a circular seat cannot pass. Verified on the shipped STL: distinct Z levels at 0.00, 2.00 and 7.50 give a 5.50 mm seat floor.",
+    "owner": "Claude (independent review)",
+    "resolution": "Fixed. The coupon is also 26 percent shorter, 7.50 mm rather than 10.20, because its height was set by heat-set insert bores rather than the seat. Inserts have their own coupon and gasket compression has two more, so the driver coupon is now seat-fit only."
+  },
+  {
+    "id": "WIZARD-001",
+    "title": "Calibration wizard tests restated the formulas instead of running them",
+    "severity": "CRITICAL",
+    "status": "FIXED",
+    "evidence_label": "VERIFIED_DIGITALLY",
+    "evidence": "The wizard turns a builder's coupon measurements into the eleven calibration values that regenerate every printed part. The first version of tests/test_wizard.py reimplemented its formulas in Python and checked that a simulated printer error was cancelled. Mutating wizard.js to compute xy/110.6 - 1 instead of 110.6/xy - 1, which inverts the sign of the correction applied to every dimension in the design, left all six tests passing. The test was validating a copy of the arithmetic that cannot disagree with itself.",
+    "affected_files": ["tests/test_wizard.py"],
+    "engineering_consequence": "An inverted scale correction does not fail any gate. The geometry remains internally consistent and every validation passes; the parts are simply scaled the wrong way, so a printer already running small produces parts smaller still, at roughly double the original error. On a 160 mm cabinet a 0.6 percent inversion is 1.9 mm. The builder discovers it after printing.",
+    "verification_method": "The test now executes the shipped wizard.js under node with a minimal DOM stub and reads compute().values. Mutation tested against four corruptions: XY sign inversion, Z sign inversion, a stale 3.4 to 3.3 nominal, and a gasket retention constant of 0.70 instead of 0.75. All four now fail the suite; before the change only the latter two did. Tolerance is 1e-3 mm to accommodate the 7 decimal rounding wizard.js applies to keep its correction code short.",
+    "owner": "Claude (independent review)",
+    "resolution": "Fixed. Also verified end to end that a printer 0.6 percent small in XY and 1.2 percent in Z produces corrections that return every parameter to nominal, that the four additive offsets move in the correct direction, that the wizard's limits match CALIBRATION_LIMITS 11 of 11, and that the hole sizes it offers are the ones the insert coupon prints."
+  }
+]
