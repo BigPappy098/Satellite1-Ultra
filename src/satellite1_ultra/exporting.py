@@ -8,7 +8,7 @@ import json
 import re
 import subprocess
 import zipfile
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
@@ -343,8 +343,20 @@ def validate_mesh(
 def export_parts(
     output: Path = ROOT / "exports",
     parameters: DesignParameters = DEFAULT_PARAMETERS,
+    only: Collection[str] | None = None,
 ) -> list[dict[str, object]]:
-    """Export every manufactured part and reject failed round trips."""
+    """Export every manufactured part and reject failed round trips.
+
+    ``only`` restricts the run to named parts.  Round one of calibration needs
+    seven small coupons and nothing else, and building the whole set to hand
+    back seven of them costs a builder about ten minutes of Colab time for no
+    return.  Orphan cleanup still reasons about the full catalogue, so a
+    filtered run cannot delete parts it was not asked to rebuild.
+    """
+    if only is not None:
+        unknown = sorted(set(only) - set(PARTS))
+        if unknown:
+            raise KeyError(f"unknown parts requested for export: {unknown}")
     step_dir = output / "step"
     stl_dir = output / "stl"
     three_mf_dir = output / "3mf"
@@ -358,14 +370,21 @@ def export_parts(
         for name in PARTS
         for directory, suffix in ((step_dir, ".step"), (stl_dir, ".stl"), (three_mf_dir, ".3mf"))
     }
-    for directory, suffix in ((step_dir, "*.step"), (stl_dir, "*.stl"), (three_mf_dir, "*.3mf")):
-        for existing in directory.glob(suffix):
-            if (directory, existing.name) not in expected:
-                existing.unlink()
+    if only is None:
+        for directory, suffix in (
+            (step_dir, "*.step"),
+            (stl_dir, "*.stl"),
+            (three_mf_dir, "*.3mf"),
+        ):
+            for existing in directory.glob(suffix):
+                if (directory, existing.name) not in expected:
+                    existing.unlink()
     commit = source_commit()
     records: list[dict[str, object]] = []
 
     for name, definition in PARTS.items():
+        if only is not None and name not in only:
+            continue
         source_shape = definition.builder(parameters)
         oriented = print_oriented(source_shape)
         expected_volume = source_shape.Volume()

@@ -38,7 +38,14 @@ from satellite1_ultra.release import (
 #: Filled in once the repository is public; every download link hangs off this.
 REPO = "https://github.com/BigPappy098/Satellite1-Ultra"
 RAW = f"{REPO}/raw/main/release/{RELEASE_NAME}"
-COLAB = "https://colab.research.google.com/github/BigPappy098/Satellite1-Ultra/blob/main/notebooks/make_my_parts.ipynb"
+#: Two notebooks, because the rounds ask for different things and a single one
+#: branching on a hidden prefix is a trap: paste the wrong code and it quietly
+#: builds the wrong set. Each notebook now refuses the other's code by name.
+_COLAB = (
+    "https://colab.research.google.com/github/BigPappy098/Satellite1-Ultra/blob/main/notebooks/"
+)
+COLAB_TEST_PIECES = _COLAB + "make_my_test_pieces.ipynb"
+COLAB_PARTS = _COLAB + "make_my_parts.ipynb"
 
 #: Parts package_release ships an STL for: everything printable.  Only the
 #: gasket solids are absent, and those are cut from foam, not printed.
@@ -515,7 +522,9 @@ at your printer&rsquo;s scale, and <em>those</em> are the ones to print.</p>
 <pre class="code" id="stage1_code"></pre>
 <div class="btn-row">
 <button class="btn" id="stage1_copy" type="button">Copy my round one code</button>
-<a class="btn blue" href="{COLAB}" target="_blank" rel="noopener">Generate the other seven</a>
+<a class="btn blue" href="{
+            COLAB_TEST_PIECES
+        }" target="_blank" rel="noopener">Generate the other seven</a>
 </div>
 </div>
 """,
@@ -731,7 +740,7 @@ generate a set of parts sized for your machine. You install nothing.</p>
 <li>Click <b>Runtime &rarr; Run all</b> and wait. It takes about 15 minutes.</li>
 <li>Your corrected parts download as a single zip.</li>
 </ol>
-<a class="btn" href="{COLAB}" target="_blank" rel="noopener">Make my corrected parts</a>
+<a class="btn" href="{COLAB_PARTS}" target="_blank" rel="noopener">Make my corrected parts</a>
 <p class="help">You need a free Google account, because that is what runs the
 calculation. Nothing is installed on your computer.</p></div>
 

@@ -11,29 +11,33 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 
 import pytest
 
 from satellite1_ultra.builder_files import CALIBRATION_STAGE_TWO, ULTRA_PRINT_ORDER
 from satellite1_ultra.configuration import CALIBRATION_LIMITS, ROOT
 
-NOTEBOOK = ROOT / "notebooks" / "make_my_parts.ipynb"
+TEST_PIECES = ROOT / "notebooks" / "make_my_test_pieces.ipynb"
+PARTS = ROOT / "notebooks" / "make_my_parts.ipynb"
+NOTEBOOKS = (TEST_PIECES, PARTS)
 WIZARD = ROOT / "wizard" / "wizard.js"
 
 
-def _cells() -> list[str]:
-    loaded = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
+def _cells(notebook: Path = PARTS) -> list[str]:
+    loaded = json.loads(notebook.read_text(encoding="utf-8"))
     return ["".join(cell["source"]) for cell in loaded["cells"]]
 
 
-def _source() -> str:
-    return "\n".join(_cells())
+def _source(notebook: Path = PARTS) -> str:
+    return "\n".join(_cells(notebook))
 
 
-def test_notebook_reads_the_same_keys_the_wizard_writes() -> None:
+@pytest.mark.parametrize("notebook", NOTEBOOKS, ids=lambda p: p.stem)
+def test_notebook_reads_the_same_keys_the_wizard_writes(notebook: Path) -> None:
     """The code is a positional list; a key order mismatch silently misassigns."""
-    match = re.search(r"^KEYS = \[(.*?)\]", _source(), re.MULTILINE | re.DOTALL)
-    assert match, "the notebook no longer declares KEYS"
+    match = re.search(r"^KEYS = \[(.*?)\]", _source(notebook), re.MULTILINE | re.DOTALL)
+    assert match, f"{notebook.stem} no longer declares KEYS"
     keys = re.findall(r'"([a-z_]+)"', match.group(1))
     assert keys == list(CALIBRATION_LIMITS), (
         "the notebook decodes the correction code into a different key order "
@@ -41,47 +45,71 @@ def test_notebook_reads_the_same_keys_the_wizard_writes() -> None:
     )
 
 
-def test_notebook_and_wizard_agree_on_the_round_prefixes() -> None:
-    """A prefix the other side does not know about is a rejected code."""
+def test_each_notebook_wants_its_own_code_and_refuses_the_other() -> None:
+    """Two notebooks, two codes. Pasting the wrong one must stop, not proceed.
+
+    A round-one code carries scale and nothing else, so building the enclosure
+    from it would size every hole, seat and gasket gap to a value the builder
+    has not measured yet -- and it would look like it worked.
+    """
     wizard = WIZARD.read_text(encoding="utf-8")
+    prefixes = {}
     for name, pattern in (
-        ("round one", r'PREFIX_ROUND_ONE = "([^"]+)"'),
+        ("round_one", r'PREFIX_ROUND_ONE = "([^"]+)"'),
         ("final", r'PREFIX_FINAL = "([^"]+)"'),
     ):
         found = re.search(pattern, wizard)
         assert found, f"wizard.js no longer defines the {name} prefix"
-        assert f'"{found.group(1)}"' in _source(), (
-            f"the notebook does not recognise the {name} prefix {found.group(1)!r} "
-            "that wizard.js emits"
+        prefixes[name] = found.group(1)
+    assert prefixes["round_one"] != prefixes["final"]
+
+    for notebook, wanted, refused in (
+        (TEST_PIECES, prefixes["round_one"], prefixes["final"]),
+        (PARTS, prefixes["final"], prefixes["round_one"]),
+    ):
+        source = _source(notebook)
+        assert f'WANT = "{wanted}"' in source, (
+            f"{notebook.stem} does not accept {wanted!r}, the code the website "
+            "sends builders here with"
         )
+        assert f'OTHER = "{refused}"' in source, (
+            f"{notebook.stem} does not recognise {refused!r} as the other "
+            "notebook's code, so pasting it would fall through to a generic error"
+        )
+        assert "raise SystemExit" in source, f"{notebook.stem} does not stop on a bad code"
 
 
-def test_notebook_branches_on_the_round() -> None:
-    """Round one must not hand back the enclosure, which is the bug this had."""
-    source = _source()
-    assert "ROUND_ONE" in source, "the notebook does not distinguish the two rounds"
-    packaging = next(cell for cell in _cells() if "make_archive" in cell)
-    assert re.search(r"if ROUND_ONE:", packaging), (
-        "the packaging cell does not branch on the round, so round one returns "
-        "whatever the final code returns"
+def test_the_two_notebooks_build_different_things() -> None:
+    """The split is the point: round one must not hand back the enclosure."""
+    tests_source = _source(TEST_PIECES)
+    parts_source = _source(PARTS)
+    assert "CALIBRATION_STAGE_TWO" in tests_source
+    assert "ULTRA_PRINT_ORDER" not in tests_source, (
+        "the test-piece notebook packages enclosure parts; a builder would get "
+        "a 45-hour print sized from two measurements"
+    )
+    assert "ULTRA_PRINT_ORDER" in parts_source
+    assert "only=WANTED" in tests_source, (
+        "the test-piece notebook builds the whole catalogue to hand back seven "
+        "coupons, costing a builder ten minutes of Colab time for nothing"
     )
 
 
-def test_notebook_imports_orders_that_exist() -> None:
+@pytest.mark.parametrize("notebook", NOTEBOOKS, ids=lambda p: p.stem)
+def test_notebook_imports_orders_that_exist(notebook: Path) -> None:
     """It imported CALIBRATION_PRINT_ORDER, which is no longer the staged name."""
     from satellite1_ultra import builder_files
 
     imported = set()
-    for match in re.finditer(r"from satellite1_ultra\.builder_files import \(([^)]*)\)", _source()):
-        imported.update(name.strip().rstrip(",") for name in match.group(1).split())
-    assert imported, "the notebook no longer imports any print order"
+    for match in re.finditer(
+        r"from satellite1_ultra\.builder_files import \(?([^)\n]+)\)?", _source(notebook)
+    ):
+        imported.update(name.strip().rstrip(",") for name in match.group(1).split(","))
+    assert imported, f"{notebook.stem} no longer imports any print order"
     for name in imported:
         assert hasattr(builder_files, name), (
-            f"the notebook imports builder_files.{name}, which does not exist"
+            f"{notebook.stem} imports builder_files.{name}, which does not exist"
         )
-    assert "CALIBRATION_STAGE_TWO" in imported, (
-        "round one must package the staged round-two set, not the whole calibration list"
-    )
 
 
 @pytest.mark.parametrize(
