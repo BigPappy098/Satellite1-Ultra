@@ -17,6 +17,8 @@ from satellite1_ultra.geometry import (
 )
 from satellite1_ultra.validation import clearance_report, sealing_report, wall_thickness_report
 
+_NOMINAL = load_design_parameters()
+
 
 @pytest.mark.parametrize(
     ("changes", "builder"),
@@ -28,8 +30,13 @@ from satellite1_ultra.validation import clearance_report, sealing_report, wall_t
         ({"gasket_thickness": 2.2, "gasket_compression_fraction": 0.25}, main_cabinet),
         ({"print_clearance": 0.4}, main_cabinet),
         ({"insert_bore_diameter": 4.1}, main_cabinet),
-        ({"driver_cutout_diameter": 88.8}, main_cabinet),
-        ({"pr_cutout_diameter": 102.3}, main_cabinet),
+        # Relative to the selected components. These were absolute figures
+        # near the old 88.5 driver cutout; when that turned out to be a frame
+        # dimension and the real cutout is 76.45, the variation asked for a
+        # bore wider than the flange and the design validator rightly refused
+        # to build it.
+        ({"driver_cutout_diameter": _NOMINAL.driver_cutout_diameter + 0.5}, main_cabinet),
+        ({"pr_cutout_diameter": _NOMINAL.pr_cutout_diameter + 0.5}, main_cabinet),
         ({"ballast_mass_g": 1000.0}, main_cabinet),
     ],
 )

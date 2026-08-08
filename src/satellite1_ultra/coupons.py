@@ -85,6 +85,7 @@ def _component_seat_coupon(
     ledge_depth: float,
     parameters: DesignParameters,
     seat_profile: tuple[float, ...] = (),
+    include_inserts: bool = True,
 ) -> cq.Shape:
     """A one-to-one slice of the real cabinet mount: ledge, seat, bore, inserts.
 
@@ -96,7 +97,16 @@ def _component_seat_coupon(
     7.6 mm of slop at the flats, which measures nothing.
     """
     p = parameters
-    thickness = max(ledge_depth + p.insert_bore_depth + p.pad_backing, seat_depth + p.pad_backing)
+    if include_inserts:
+        thickness = max(
+            ledge_depth + p.insert_bore_depth + p.pad_backing, seat_depth + p.pad_backing
+        )
+    else:
+        # Seat-fit only. The insert bores, not the seat, were setting the
+        # height: 7.2 mm of bore plus 3.0 mm of backing against a 5.5 mm seat.
+        # Heat-set inserts have their own coupon and gasket compression has two
+        # more, so carrying them here just made this one taller to print.
+        thickness = seat_depth + 2.0
     coupon = cq.Workplane("XY").circle(pad_diameter / 2.0).extrude(thickness)
     if ledge_diameter:
         coupon = coupon.cut(
@@ -110,8 +120,12 @@ def _component_seat_coupon(
                 _depth_traced_profile(
                     seat_profile,
                     (seat_diameter - 2.0 * parameters.print_clearance) / 2.0,
-                    -(thickness - seat_depth),
-                    seat_depth,
+                    # Measured from the top face, downward, exactly as the
+                    # cabinet mount does it. Passing the face's own height here
+                    # started the cut above the part, so only its last 0.80 mm
+                    # of a 5.50 mm seat landed in material.
+                    -1.0,
+                    seat_depth + 1.0,
                     (0.0, 0.0, thickness),
                     (0.0, 0.0, -1.0),
                     clearance=parameters.print_clearance,
@@ -125,8 +139,10 @@ def _component_seat_coupon(
             .extrude(seat_depth)
         )
     coupon = coupon.cut(cq.Workplane("XY").circle(bore_diameter / 2.0).extrude(thickness))
-    radius = bolt_circle / 2.0
     solid = cast(cq.Shape, coupon.val())
+    if not include_inserts:
+        return solid
+    radius = bolt_circle / 2.0
     for index in range(4):
         angle = pi / 4.0 + index * pi / 2.0
         x, y = radius * cos(angle), radius * sin(angle)
@@ -154,6 +170,7 @@ def active_driver_coupon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
         0.0,
         p,
         seat_profile=p.driver_frame_profile,
+        include_inserts=False,
     )
     coupon = _engrave(
         coupon,
