@@ -22,3 +22,12 @@ dist/
 reports/generated/
 
 site/
+
+# The release archive is a build artifact, rebuilt byte-for-byte by
+# `satellite1_ultra package` from release/Satellite1-Ultra-RC1/, which IS
+# tracked.  Nothing links to the zip: the website serves individual files out
+# of the folder.  Tracked, it added ~75 MB of incompressible binary per
+# regeneration -- 21 copies in history, about 1.5 GB of a 2.7 GB repository --
+# and tripped GitHub's large-file warning on every push.  If a single-file
+# download is ever wanted, attach it to a tagged GitHub Release instead.
+release/*.zip
