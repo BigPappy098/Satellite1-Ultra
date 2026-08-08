@@ -112,3 +112,63 @@ def test_only_the_first_tab_is_open_on_arrival(calibrate_html: str) -> None:
         start = calibrate_html.index(f'id="panel-{key}"')
         opening = calibrate_html[start : calibrate_html.index(">", start)]
         assert "hidden" in opening, f"panel {key} is open before the builder reaches it"
+
+
+SCALE_HARNESS = Path(__file__).parent / "support" / "scale_panel_harness.js"
+
+
+@pytest.fixture(scope="module")
+def scale_states() -> list[dict[str, object]]:
+    """Walk the round-one panel through the states a builder actually hits."""
+    if shutil.which("node") is None:
+        pytest.skip("node is required to run the shipped wizard.js")
+    result = subprocess.run(
+        ["node", str(SCALE_HARNESS), str(ROOT / "wizard" / "wizard.js")],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=True,
+    )
+    return json.loads(result.stdout)
+
+
+def test_the_scale_panel_waits_before_anything_is_typed(
+    scale_states: list[dict[str, object]],
+) -> None:
+    """An empty box is not a measurement, and must not read as a verdict."""
+    first = scale_states[0]
+    assert first["waiting"] is True
+    assert first["codeShown"] is False
+    assert first["perfect"] is False, (
+        "the panel declared the printer perfect before anything was measured"
+    )
+
+
+def test_the_scale_panel_recovers_after_reporting_a_perfect_printer(
+    scale_states: list[dict[str, object]],
+) -> None:
+    """The bug this exists for: the panel used to die the first time it said
+    "dead on".
+
+    Announcing a perfect printer was done by overwriting the container's
+    innerHTML, which deleted the code element, the percentage line and both
+    buttons out of the document. Every later keystroke hit a null guard and
+    returned, so the round-one code could never appear again. With the boxes
+    pre-filled at nominal it fired on page load, leaving the tab inert: the
+    project owner typed a real 109.60 and the page did nothing at all.
+    """
+    by_label = {str(state["label"]): state for state in scale_states}
+    perfect = by_label["typed the perfect numbers"]
+    assert perfect["perfect"] is True and perfect["codeShown"] is False
+
+    corrected = by_label["then corrected xy to 109.60"]
+    assert corrected["codeShown"] is True, (
+        "after showing the perfect-printer message the panel never recovered; "
+        "a builder who corrects a typo gets a page that does nothing"
+    )
+    assert str(corrected["code"]).startswith("S1U1-")
+    assert "+0.91%" in str(corrected["pct"])
+
+    # And it must keep toggling, not just recover once.
+    assert by_label["back to perfect"]["perfect"] is True
+    assert by_label["and off again"]["codeShown"] is True

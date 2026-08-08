@@ -471,35 +471,44 @@ right shape, 0.34&nbsp;mm too small.</p></div>
 <p class="lede">Two measurements, both off the part you just printed. Nothing
 else is asked for on this tab.</p>
 {
-            (
-                _measurement_card(
-                    "1",
-                    "How wide is the marked slot?",
-                    "calibration_official_interface.png",
-                    "the piece marked <code>01_CHECK_SATELLITE_TOP_FIT</code>",
-                    "Find the engraved words <b>MEASURE XY 110.60</b>. Put the <b>small inside "
-                    "jaws</b> of your calipers inside that slot and open them until they touch. "
-                    "Do it at three different heights and use the middle answer.",
-                    '<div class="field"><label class="q" for="xy">Type what the calipers say (mm)</label>'
-                    '<div class="help">If your printer is perfect this reads 110.60.</div>'
-                    '<input type="number" id="xy" step="0.01" value="110.60">'
-                    '<div class="verdict" id="xy_v"></div></div>',
-                ),
-                _measurement_card(
-                    "2",
-                    "How thick is the flat edge?",
-                    "calibration_official_interface.png",
-                    "the same piece",
-                    "Use the <b>big outside jaws</b> on a clean flat edge of the same piece. "
-                    "Measure at four corners and use the middle answer.",
-                    '<div class="field"><label class="q" for="z">Type what the calipers say (mm)</label>'
-                    '<div class="help">If your printer is perfect this reads 3.00.</div>'
-                    '<input type="number" id="z" step="0.01" value="3.00">'
-                    '<div class="verdict" id="z_v"></div></div>',
-                ),
+            "".join(
+                (
+                    _measurement_card(
+                        "1",
+                        "How wide is the marked slot?",
+                        "calibration_official_interface.png",
+                        "the piece marked <code>01_CHECK_SATELLITE_TOP_FIT</code>",
+                        "Find the engraved words <b>MEASURE XY 110.60</b>. Put the <b>small inside "
+                        "jaws</b> of your calipers inside that slot and open them until they touch. "
+                        "Do it at three different heights and use the middle answer.",
+                        '<div class="field"><label class="q" for="xy">Type what the calipers say (mm)</label>'
+                        '<div class="help">If your printer is perfect this reads 110.60.</div>'
+                        '<input type="number" id="xy" step="0.01" placeholder="110.60">'
+                        '<div class="verdict" id="xy_v"></div></div>',
+                    ),
+                    _measurement_card(
+                        "2",
+                        "How thick is the flat edge?",
+                        "calibration_official_interface.png",
+                        "the same piece",
+                        "Use the <b>big outside jaws</b> on a clean flat edge of the same piece. "
+                        "Measure at four corners and use the middle answer.",
+                        '<div class="field"><label class="q" for="z">Type what the calipers say (mm)</label>'
+                        '<div class="help">If your printer is perfect this reads 3.00.</div>'
+                        '<input type="number" id="z" step="0.01" placeholder="3.00">'
+                        '<div class="verdict" id="z_v"></div></div>',
+                    ),
+                )
             )
         }
-<div class="note" id="stage1_out"><strong>Round one done &mdash; your scale</strong>
+<div id="stage1_wait" class="note"><strong>Waiting for both measurements</strong>
+<p>Type the two numbers above and your scale appears here.</p></div>
+
+<div id="stage1_perfect" class="ok hide"><strong>Your printer is dead on</strong>
+<p>No scale correction needed. Print the round two pieces exactly as they came
+in the download, then carry on to the next tab.</p></div>
+
+<div class="note hide" id="stage1_out"><strong>Round one done &mdash; your scale</strong>
 <p id="stage1_pct" class="mono"></p>
 <p>Take this code to the generator. It rebuilds the remaining seven test pieces
 at your printer&rsquo;s scale, and <em>those</em> are the ones to print.</p>
@@ -544,91 +553,93 @@ error your printer has <em>beyond</em> its scale.</p>
 pieces in front of you were printed from the older code, they no longer match
 &mdash; regenerate and reprint them before trusting anything below.</p></div>
 {
-            (
-                _measurement_card(
-                    "3",
-                    "Which hole does an M3 screw drop through?",
-                    "calibration_fasteners.png",
-                    "the piece marked <code>02_CHECK_SCREWS_AND_INSERTS</code>",
-                    "There are three holes, labelled 3.4, 3.5 and 3.6. Try your M3 screw in each. "
-                    "Pick the <b>smallest</b> one it falls through <b>on its own, with no pushing</b>.",
-                    '<div class="field"><label class="q" for="clear">Pick the hole</label>'
-                    '<select id="clear"><option value="3.4" selected>3.4 — the smallest one</option>'
-                    '<option value="3.5">3.5 — the middle one</option>'
-                    '<option value="3.6">3.6 — the biggest one</option></select></div>',
-                ),
-                _measurement_card(
-                    "4",
-                    "Which hole holds a heat-set insert best?",
-                    "calibration_fasteners.png",
-                    "the same piece",
-                    "Melt an insert into the 4.0, 4.1, 4.2 and 4.3 holes. Pick the one where it "
-                    "went in <b>straight and level with the surface</b>, did not crack the plastic, "
-                    "and does not spin.",
-                    '<div class="field"><label class="q" for="bore">Pick the hole</label>'
-                    '<select id="bore"><option value="4.0">4.0</option><option value="4.1">4.1</option>'
-                    '<option value="4.2" selected>4.2</option><option value="4.3">4.3</option></select></div>',
-                ),
-                _measurement_card(
-                    "5",
-                    "Does your speaker drop in?",
-                    "calibration_driver.png",
-                    "the piece marked <code>03_CHECK_SPEAKER_FIT</code>",
-                    "Put your real Dayton ND91-4 into the ring. It should drop in <b>by hand</b> "
-                    "and sit flat. Leave the box at 0 if it does. If it is too tight, type a small "
-                    "positive number to make the hole bigger (try 0.2). If it is sloppy, type a "
-                    "small negative number.",
-                    '<div class="field"><label class="q" for="dcut">Change the hole size by (mm)</label>'
-                    '<div class="help">0 means "it was fine". Most people leave this at 0.</div>'
-                    '<input type="number" id="dcut" step="0.05" value="0">'
-                    '<div class="verdict" id="dcut_v"></div></div>'
-                    '<div class="field"><label class="q" for="dflange">How thick is the speaker\'s metal rim? (mm)</label>'
-                    '<div class="help">Measure the flat outer lip of the speaker in four places.</div>'
-                    '<input type="number" id="dflange" step="0.01" value="3.00">'
-                    '<div class="verdict" id="dflange_v"></div></div>',
-                ),
-                _measurement_card(
-                    "6",
-                    "Does your radiator drop in?",
-                    "calibration_radiator.png",
-                    "the piece marked <code>04_CHECK_RADIATOR_FIT</code>",
-                    "Same idea, with one passive radiator.",
-                    '<div class="field"><label class="q" for="pcut">Change the hole size by (mm)</label>'
-                    '<div class="help">0 means "it was fine".</div>'
-                    '<input type="number" id="pcut" step="0.05" value="0">'
-                    '<div class="verdict" id="pcut_v"></div></div>'
-                    '<div class="field"><label class="q" for="pflange">How thick is the radiator\'s rim? (mm)</label>'
-                    '<input type="number" id="pflange" step="0.01" value="4.00">'
-                    '<div class="verdict" id="pflange_v"></div></div>',
-                ),
-                _measurement_card(
-                    "7",
-                    "How much does your foam squash?",
-                    "calibration_gasket.png",
-                    "the two pieces marked <code>05_GASKET_TEST_BASE</code> and <code>06_GASKET_TEST_TOP</code>",
-                    "Measure your foam sheet on its own first. Then put a strip between the two "
-                    "pieces and screw them together until they <b>stop</b> — until the two hard "
-                    "edges touch. Measure the gap that is left.",
-                    '<div class="field"><label class="q" for="sheet">Foam thickness on its own (mm)</label>'
-                    '<input type="number" id="sheet" step="0.01" value="2.00">'
-                    '<div class="verdict" id="sheet_v"></div></div>'
-                    '<div class="field"><label class="q" for="gap">Gap once fully tightened (mm)</label>'
-                    '<input type="number" id="gap" step="0.01" value="1.50">'
-                    '<div class="verdict" id="gap_v"></div></div>',
-                ),
-                _measurement_card(
-                    "8",
-                    "Do the wires fit the rubber seal?",
-                    "calibration_cable.png",
-                    "the piece marked <code>07_CHECK_CABLE_HOLE</code> and the bendy TPU seal",
-                    "Push your two real speaker wires through the seal, then push the seal into "
-                    "the hole. It should take <b>firm finger pressure</b> and then stay put. Leave "
-                    "the box at 0 if that worked.",
-                    '<div class="field"><label class="q" for="cable">Change the hole size by (mm)</label>'
-                    '<div class="help">0 means "it was fine".</div>'
-                    '<input type="number" id="cable" step="0.05" value="0">'
-                    '<div class="verdict" id="cable_v"></div></div>',
-                ),
+            "".join(
+                (
+                    _measurement_card(
+                        "3",
+                        "Which hole does an M3 screw drop through?",
+                        "calibration_fasteners.png",
+                        "the piece marked <code>02_CHECK_SCREWS_AND_INSERTS</code>",
+                        "There are three holes, labelled 3.4, 3.5 and 3.6. Try your M3 screw in each. "
+                        "Pick the <b>smallest</b> one it falls through <b>on its own, with no pushing</b>.",
+                        '<div class="field"><label class="q" for="clear">Pick the hole</label>'
+                        '<select id="clear"><option value="3.4" selected>3.4 — the smallest one</option>'
+                        '<option value="3.5">3.5 — the middle one</option>'
+                        '<option value="3.6">3.6 — the biggest one</option></select></div>',
+                    ),
+                    _measurement_card(
+                        "4",
+                        "Which hole holds a heat-set insert best?",
+                        "calibration_fasteners.png",
+                        "the same piece",
+                        "Melt an insert into the 4.0, 4.1, 4.2 and 4.3 holes. Pick the one where it "
+                        "went in <b>straight and level with the surface</b>, did not crack the plastic, "
+                        "and does not spin.",
+                        '<div class="field"><label class="q" for="bore">Pick the hole</label>'
+                        '<select id="bore"><option value="4.0">4.0</option><option value="4.1">4.1</option>'
+                        '<option value="4.2" selected>4.2</option><option value="4.3">4.3</option></select></div>',
+                    ),
+                    _measurement_card(
+                        "5",
+                        "Does your speaker drop in?",
+                        "calibration_driver.png",
+                        "the piece marked <code>03_CHECK_SPEAKER_FIT</code>",
+                        "Put your real Dayton ND91-4 into the ring. It should drop in <b>by hand</b> "
+                        "and sit flat. Leave the box at 0 if it does. If it is too tight, type a small "
+                        "positive number to make the hole bigger (try 0.2). If it is sloppy, type a "
+                        "small negative number.",
+                        '<div class="field"><label class="q" for="dcut">Change the hole size by (mm)</label>'
+                        '<div class="help">0 means "it was fine". Most people leave this at 0.</div>'
+                        '<input type="number" id="dcut" step="0.05" value="0">'
+                        '<div class="verdict" id="dcut_v"></div></div>'
+                        '<div class="field"><label class="q" for="dflange">How thick is the speaker\'s metal rim? (mm)</label>'
+                        '<div class="help">Measure the flat outer lip of the speaker in four places.</div>'
+                        '<input type="number" id="dflange" step="0.01" value="3.00">'
+                        '<div class="verdict" id="dflange_v"></div></div>',
+                    ),
+                    _measurement_card(
+                        "6",
+                        "Does your radiator drop in?",
+                        "calibration_radiator.png",
+                        "the piece marked <code>04_CHECK_RADIATOR_FIT</code>",
+                        "Same idea, with one passive radiator.",
+                        '<div class="field"><label class="q" for="pcut">Change the hole size by (mm)</label>'
+                        '<div class="help">0 means "it was fine".</div>'
+                        '<input type="number" id="pcut" step="0.05" value="0">'
+                        '<div class="verdict" id="pcut_v"></div></div>'
+                        '<div class="field"><label class="q" for="pflange">How thick is the radiator\'s rim? (mm)</label>'
+                        '<input type="number" id="pflange" step="0.01" value="4.00">'
+                        '<div class="verdict" id="pflange_v"></div></div>',
+                    ),
+                    _measurement_card(
+                        "7",
+                        "How much does your foam squash?",
+                        "calibration_gasket.png",
+                        "the two pieces marked <code>05_GASKET_TEST_BASE</code> and <code>06_GASKET_TEST_TOP</code>",
+                        "Measure your foam sheet on its own first. Then put a strip between the two "
+                        "pieces and screw them together until they <b>stop</b> — until the two hard "
+                        "edges touch. Measure the gap that is left.",
+                        '<div class="field"><label class="q" for="sheet">Foam thickness on its own (mm)</label>'
+                        '<input type="number" id="sheet" step="0.01" value="2.00">'
+                        '<div class="verdict" id="sheet_v"></div></div>'
+                        '<div class="field"><label class="q" for="gap">Gap once fully tightened (mm)</label>'
+                        '<input type="number" id="gap" step="0.01" value="1.50">'
+                        '<div class="verdict" id="gap_v"></div></div>',
+                    ),
+                    _measurement_card(
+                        "8",
+                        "Do the wires fit the rubber seal?",
+                        "calibration_cable.png",
+                        "the piece marked <code>07_CHECK_CABLE_HOLE</code> and the bendy TPU seal",
+                        "Push your two real speaker wires through the seal, then push the seal into "
+                        "the hole. It should take <b>firm finger pressure</b> and then stay put. Leave "
+                        "the box at 0 if that worked.",
+                        '<div class="field"><label class="q" for="cable">Change the hole size by (mm)</label>'
+                        '<div class="help">0 means "it was fine".</div>'
+                        '<input type="number" id="cable" step="0.05" value="0">'
+                        '<div class="verdict" id="cable_v"></div></div>',
+                    ),
+                )
             )
         }
 """,

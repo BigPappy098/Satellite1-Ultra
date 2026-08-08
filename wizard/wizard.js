@@ -189,25 +189,36 @@ let currentCode = "";
 let stageOneCode = "";
 
 function refreshStageOne() {
+  /* Toggle between three sibling blocks. This used to overwrite
+     stage1_out.innerHTML to announce a perfect printer, which deleted
+     stage1_code, stage1_pct and both buttons out of the document. Every later
+     keystroke then hit the `if (!node) return` guard above and did nothing, so
+     once the panel said "dead on" it could never say anything else -- and with
+     the boxes pre-filled at nominal, it said that the moment the page loaded.
+     The scale tab was dead on arrival. */
+  const codeNode = el("stage1_code");
+  const waiting = el("stage1_wait");
+  const perfect = el("stage1_perfect");
+  const out = el("stage1_out");
+  if (!codeNode || !out) return;
+
   const values = scaleOnly();
-  const node = el("stage1_code");
-  if (!node) return;
   stageOneCode = values ? encode(values, PREFIX_ROUND_ONE) : "";
   const ready = Boolean(values);
-  el("stage1_out").classList.toggle("hide", !ready);
-  if (!ready) return;
-  if (scaleIsNegligible(values)) {
-    el("stage1_out").innerHTML = "<strong>Your printer is dead on</strong>"
-      + "<p>No scale correction needed. Print the round two pieces exactly as"
-      + " they came in the download.</p>";
-    return;
-  }
+  const spotOn = ready && scaleIsNegligible(values);
+
+  if (waiting) waiting.classList.toggle("hide", ready);
+  if (perfect) perfect.classList.toggle("hide", !spotOn);
+  out.classList.toggle("hide", !ready || spotOn);
+  if (!ready || spotOn) return;
+
   const xy = values.xy_scale_correction_fraction * 100;
   const z = values.z_scale_correction_fraction * 100;
-  node.textContent = stageOneCode;
+  codeNode.textContent = stageOneCode;
   el("stage1_pct").textContent =
     `XY ${xy >= 0 ? "+" : ""}${xy.toFixed(2)}%, Z ${z >= 0 ? "+" : ""}${z.toFixed(2)}%`;
 }
+
 
 function refresh() {
   refreshStageOne();
