@@ -29,6 +29,7 @@ from satellite1_ultra.geometry import (
     DesignParameters,
     MountSpec,
     _bolt_points,
+    _depth_arc_relief,
     _depth_cylinder,
     acoustic_mounts,
     ballast_lid_fastener_positions,
@@ -212,6 +213,25 @@ def _mount_seal_checks(
             mount.inward,
         )
     )
+    # Take the declared terminal relief out of the probe rather than out of the
+    # threshold.  A blind pocket 1.5 mm into a web 6 to 13 mm thick is not a
+    # bypass, but a fraction alone cannot tell it from a channel that breaks
+    # through to the seat wall: both read a hair under 1.0.  Subtracting the
+    # feature the design declares keeps the threshold at exactly 1.0, so any
+    # void the design does NOT declare -- including a relief cut deeper, wider
+    # or at a different angle than the one recorded here -- still fails.
+    if mount.relief_arc_deg > 0.0:
+        land = land.cut(
+            _depth_arc_relief(
+                mount.relief_radius,
+                mount.relief_centre_deg,
+                mount.relief_arc_deg,
+                land_start,
+                land_length,
+                mount.face_point,
+                mount.inward,
+            )
+        )
     fraction = _material_fraction(cabinet, land)
     checks.append(
         {
@@ -221,8 +241,9 @@ def _mount_seal_checks(
             "status": "PASS" if fraction >= 0.999999 else "FAIL",
             "evidence": EVIDENCE_DIGITAL,
             "note": (
-                "A fraction below 1.0 means a radial path bypasses the component "
-                "gasket and vents the chamber to ambient."
+                "A fraction below 1.0 means material is missing from the land "
+                "that the design does not account for: a radial path that "
+                "bypasses the component gasket and vents the chamber to ambient."
             ),
         }
     )

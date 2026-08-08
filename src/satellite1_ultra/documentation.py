@@ -229,7 +229,9 @@ BUY_LINKS: dict[str, str] = {
     "E01": "https://futureproofhomes.net/products/satellite1-kit",
     "H01": "https://www.amazon.com/s?k=CNC+Kitchen+M3+heat+set+insert+M3x5.7",
     "H02": "https://www.amazon.com/s?k=JST-XH+2.54mm+2+pin+speaker+pigtail",
-    "H03": "https://www.amazon.com/s?k=2.8mm+fully+insulated+female+quick+disconnect",
+    # H03 is a technique, not a part; the consumable it needs is heat-shrink.
+    "H03": "https://www.amazon.com/s?k=3mm+heat+shrink+tubing+assortment",
+    "H04": "https://www.amazon.com/s?k=2.8mm+fully+insulated+female+quick+disconnect",
     "B01": "https://www.onlinemetals.com/en/buy/steel/0-25-mild-steel-plate-a36-hot-rolled/pid/1156",
     "B02": "https://www.amazon.com/s?k=M5+flat+washer+stainless+assortment",
     "G00": "https://www.amazon.com/s?k=2mm+closed+cell+EPDM+foam+sheet+adhesive",
@@ -379,10 +381,39 @@ def bill_of_materials(parameters: DesignParameters, root: Path = ROOT) -> list[d
             {
                 "id": "H03",
                 "category": "speaker terminals",
+                "item": "solder the leads directly to the driver's terminal lugs",
+                "specification": (
+                    "The ND91-4 ships with flat solder lugs, each pierced by an "
+                    "oblong hole: thread the conductor through, crimp it closed, "
+                    "then flow solder, so the joint is mechanically captive rather "
+                    "than relying on solder for strength. Dress the wire toward the "
+                    "driver axis, never outward, and heat-shrink each joint. "
+                    "Radial bulk here is the binding constraint: the terminals are "
+                    "the widest thing that must pass the 76.65 mm bore, they clear "
+                    "it only through the notch, and the leads have to be attached "
+                    "before the driver goes in because the chamber is sealed after."
+                ),
+                "quantity": "2 joints",
+                "required": "recommended",
+                "evidence": EVIDENCE_ESTIMATE,
+                "source": "builder supplied",
+            },
+            {
+                "id": "H04",
+                "category": "speaker terminals",
                 "item": "2.8 mm fully insulated female quick-disconnects",
-                "specification": "for 22-18 AWG wire; verify fit on the purchased ND91-4 before crimping",
+                "specification": (
+                    "Alternative to H03, and the weaker one. A disconnect body plus "
+                    "its sleeve stands 2 to 3 mm proud of the lug on the side that "
+                    "has the least room, and it is a rattle source inside a sealed "
+                    "chamber. It also buys nothing: reaching this joint means "
+                    "pulling the driver anyway. If used, verify the blade width "
+                    "against the lug first, measured across the flat face and not "
+                    "along it, and confirm the fit on the speaker-fit coupon before "
+                    "committing to the cabinet print."
+                ),
                 "quantity": "2",
-                "required": "recommended; direct solder is acceptable",
+                "required": "optional",
                 "evidence": EVIDENCE_ESTIMATE,
                 "source": "builder supplied",
             },
@@ -502,7 +533,7 @@ ASSEMBLY_STEPS: tuple[dict[str, str], ...] = (
         "fasteners": "F04, 4 screws",
         "tools": "2.0 mm hex; crimper or soldering iron; polarity tester",
         "gasket": "G02",
-        "action": "Mark the red conductor positive. Connect red to the terminal marked + and black to -. Face the terminals upward. Center G02, seat the driver from the -Y/front side, fit the clamp ring, and tighten F04 in two diagonal passes to 0.35 N m; never exceed 0.45 N m.",
+        "action": "Mark the red conductor positive. Connect red to the terminal marked + and black to -. Look into the driver opening before you fit anything: at the top, in line with the topmost corner of the recess, the wall is notched wider. The driver's terminals sit in line with one of its four corner tabs and stand proud enough that the basket will not pass the opening anywhere else, so rotate the driver until its terminals point straight up into that notch. It only goes in one way round, and that is also the way the wire needs to leave to reach the cable passage in the divider above. Center G02, seat the driver from the -Y/front side, fit the clamp ring, and tighten F04 in two diagonal passes to 0.35 N m; never exceed 0.45 N m.",
         "pass": "Ring bottoms evenly; G02 is continuous all the way round and covers all four unused driver mounting holes; cone moves outward on a brief 1.5 V positive polarity pulse.",
         "warning": "Use only a brief low-voltage polarity pulse. Never connect a loose driver to the powered HAT.",
         "image": "IMAGES/assembly_stage_03_driver.png",

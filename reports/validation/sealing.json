@@ -13,11 +13,11 @@
   "checks": [
     {
       "feature": "active_driver: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 1.0,
+      "measured_solid_fraction": 0.9999999999999913,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
-      "note": "A fraction below 1.0 means a radial path bypasses the component gasket and vents the chamber to ambient."
+      "note": "A fraction below 1.0 means material is missing from the land that the design does not account for: a radial path that bypasses the component gasket and vents the chamber to ambient."
     },
     {
       "feature": "active_driver: seat sidewall is solid over the full seat depth",
@@ -41,7 +41,7 @@
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
-      "note": "A fraction below 1.0 means a radial path bypasses the component gasket and vents the chamber to ambient."
+      "note": "A fraction below 1.0 means material is missing from the land that the design does not account for: a radial path that bypasses the component gasket and vents the chamber to ambient."
     },
     {
       "feature": "pr_-1: seat sidewall is solid over the full seat depth",
@@ -65,7 +65,7 @@
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
-      "note": "A fraction below 1.0 means a radial path bypasses the component gasket and vents the chamber to ambient."
+      "note": "A fraction below 1.0 means material is missing from the land that the design does not account for: a radial path that bypasses the component gasket and vents the chamber to ambient."
     },
     {
       "feature": "pr_+1: seat sidewall is solid over the full seat depth",
@@ -86,7 +86,7 @@
     {
       "feature": "active_driver unused mounting holes do not vent the chamber",
       "gasket_annulus_radius_mm": [
-        38.325,
+        39.825,
         43.5
       ],
       "mounting_hole_footprint_radius_mm": [

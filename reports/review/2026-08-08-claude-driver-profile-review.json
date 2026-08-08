@@ -23,7 +23,9 @@
     "status": "OPEN",
     "evidence_label": "VERIFIED_DIGITALLY",
     "evidence": "The seat profile was first extruded from a closed periodic spline through 288 points including the concave tab transitions. The resulting solid looked correct and passed a bounding-box check, but intersecting it with the sealing probe returned an empty shape. _material_fraction divides intersection volume by probe volume, so the gate reported measured_solid_fraction = 0.0 and failed with 'a radial path bypasses the component gasket and vents the chamber to ambient'. Direct point-in-solid sampling at fifteen positions across the same region found solid cabinet material at every one. The cabinet was correct; the boolean had failed silently.",
-    "affected_files": ["src/satellite1_ultra/validation.py"],
+    "affected_files": [
+      "src/satellite1_ultra/validation.py"
+    ],
     "engineering_consequence": "Every gate built on _material_fraction shares this: an OpenCascade failure and a genuine hole in the pressure boundary produce the same number. It currently fails safe, raising a false alarm rather than passing a real defect, but a 0.0 reading carries no information about which occurred, and diagnosing it required hand-probing the solid. A future change that makes the boolean fail in the other direction, returning the probe volume rather than nothing, would report a defective part as sound.",
     "verification_method": "Reproduce by extruding a seat profile from a periodic spline rather than a polyline and running sealing_report; the driver checks return exactly 0.0 while point sampling shows solid material. The guard should assert that an empty intersection is corroborated by point sampling before being reported as missing material, and should distinguish a boolean that returned nothing from material that is genuinely absent.",
     "owner": "project owner",
@@ -36,7 +38,10 @@
     "status": "FIXED",
     "evidence_label": "VERIFIED_DIGITALLY",
     "evidence": "The driver coupon shipped with a 0.80 mm seat against a 5.50 mm design, because the recess was cut from an offset that began 4.7 mm above the part so only its tail landed in material. All eleven gates passed, because they model the cabinet. The only coupon test asserted that the result was a valid single solid with volume above 100 mm3, which a 0.80 mm recess satisfies. Reported by the project owner after printing it.",
-    "affected_files": ["src/satellite1_ultra/coupons.py", "tests/test_coupons.py"],
+    "affected_files": [
+      "src/satellite1_ultra/coupons.py",
+      "tests/test_coupons.py"
+    ],
     "engineering_consequence": "The coupon set is the mechanism that protects a builder from committing filament to a 45 hour cabinet print. A builder establishes flange thickness, still an ENGINEERING_ESTIMATE, by seating the driver against this recess and measuring the step. A coupon that misreports that depth by 4.7 mm produces a confidently wrong correction, which then propagates into every generated part. A coupon that lies is worse than no coupon, because it is trusted.",
     "verification_method": "tests/test_coupons.py now probes the built solid for the seat floor depth at two angles on both component coupons and asserts it matches the cabinet's seat depth to 0.05 mm, and separately asserts the driver seat spans meaningfully more at a tab than mid-edge so a circular seat cannot pass. Verified on the shipped STL: distinct Z levels at 0.00, 2.00 and 7.50 give a 5.50 mm seat floor.",
     "owner": "Claude (independent review)",
@@ -49,10 +54,29 @@
     "status": "FIXED",
     "evidence_label": "VERIFIED_DIGITALLY",
     "evidence": "The wizard turns a builder's coupon measurements into the eleven calibration values that regenerate every printed part. The first version of tests/test_wizard.py reimplemented its formulas in Python and checked that a simulated printer error was cancelled. Mutating wizard.js to compute xy/110.6 - 1 instead of 110.6/xy - 1, which inverts the sign of the correction applied to every dimension in the design, left all six tests passing. The test was validating a copy of the arithmetic that cannot disagree with itself.",
-    "affected_files": ["tests/test_wizard.py"],
+    "affected_files": [
+      "tests/test_wizard.py"
+    ],
     "engineering_consequence": "An inverted scale correction does not fail any gate. The geometry remains internally consistent and every validation passes; the parts are simply scaled the wrong way, so a printer already running small produces parts smaller still, at roughly double the original error. On a 160 mm cabinet a 0.6 percent inversion is 1.9 mm. The builder discovers it after printing.",
     "verification_method": "The test now executes the shipped wizard.js under node with a minimal DOM stub and reads compute().values. Mutation tested against four corruptions: XY sign inversion, Z sign inversion, a stale 3.4 to 3.3 nominal, and a gasket retention constant of 0.70 instead of 0.75. All four now fail the suite; before the change only the latter two did. Tolerance is 1e-3 mm to accommodate the 7 decimal rounding wizard.js applies to keep its correction code short.",
     "owner": "Claude (independent review)",
     "resolution": "Fixed. Also verified end to end that a printer 0.6 percent small in XY and 1.2 percent in Z produces corrections that return every parameter to nominal, that the four additive offsets move in the correct direction, that the wizard's limits match CALIBRATION_LIMITS 11 of 11, and that the hole sizes it offers are the ones the insert coupon prints."
+  },
+  {
+    "id": "FIT-004",
+    "title": "Driver terminals foul the bore, so the basket cannot pass the baffle",
+    "severity": "HIGH",
+    "status": "FIXED",
+    "evidence_label": "ENGINEERING_ESTIMATE",
+    "evidence": "The project owner test-fitted a real ND91-4 into the printed driver coupon and reported that the wire connection points get in the way of it dropping through, separately from the seat shape. That the terminals foul the bore is therefore observed, not inferred. How far they foul it is not: the driver was no longer to hand when the question was asked, so the 38.90 mm terminal reach behind the 0.57 mm figure is taken from the manufacturer's outline drawing rather than measured, against a bore wall at 38.33 mm. The relief is sized with that uncertainty in mind. Scale is not the cause: the printer measured 0.90 percent small in XY, which shrinks the bore a further 0.34 mm, but a perfectly scaled print still interferes, so calibration cannot resolve it.",
+    "affected_files": [
+      "src/satellite1_ultra/geometry.py",
+      "src/satellite1_ultra/coupons.py",
+      "src/satellite1_ultra/documentation.py"
+    ],
+    "engineering_consequence": "The driver cannot be installed. Opening the bore for all 360 degrees to clear one feature would cost 1.5 mm of gasket land everywhere, narrowing the driver's sealing annulus from 5.13 mm to 3.63 mm on a joint that holds the sealed chamber, to buy clearance across about 20 percent of the circumference. It would also enlarge the acoustic opening, which is a tuned dimension.",
+    "verification_method": "A 40 degree pie relief centred on the top tab widens the bore to 39.83 mm radius over its arc, from the seat floor downward. Probed on the built solid at 0.12 mm steps in Z: the notch section and a plain-tab section lie on each other from the front face down to the seat floor, then the notch steps out by 1.50 mm. Terminal clearance goes from -0.57 mm to +0.92 mm, 1.6 times the estimated interference, so it still clears if the drawing-derived reach is out by half again. The relief presents 27.8 mm of arc at its wall. Five require() checks bound it: it must exist, must not reach past the narrowest seat wall, must start at or below the seat floor and above the baffle back, must span less than 90 degrees so it cannot undercut a neighbouring tab, and must leave more than 3 mm of gasket land at the notch. That last check is taken from component_gasket_annulus rather than restated: written out by hand it read flange/2 - 1.5 instead of (flange - 1.5)/2, understated the land by 0.75 mm, and rejected a design that was within limits. The coupon carries the identical relief at the identical angle relative to the tabs.",
+    "owner": "Claude (independent review)",
+    "resolution": "Fixed, after two wrong placements that are worth recording because both came from treating an unconfirmed answer as settled. The relief first spanned 70 degrees to cover both possible terminal positions. The project owner then said the terminals sat between the tabs, so it was narrowed to 40 degrees on the mid-edge at 315; the owner then corrected that to in line with a corner tab, which is where it now sits, at 270, the tab pointing straight up. The wire leaves vertically and turns to the divider's cable passage. The correction improved the design: a tab has 13.27 mm of seat ledge against 5.91 mm mid-edge, so the notch is now cut under the widest part of the sealing land rather than the narrowest.\n\nThe 1.00 mm standoff that kept a lip of wall backing the gasket's inner edge is gone. That lip occupied radii 38.33 to 39.83 in the first millimetre under the flange, which is exactly where the terminals are, and the owner reported the driver would not drop through at all, placing the clash at the top of the basket. The lip would have kept the driver out while passing every gate. Removing it costs a bounded amount: over 40 degrees the gasket bears from 39.83 outward instead of 38.33, narrowing the land from 5.17 mm to 3.67 mm across 11 percent of the circumference. It stays continuous and fully backed everywhere else. A locally narrower seal still seals; a driver that will not go in is not recoverable."
   }
 ]

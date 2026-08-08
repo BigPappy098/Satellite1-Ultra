@@ -10,6 +10,7 @@ import cadquery as cq
 from satellite1_ultra.geometry import (
     DEFAULT_PARAMETERS,
     DesignParameters,
+    _depth_arc_relief,
     _depth_traced_profile,
     rounded_prism,
 )
@@ -86,6 +87,10 @@ def _component_seat_coupon(
     parameters: DesignParameters,
     seat_profile: tuple[float, ...] = (),
     include_inserts: bool = True,
+    relief_radius: float = 0.0,
+    relief_centre_deg: float = 0.0,
+    relief_arc_deg: float = 0.0,
+    relief_from_face: float = 0.0,
 ) -> cq.Shape:
     """A one-to-one slice of the real cabinet mount: ledge, seat, bore, inserts.
 
@@ -139,6 +144,24 @@ def _component_seat_coupon(
             .extrude(seat_depth)
         )
     coupon = coupon.cut(cq.Workplane("XY").circle(bore_diameter / 2.0).extrude(thickness))
+    if relief_arc_deg > 0.0:
+        # The same relief the baffle gets, at the same angle relative to the
+        # tabs. Without it this coupon cannot answer the question it is being
+        # printed to answer: the driver was reported as not dropping through,
+        # and it was the terminals fouling the bore, not the seat being wrong.
+        coupon = coupon.cut(
+            cq.Workplane("XY").add(
+                _depth_arc_relief(
+                    relief_radius,
+                    relief_centre_deg,
+                    relief_arc_deg,
+                    relief_from_face,
+                    thickness,
+                    (0.0, 0.0, thickness),
+                    (0.0, 0.0, -1.0),
+                )
+            )
+        )
     solid = cast(cq.Shape, coupon.val())
     if not include_inserts:
         return solid
@@ -171,6 +194,10 @@ def active_driver_coupon(parameters: DesignParameters = DEFAULT_PARAMETERS) -> c
         p,
         seat_profile=p.driver_frame_profile,
         include_inserts=False,
+        relief_radius=p.driver_bore_diameter / 2.0 + p.driver_terminal_relief_radial,
+        relief_centre_deg=p.driver_terminal_relief_centre_deg,
+        relief_arc_deg=p.driver_terminal_relief_arc_deg,
+        relief_from_face=p.driver_seat_depth + p.driver_terminal_relief_standoff,
     )
     coupon = _engrave(
         coupon,

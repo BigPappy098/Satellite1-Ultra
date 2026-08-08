@@ -33,7 +33,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from functools import lru_cache
-from math import copysign, cos, degrees, gamma, pi, sin, sqrt
+from math import copysign, cos, degrees, gamma, pi, radians, sin, sqrt
 from typing import cast
 
 import cadquery as cq
@@ -78,6 +78,38 @@ class DesignParameters:
     #: The frame between the corners.  This is the continuous surface the
     #: gasket seals against; the corners carry the mounting holes.
     driver_flange_body_diameter: float = 88.5
+    #: The driver's spade terminals stand proud of the basket just below the
+    #: flange and foul the bore before the flange ever reaches the seat.  They
+    #: reach about 0.57 mm past the bore wall, so the basket will not pass
+    #: through.  Widening the bore for all 360 degrees would thin the gasket
+    #: land everywhere to buy clearance in one place, so the relief is local.
+    driver_terminal_relief_radial: float = 1.50
+    #: Measured in the seat's own frame, where 0 and 90 are tab directions.
+    #: The terminals sit in line with a corner tab, the one carrying the screw
+    #: hole, so the relief goes at 270: the tab pointing straight up.  The wire
+    #: then leaves vertically and turns toward the divider's cable passage.
+    #:
+    #: A tab is the most forgiving place this could have landed.  The seat
+    #: reaches furthest out there, so the seat floor is 13.27 mm of ledge at a
+    #: tab against 5.91 mm mid-edge, and the relief is cut under the widest,
+    #: best-supported part of the sealing land rather than the narrowest.
+    driver_terminal_relief_centre_deg: float = 270.0
+    driver_terminal_relief_arc_deg: float = 40.0
+    #: How far below the seat floor the relief starts.  Zero, and deliberately.
+    #:
+    #: It was 1.00 mm, to keep a lip of full-thickness wall backing the gasket's
+    #: inner edge all the way round.  That lip occupies exactly the radii the
+    #: terminals need, 38.33 to 39.83, in the first millimetre under the flange,
+    #: and the driver was reported as not dropping through at all, which puts
+    #: the clash right at the top of the basket.  A lip there would have kept
+    #: the driver out while measuring as a success on every gate.
+    #:
+    #: The cost of removing it is bounded and small: over 40 degrees, one tab in
+    #: nine, the gasket bears on seat floor from 39.83 outward instead of 38.33,
+    #: so the land narrows from 5.17 mm to 3.67 mm.  It stays continuous and
+    #: fully backed everywhere else.  A seal that is locally narrower still
+    #: seals; a driver that will not go in is not recoverable.
+    driver_terminal_relief_standoff: float = 0.00
     #: One quadrant of the frame outline at 5 degree steps, normalised to the
     #: tab radius, traced from the product photograph. The frame is a circular
     #: body with four tabs, not a disc and not a straight-sided square.
@@ -434,6 +466,44 @@ def validate_design_parameters(parameters: DesignParameters) -> None:
         "it; the driver would fall through the baffle",
     )
     require(
+        p.driver_terminal_relief_radial > 0.0,
+        "the driver's terminals stand about 0.57 mm past the bore wall, so a "
+        "bore with no local relief will not pass the basket at all",
+    )
+    require(
+        p.driver_bore_diameter / 2.0 + p.driver_terminal_relief_radial
+        < p.driver_outer_diameter / 2.0 * min(p.driver_frame_profile),
+        "the terminal relief reaches past the narrowest part of the seat wall; "
+        "it would break out through the side of the recess instead of staying "
+        "a pocket in the bore",
+    )
+    require(
+        0.0 <= p.driver_terminal_relief_standoff < p.driver_seat_depth,
+        "the terminal relief must start at or below the seat floor and above "
+        "the back of the baffle, or it misses the terminals entirely",
+    )
+    # Taken from component_gasket_annulus rather than restated: an earlier
+    # version of this check wrote the outer edge as flange/2 - 1.5 instead of
+    # (flange - 1.5)/2, understating the land by 0.75 mm, and rejected a design
+    # that was in fact within limits.
+    _gasket_inner, _gasket_outer = component_gasket_annulus("active_driver", p)
+    require(
+        (_gasket_outer - _gasket_inner) / 2.0 > 3.0,
+        "the terminal relief leaves under 3 mm of driver gasket land; the seal "
+        "is continuous but too narrow to trust",
+    )
+    require(
+        _gasket_inner >= p.driver_bore_diameter + 2.0 * p.driver_terminal_relief_radial,
+        "the driver gasket reaches inboard of the terminal notch, so its inner "
+        "edge would overhang open air across the notch arc with nothing behind "
+        "it to compress against",
+    )
+    require(
+        0.0 < p.driver_terminal_relief_arc_deg < 90.0,
+        "a terminal relief spanning 90 degrees or more would undercut a "
+        "mounting tab; local relief is the whole point of cutting it locally",
+    )
+    require(
         p.driver_flange_body_diameter <= p.driver_outer_diameter,
         "active-driver sealing body cannot be wider than the across-ears envelope",
     )
@@ -598,6 +668,45 @@ def _mount_basis(inward: Vector3) -> tuple[Vector3, Vector3]:
     )
 
 
+def _depth_arc_relief(
+    radius: float,
+    centre_deg: float,
+    arc_deg: float,
+    depth_from_face: float,
+    length: float,
+    face_point: Vector3,
+    inward: Vector3,
+    count: int = 48,
+) -> cq.Shape:
+    """A pie wedge driven into a mount face, for local clearance in a bore.
+
+    Angles share the traced seat's frame, so a relief stays put relative to the
+    four tabs whichever way the mount itself faces.  The wedge runs from the
+    axis outward: the bore has already taken everything inside it, so the only
+    material this removes is the crescent past the bore wall.
+    """
+    normal = cq.Vector(*inward).normalized()
+    seed = cq.Vector(0.0, 0.0, 1.0)
+    if abs(normal.z) > 0.9:
+        seed = cq.Vector(1.0, 0.0, 0.0)
+    u_vec = normal.cross(seed).normalized()
+    v_vec = normal.cross(u_vec).normalized()
+    start = _offset(face_point, inward, depth_from_face)
+    points = [cq.Vector(*start)]
+    for index in range(count + 1):
+        theta = radians(centre_deg - arc_deg / 2.0 + arc_deg * index / count)
+        du, dv = radius * cos(theta), radius * sin(theta)
+        points.append(
+            cq.Vector(
+                start[0] + u_vec.x * du + v_vec.x * dv,
+                start[1] + u_vec.y * du + v_vec.y * dv,
+                start[2] + u_vec.z * du + v_vec.z * dv,
+            )
+        )
+    wire = cq.Wire.makePolygon([*points, points[0]])
+    return cast(cq.Shape, cq.Solid.extrudeLinear(wire, [], cq.Vector(*inward) * length))
+
+
 def _bolt_points(
     face_point: Vector3,
     inward: Vector3,
@@ -727,6 +836,12 @@ class MountSpec:
     seat_profile: tuple[float, ...] = ()
     #: Radius the tabs reach, including clearance.
     seat_tab_radius: float = 0.0
+    #: Local widening of the bore for terminals or other basket furniture.
+    #: Zero leaves the bore a plain cylinder, which is right for the radiators.
+    relief_radius: float = 0.0
+    relief_centre_deg: float = 0.0
+    relief_arc_deg: float = 0.0
+    relief_from_face: float = 0.0
 
 
 def driver_mount(parameters: DesignParameters = DEFAULT_PARAMETERS) -> MountSpec:
@@ -744,6 +859,10 @@ def driver_mount(parameters: DesignParameters = DEFAULT_PARAMETERS) -> MountSpec
         bolt_circle=p.driver_clamp_bolt_circle,
         seat_profile=p.driver_frame_profile,
         seat_tab_radius=p.driver_outer_diameter / 2.0,
+        relief_radius=p.driver_bore_diameter / 2.0 + p.driver_terminal_relief_radial,
+        relief_centre_deg=p.driver_terminal_relief_centre_deg,
+        relief_arc_deg=p.driver_terminal_relief_arc_deg,
+        relief_from_face=p.driver_seat_depth + p.driver_terminal_relief_standoff,
     )
 
 
@@ -816,6 +935,18 @@ def _apply_mount(
     else:
         cabinet = cabinet.cut(
             _depth_cylinder(mount.seat_diameter / 2.0, -1.0, mount.seat_depth + 1.0, face, inward)
+        )
+    if mount.relief_arc_deg > 0.0:
+        cabinet = cabinet.cut(
+            _depth_arc_relief(
+                mount.relief_radius,
+                mount.relief_centre_deg,
+                mount.relief_arc_deg,
+                mount.relief_from_face,
+                mount.pad_depth + 3.0,
+                face,
+                inward,
+            )
         )
     cabinet = cabinet.cut(
         _depth_cylinder(mount.bore_diameter / 2.0, -1.0, mount.pad_depth + 3.0, face, inward)
@@ -1308,7 +1439,19 @@ def component_gasket_annulus(
         # diameter.  Between the ears there is no flange to compress against, so
         # a gasket taken out to 103.2 mm is uncompressed over most of its
         # circumference: four leak paths straight out of the chamber.
-        return (p.driver_bore_diameter, p.driver_flange_body_diameter - 1.5)
+        #
+        # Inner edge starts at the terminal notch, not at the bore.  The notch
+        # takes seat floor out to the relief radius across its arc, so a gasket
+        # sized to the bore would overhang open air there: unsupported foam
+        # free to be pushed into the void by chamber pressure, on the one part
+        # of the ring that is already narrowest.  Starting here costs 1.50 mm of
+        # land uniformly and keeps every millimetre of the gasket backed by
+        # solid material all the way round, which is what the sealing gate
+        # checks and what actually seals.
+        return (
+            p.driver_bore_diameter + 2.0 * p.driver_terminal_relief_radial,
+            p.driver_flange_body_diameter - 1.5,
+        )
     if component.startswith("pr"):
         # Stop inside the radiator's rim, not at the seat.  The seat is the
         # flange plus print clearance, so a gasket taken out to it overhangs

@@ -137,3 +137,43 @@ def test_generated_step_reopens_in_a_second_independent_reader() -> None:
                 assert measured <= declared + 0.5, path.name
     finally:
         gmsh.finalize()
+
+
+@pytest.mark.geometry
+def test_the_land_probe_excuses_only_the_relief_the_design_declares() -> None:
+    """Subtracting a declared feature from a probe must not blunt the probe.
+
+    The driver bore carries a terminal notch, and the gasket-land check would
+    otherwise read it as missing material: a blind 1.5 mm pocket in a web 6 to
+    13 mm thick scores the same fraction as a channel that breaks clean through
+    to the seat wall. The probe therefore subtracts the relief the MountSpec
+    declares. That is only sound if a relief which differs from the declaration
+    in any way still fails, so this asserts exactly that.
+    """
+    from dataclasses import replace
+
+    from satellite1_ultra.configuration import load_design_parameters
+    from satellite1_ultra.geometry import driver_mount, main_cabinet
+    from satellite1_ultra.validation import _mount_seal_checks
+
+    parameters = load_design_parameters()
+    cabinet = main_cabinet(parameters)
+    mount = driver_mount(parameters)
+
+    def land_status(spec: object) -> str:
+        for check in _mount_seal_checks(cabinet, spec, parameters, "driver"):
+            if "gasket-land annulus" in check["feature"]:
+                return str(check["status"])
+        raise AssertionError("the gasket-land check is gone")
+
+    assert land_status(mount) == "PASS", "the honestly declared relief should pass"
+    for label, wrong in (
+        ("not declared at all", replace(mount, relief_arc_deg=0.0)),
+        ("declared at the wrong tab", replace(mount, relief_centre_deg=90.0)),
+        ("declared shallower than cut", replace(mount, relief_radius=mount.relief_radius - 0.8)),
+        ("declared narrower than cut", replace(mount, relief_arc_deg=12.0)),
+    ):
+        assert land_status(wrong) == "FAIL", (
+            f"a relief {label} was excused by the land probe; the subtraction has "
+            "blunted the check instead of describing the part"
+        )
