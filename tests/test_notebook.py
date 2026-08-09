@@ -211,3 +211,80 @@ def test_the_source_really_is_importable_below_the_pyproject_pin() -> None:
         "these modules need Python 3.12 syntax, so the notebooks can no longer "
         "rely on sys.path alone: " + "; ".join(offenders)
     )
+
+
+#: Package name on PyPI for each importable module whose names differ.
+_PYPI_NAME = {"yaml": "pyyaml", "PIL": "pillow", "stl": "numpy-stl"}
+
+
+def _import_chain(entry_modules: set[str]) -> dict[str, set[str]]:
+    """Every non-stdlib top-level import reachable from these modules."""
+    import ast
+    import sys
+
+    stdlib = set(sys.stdlib_module_names)
+    source_dir = ROOT / "src" / "satellite1_ultra"
+    seen: set[str] = set()
+    queue = list(entry_modules)
+    external: dict[str, set[str]] = {}
+    while queue:
+        name = queue.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        path = source_dir / f"{name}.py"
+        if not path.is_file():
+            continue
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Import):
+                modules = [alias.name.split(".")[0] for alias in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
+                modules = [node.module.split(".")[0]]
+            else:
+                continue
+            for module in modules:
+                if module.startswith("satellite1_ultra"):
+                    if isinstance(node, ast.ImportFrom) and node.module:
+                        queue.append(node.module.split(".")[-1])
+                elif module not in stdlib:
+                    external.setdefault(module, set()).add(path.name)
+    return external
+
+
+@pytest.mark.parametrize("notebook", NOTEBOOKS, ids=lambda p: p.stem)
+def test_the_install_cell_covers_everything_the_notebook_imports(notebook: Path) -> None:
+    """A hand-written install list drifts from the code it has to support.
+
+    Removing the editable install took away the only thing that had ever
+    mentioned this project's dependencies, and the install cell listed three
+    packages by hand. trimesh was not among them, so the notebook downloaded the
+    design, imported it happily, and died in the build cell on
+    "No module named 'trimesh'" -- several minutes in, after the slow steps.
+
+    This walks the real import chain from what each notebook imports, so the
+    list cannot fall behind the code again.
+    """
+    source = _source(notebook)
+    entry = set(re.findall(r"from satellite1_ultra\.(\w+) import", source))
+    assert entry, f"{notebook.stem} imports nothing from the package"
+
+    # Match the command, not a comment that mentions one: several cells discuss
+    # `pip install -e .` in prose explaining why it was removed.
+    install = next(line for line in source.splitlines() if line.lstrip().startswith("!pip install"))
+    installed = set()
+    for token in install.split():
+        # Strip quoting before splitting on the specifier, or "numpy<2.1"
+        # parses to an empty string and reads as "not installed".
+        name = re.split(r"[=<>!~]", token.strip('"').strip("'"))[0].strip()
+        if name and not name.startswith(("!", "-", "|", "2>")) and name not in {"install", "tail"}:
+            installed.add(name.lower())
+
+    missing = []
+    for module in _import_chain(entry):
+        package = _PYPI_NAME.get(module, module).lower()
+        if package not in installed:
+            missing.append(f"{module} (pip: {package})")
+    assert not missing, (
+        f"{notebook.stem} imports these but never installs them, so it will fail "
+        f"partway through a build: {sorted(missing)}"
+    )
