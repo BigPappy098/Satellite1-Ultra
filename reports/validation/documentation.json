@@ -1,5 +1,5 @@
 {
-  "status": "FAIL",
+  "status": "PASS",
   "evidence": "VERIFIED_DIGITALLY",
   "checked_files": [
     "docs/BUILD_BOOK.md",
@@ -15,7 +15,7 @@
     {
       "file": "SATELLITE1_ULTRA_BUILD_BOOK.pdf",
       "pages": 24,
-      "bytes": 9151075
+      "bytes": 9151248
     },
     {
       "file": "CALIBRATION_GUIDE.pdf",
@@ -30,12 +30,12 @@
     {
       "file": "HARDWARE_AND_MATERIALS_GUIDE.pdf",
       "pages": 5,
-      "bytes": 13203
+      "bytes": 13204
     },
     {
       "file": "ASSEMBLY_GUIDE.pdf",
       "pages": 11,
-      "bytes": 5724394
+      "bytes": 5724567
     },
     {
       "file": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
@@ -48,18 +48,5 @@
       "bytes": 440999
     }
   ],
-  "errors": [
-    "export-validation part set mismatch: missing=['active_driver_clamp_ring', 'anti_slip_ring', 'ballast_cartridge', 'ballast_cartridge_lid', 'base_skirt', 'bottom_service_plate', 'coupon_active_driver', 'coupon_cable_passage', 'coupon_gasket_base', 'coupon_gasket_cap', 'coupon_heat_set_insert', 'coupon_official_interface', 'coupon_passive_radiator', 'divider_gasket', 'driver_gasket', 'leak_test_adapter', 'main_cabinet', 'mic_isolation_bushing', 'passive_radiator_clamp_ring', 'passive_radiator_gasket', 'pressure_divider', 'shell_base', 'shell_base_fabric', 'shell_crown', 'shell_crown_fabric', 'shell_grille', 'shell_grille_fabric'], extra=[]",
-    "stale export cable_gland: source inputs changed since 170e6604453255844ecb5a1e922810cc1a1838b2",
-    "guide references unknown 3MF part: coupon_official_interface",
-    "guide references unknown 3MF part: coupon_heat_set_insert",
-    "guide references unknown 3MF part: coupon_active_driver",
-    "guide references unknown 3MF part: coupon_passive_radiator",
-    "guide references unknown 3MF part: coupon_gasket_base",
-    "guide references unknown 3MF part: coupon_gasket_cap",
-    "guide references unknown 3MF part: coupon_cable_passage",
-    "guide references unknown 3MF part: main_cabinet",
-    "guide references unknown 3MF part: base_skirt",
-    "guide references unknown 3MF part: anti_slip_ring"
-  ]
+  "errors": []
 }
