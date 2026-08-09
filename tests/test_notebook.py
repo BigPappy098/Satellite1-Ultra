@@ -124,3 +124,25 @@ def test_every_packaged_part_has_an_export(
         for folder, suffix in (("3mf", ".3mf"), ("stl", ".stl")):
             path = ROOT / "exports" / folder / f"{source}{suffix}"
             assert path.is_file(), f"{label}: the notebook would copy a missing {path.name}"
+
+
+def test_both_notebooks_install_the_same_environment() -> None:
+    """A builder runs both. Two different pins means two different builds.
+
+    Colab pre-installs numba, which wants numpy below 2.1; pinning above it made
+    pip print a red dependency ERROR partway through a first-time build. Nothing
+    here imports numba, so it was cosmetic, but the two notebooks must at least
+    agree with each other or the test pieces and the enclosure come off
+    different toolchains.
+    """
+    installs = []
+    for notebook in NOTEBOOKS:
+        cell = next(c for c in _cells(notebook) if "pip install" in c)
+        installs.append(next(line for line in cell.splitlines() if "pip install" in line))
+    assert installs[0] == installs[1], (
+        f"the notebooks install different environments:\n  {installs[0]}\n  {installs[1]}"
+    )
+    assert "numpy<2.1" in installs[0], (
+        "numpy is no longer held below Colab's numba constraint; a first-time "
+        "builder will see a red dependency ERROR mid-build"
+    )
