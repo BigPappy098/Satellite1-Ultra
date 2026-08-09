@@ -83,7 +83,10 @@ class DesignParameters:
     #: reach about 0.57 mm past the bore wall, so the basket will not pass
     #: through.  Widening the bore for all 360 degrees would thin the gasket
     #: land everywhere to buy clearance in one place, so the relief is local.
-    driver_terminal_relief_radial: float = 1.50
+    #: Measured on the real driver: the terminal plate stands 2.80 mm proud of
+    #: the basket, is 31.0 mm long, and runs 18.2 mm down.  1.50 mm was taken
+    #: from a drawing and was not enough for either dimension.
+    driver_terminal_relief_radial: float = 3.20
     #: Measured in the seat's own frame, where 0 and 90 are tab directions.
     #: The terminals sit in line with a corner tab, the one carrying the screw
     #: hole, so the relief goes at 270: the tab pointing straight up.  The wire
@@ -94,7 +97,9 @@ class DesignParameters:
     #: tab against 5.91 mm mid-edge, and the relief is cut under the widest,
     #: best-supported part of the sealing land rather than the narrowest.
     driver_terminal_relief_centre_deg: float = 270.0
-    driver_terminal_relief_arc_deg: float = 40.0
+    #: 31 mm of plate occupies 46.3 degrees at the bore wall, so 40 caught its
+    #: ends.  56 leaves roughly 3 mm of slack at each end.
+    driver_terminal_relief_arc_deg: float = 56.0
     #: How far below the seat floor the relief starts.  Zero, and deliberately.
     #:
     #: It was 1.00 mm, to keep a lip of full-thickness wall backing the gasket's
@@ -467,8 +472,8 @@ def validate_design_parameters(parameters: DesignParameters) -> None:
     )
     require(
         p.driver_terminal_relief_radial > 0.0,
-        "the driver's terminals stand about 0.57 mm past the bore wall, so a "
-        "bore with no local relief will not pass the basket at all",
+        "the driver's terminals stand 2.80 mm proud of the basket, measured, so "
+        "a bore with no local relief will not pass it at all",
     )
     require(
         p.driver_bore_diameter / 2.0 + p.driver_terminal_relief_radial
@@ -493,10 +498,10 @@ def validate_design_parameters(parameters: DesignParameters) -> None:
         "is continuous but too narrow to trust",
     )
     require(
-        _gasket_inner >= p.driver_bore_diameter + 2.0 * p.driver_terminal_relief_radial,
-        "the driver gasket reaches inboard of the terminal notch, so its inner "
-        "edge would overhang open air across the notch arc with nothing behind "
-        "it to compress against",
+        _gasket_outer / 2.0 - (p.driver_bore_diameter / 2.0 + p.driver_terminal_relief_radial)
+        > 1.5,
+        "the terminal notch leaves under 1.5 mm of backed gasket land across "
+        "its arc; the seal is continuous but too narrow there to trust",
     )
     require(
         0.0 < p.driver_terminal_relief_arc_deg < 90.0,
@@ -1440,18 +1445,14 @@ def component_gasket_annulus(
         # a gasket taken out to 103.2 mm is uncompressed over most of its
         # circumference: four leak paths straight out of the chamber.
         #
-        # Inner edge starts at the terminal notch, not at the bore.  The notch
-        # takes seat floor out to the relief radius across its arc, so a gasket
-        # sized to the bore would overhang open air there: unsupported foam
-        # free to be pushed into the void by chamber pressure, on the one part
-        # of the ring that is already narrowest.  Starting here costs 1.50 mm of
-        # land uniformly and keeps every millimetre of the gasket backed by
-        # solid material all the way round, which is what the sealing gate
-        # checks and what actually seals.
-        return (
-            p.driver_bore_diameter + 2.0 * p.driver_terminal_relief_radial,
-            p.driver_flange_body_diameter - 1.5,
-        )
+        # Inner edge is the bore, so the gasket is as wide as the flange allows.
+        # It was briefly pulled in to clear the terminal notch, which kept every
+        # millimetre backed by solid seat floor.  That was affordable while the
+        # notch was 1.50 mm deep; the real driver needs 3.20, and paying that
+        # uniformly would leave under 2 mm of land all the way round to buy
+        # support across a sixth of it.  The gasket now overhangs the notch and
+        # is fully backed everywhere else.
+        return (p.driver_bore_diameter, p.driver_flange_body_diameter - 1.5)
     if component.startswith("pr"):
         # Stop inside the radiator's rim, not at the seat.  The seat is the
         # flange plus print clearance, so a gasket taken out to it overhangs
