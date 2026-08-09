@@ -288,3 +288,33 @@ def test_the_install_cell_covers_everything_the_notebook_imports(notebook: Path)
         f"{notebook.stem} imports these but never installs them, so it will fail "
         f"partway through a build: {sorted(missing)}"
     )
+
+
+@pytest.mark.parametrize("notebook", NOTEBOOKS, ids=lambda p: p.stem)
+def test_the_fetch_step_leaves_the_directory_before_deleting_it(notebook: Path) -> None:
+    """Re-running the cell must not saw off the branch it is sitting on.
+
+    The cell ends with os.chdir(REPO), so a second run begins with the working
+    directory inside the tree it is about to remove. Deleting it leaves the
+    process with no cwd, and git dies with "Unable to read current working
+    directory" before writing anything -- which reads as a download failure and
+    is not one. Colab keeps one kernel across cell runs, so this is the normal
+    case, not an edge case.
+    """
+    fetch = next(
+        cell for cell in _cells(notebook) if "clone" in cell and "Satellite1-Ultra.git" in cell
+    )
+    lines = [
+        line for line in fetch.splitlines() if line.strip() and not line.lstrip().startswith("#")
+    ]
+    step_out = next((i for i, line in enumerate(lines) if 'os.chdir("/content")' in line), None)
+    remove = next((i for i, line in enumerate(lines) if "rmtree(REPO" in line), None)
+    assert remove is not None, "the fetch step no longer clears the previous download"
+    assert step_out is not None, (
+        "the fetch step deletes the repository without stepping out of it first; "
+        "a second run will fail with 'Unable to read current working directory'"
+    )
+    assert step_out < remove, (
+        f"the fetch step steps out at line {step_out} but deletes at line {remove}; "
+        "the order matters, not merely the presence"
+    )
