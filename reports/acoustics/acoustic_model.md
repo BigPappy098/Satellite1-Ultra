@@ -7,9 +7,9 @@
 - Net acoustic volume: **3.518 L** (exact B-rep, `VERIFIED_DIGITALLY`)
 - Architecture: one active driver, 2 opposed passive radiators
 - Target tuning: 60.0 Hz
-- Required moving mass per radiator: **19.69 g**
+- Required moving mass per radiator: **19.68 g**
 - Published Mms per radiator: 11.70 g
-- Added tuning mass per radiator: **7.99 g** (15.97 g total), fitted to the M5 mass-adjustment thread
+- Added tuning mass per radiator: **7.98 g** (15.97 g total), fitted to the M5 mass-adjustment thread
 
 ## Modelled results
 

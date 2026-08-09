@@ -13,7 +13,7 @@
   "checks": [
     {
       "feature": "active_driver: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 0.9999999999999913,
+      "measured_solid_fraction": 1.0000000000000058,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
@@ -86,7 +86,7 @@
     {
       "feature": "active_driver unused mounting holes do not vent the chamber",
       "gasket_annulus_radius_mm": [
-        39.825,
+        38.325,
         43.5
       ],
       "mounting_hole_footprint_radius_mm": [

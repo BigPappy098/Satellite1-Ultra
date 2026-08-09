@@ -15,37 +15,37 @@
     {
       "file": "SATELLITE1_ULTRA_BUILD_BOOK.pdf",
       "pages": 24,
-      "bytes": 9151248
+      "bytes": 9142304
     },
     {
       "file": "CALIBRATION_GUIDE.pdf",
       "pages": 6,
-      "bytes": 1569763
+      "bytes": 1565790
     },
     {
       "file": "PRINTING_GUIDE.pdf",
       "pages": 26,
-      "bytes": 6732662
+      "bytes": 6732076
     },
     {
       "file": "HARDWARE_AND_MATERIALS_GUIDE.pdf",
       "pages": 5,
-      "bytes": 13204
+      "bytes": 13203
     },
     {
       "file": "ASSEMBLY_GUIDE.pdf",
       "pages": 11,
-      "bytes": 5724567
+      "bytes": 5723735
     },
     {
       "file": "TESTING_AND_COMMISSIONING_GUIDE.pdf",
       "pages": 3,
-      "bytes": 1534568
+      "bytes": 1530613
     },
     {
       "file": "MAINTENANCE_GUIDE.pdf",
       "pages": 1,
-      "bytes": 440999
+      "bytes": 440986
     }
   ],
   "errors": []
