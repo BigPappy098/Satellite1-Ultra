@@ -460,6 +460,13 @@ def export_parts(
         }
         records.append(record)
 
+    # A filtered run describes part of the catalogue, so it must not overwrite
+    # the reports and manifest that describe all of it.  Writing them anyway
+    # replaced a 28-part validation record with a 1-part one, and the only thing
+    # that noticed was test_documentation complaining that 27 parts had vanished.
+    if only is not None:
+        return records
+
     (report_dir / "export_validation.json").write_text(
         json.dumps(records, indent=2) + "\n",
         encoding="utf-8",

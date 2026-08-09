@@ -1,5 +1,5 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "evidence": "VERIFIED_DIGITALLY",
   "checked_files": [
     "docs/BUILD_BOOK.md",
@@ -48,5 +48,18 @@
       "bytes": 440999
     }
   ],
-  "errors": []
+  "errors": [
+    "export-validation part set mismatch: missing=['active_driver_clamp_ring', 'anti_slip_ring', 'ballast_cartridge', 'ballast_cartridge_lid', 'base_skirt', 'bottom_service_plate', 'coupon_active_driver', 'coupon_cable_passage', 'coupon_gasket_base', 'coupon_gasket_cap', 'coupon_heat_set_insert', 'coupon_official_interface', 'coupon_passive_radiator', 'divider_gasket', 'driver_gasket', 'leak_test_adapter', 'main_cabinet', 'mic_isolation_bushing', 'passive_radiator_clamp_ring', 'passive_radiator_gasket', 'pressure_divider', 'shell_base', 'shell_base_fabric', 'shell_crown', 'shell_crown_fabric', 'shell_grille', 'shell_grille_fabric'], extra=[]",
+    "stale export cable_gland: source inputs changed since 170e6604453255844ecb5a1e922810cc1a1838b2",
+    "guide references unknown 3MF part: coupon_official_interface",
+    "guide references unknown 3MF part: coupon_heat_set_insert",
+    "guide references unknown 3MF part: coupon_active_driver",
+    "guide references unknown 3MF part: coupon_passive_radiator",
+    "guide references unknown 3MF part: coupon_gasket_base",
+    "guide references unknown 3MF part: coupon_gasket_cap",
+    "guide references unknown 3MF part: coupon_cable_passage",
+    "guide references unknown 3MF part: main_cabinet",
+    "guide references unknown 3MF part: base_skirt",
+    "guide references unknown 3MF part: anti_slip_ring"
+  ]
 }

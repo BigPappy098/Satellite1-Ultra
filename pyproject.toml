@@ -15,25 +15,28 @@ dependencies = [
   "click==8.2.1",
   "gmsh==4.13.1",
   "matplotlib==3.10.3",
-  "networkx==3.5",
-  "numpy==2.2.6",
-  "numpy-stl==3.2.0",
-  "Pillow==11.2.1",
-  "pydantic==2.11.7",
   "pypdf==5.7.0",
   "PyYAML==6.0.2",
   "reportlab==4.4.2",
-  "rich==14.0.0",
+  "trimesh==4.6.10",
+  # trimesh's base install requires numpy alone; networkx, Pillow, scipy and
+  # shapely are its "easy" extra, and it imports them at import time.  They are
+  # listed here rather than as trimesh[easy] so the versions are pinned like
+  # everything else: this project checksums its exports against a source commit,
+  # so a float that rounds differently is a diff.  Nothing in src imports any of
+  # the four directly except one lazy scipy.spatial call in official.py, which
+  # is why they read as unused.
+  "networkx==3.5",
+  "numpy==2.2.6",
+  "Pillow==11.2.1",
   "scipy==1.15.3",
-  "shapely==2.1.1",
-  "trimesh==4.6.10"
+  "shapely==2.1.1"
 ]
 
 [project.optional-dependencies]
 dev = [
   "mypy==1.16.1",
   "pytest==8.4.1",
-  "pytest-cov==6.1.1",
   "ruff==0.12.2"
 ]
 
