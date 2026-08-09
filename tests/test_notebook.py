@@ -146,3 +146,68 @@ def test_both_notebooks_install_the_same_environment() -> None:
         "numpy is no longer held below Colab's numba constraint; a first-time "
         "builder will see a red dependency ERROR mid-build"
     )
+
+
+@pytest.mark.parametrize("notebook", NOTEBOOKS, ids=lambda p: p.stem)
+def test_the_fetch_step_does_not_depend_on_an_editable_install(notebook: Path) -> None:
+    """`pip install -e .` refuses on any Python outside the pyproject pin.
+
+    pyproject requires >=3.12,<3.13, which describes CI rather than the source:
+    every module here parses as 3.11. Colab moves its Python from time to time,
+    so on the wrong day the install failed and the next cell died with a bare
+    "No module named 'satellite1_ultra'" that named nothing useful. The package
+    is pure Python, so putting src on sys.path is equivalent and cannot fail for
+    a version reason.
+    """
+    fetch = next(
+        cell for cell in _cells(notebook) if "clone" in cell and "Satellite1-Ultra.git" in cell
+    )
+    # Comments in this cell explain what was removed and why, so match on the
+    # lines that actually run rather than on the prose describing them.
+    executable = [
+        line for line in fetch.splitlines() if line.strip() and not line.lstrip().startswith("#")
+    ]
+    for line in executable:
+        assert "-e ." not in line, (
+            "the fetch step installs the package as editable again; it will "
+            f"refuse on any Colab Python outside the pyproject pin: {line.strip()}"
+        )
+    assert any("sys.path.insert" in line for line in executable), (
+        "the fetch step no longer puts src on the path"
+    )
+    assert any("src" in line for line in executable)
+
+
+@pytest.mark.parametrize("notebook", NOTEBOOKS, ids=lambda p: p.stem)
+def test_setup_failures_are_not_piped_into_silence(notebook: Path) -> None:
+    """A hidden failure becomes an unexplained crash two cells later."""
+    for cell in _cells(notebook):
+        if "Satellite1-Ultra.git" not in cell:
+            continue
+        assert "| tail" not in cell, (
+            "the fetch step pipes its output through tail, which is how a "
+            "failed install got hidden and surfaced as a bare ModuleNotFoundError"
+        )
+        assert "returncode" in cell and "SystemExit" in cell, (
+            "the fetch step does not check whether the download succeeded"
+        )
+
+
+def test_the_source_really_is_importable_below_the_pyproject_pin() -> None:
+    """The claim the fetch step rests on, checked rather than asserted.
+
+    If a module ever adopts 3.12-only syntax, putting src on the path stops
+    being equivalent to installing, and the notebooks need a different fix.
+    """
+    import ast
+
+    offenders = []
+    for path in sorted((ROOT / "src" / "satellite1_ultra").glob("*.py")):
+        try:
+            ast.parse(path.read_text(encoding="utf-8"), feature_version=(3, 11))
+        except SyntaxError as error:
+            offenders.append(f"{path.name}: {error.msg}")
+    assert not offenders, (
+        "these modules need Python 3.12 syntax, so the notebooks can no longer "
+        "rely on sys.path alone: " + "; ".join(offenders)
+    )
