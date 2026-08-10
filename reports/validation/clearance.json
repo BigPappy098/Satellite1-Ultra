@@ -25,7 +25,7 @@
     },
     {
       "feature": "passive-radiator rear excursion to cabinet centre plane",
-      "nominal_mm": 31.28,
+      "nominal_mm": 31.53,
       "minimum_mm": 10.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

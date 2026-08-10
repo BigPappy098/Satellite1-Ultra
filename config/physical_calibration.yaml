@@ -14,5 +14,5 @@ passive_radiator_cutout_diameter_offset_mm: 0.0
 cable_passage_diameter_offset_mm: 0.0
 gasket_sheet_thickness_mm: 2.0
 gasket_compressed_thickness_offset_mm: 0.0
-active_driver_flange_thickness_mm: 3.0
-passive_radiator_flange_thickness_mm: 4.0
+active_driver_flange_thickness_mm: 1.0
+passive_radiator_flange_thickness_mm: 3.75

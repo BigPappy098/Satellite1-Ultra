@@ -13,8 +13,8 @@ const LIMITS = {
   cable_passage_diameter_offset_mm: [-0.8, 0.8],
   gasket_sheet_thickness_mm: [1.5, 2.5],
   gasket_compressed_thickness_offset_mm: [-0.25, 0.25],
-  active_driver_flange_thickness_mm: [2.0, 5.0],
-  passive_radiator_flange_thickness_mm: [2.0, 6.0],
+  active_driver_flange_thickness_mm: [0.8, 5.0],
+  passive_radiator_flange_thickness_mm: [0.8, 6.0],
 };
 const KEYS = Object.keys(LIMITS);
 
@@ -34,8 +34,8 @@ const NEGLIGIBLE = {
 };
 const NOMINAL = {
   gasket_sheet_thickness_mm: 2.0,
-  active_driver_flange_thickness_mm: 3.0,
-  passive_radiator_flange_thickness_mm: 4.0,
+  active_driver_flange_thickness_mm: 1.0,
+  passive_radiator_flange_thickness_mm: 3.75,
 };
 
 const el = (id) => document.getElementById(id);

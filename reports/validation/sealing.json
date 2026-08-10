@@ -13,7 +13,7 @@
   "checks": [
     {
       "feature": "active_driver: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 1.0000000000000058,
+      "measured_solid_fraction": 1.0000000000000062,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
@@ -37,7 +37,7 @@
     },
     {
       "feature": "pr_-1: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 0.9999999999999992,
+      "measured_solid_fraction": 0.9999999999999993,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",
@@ -61,7 +61,7 @@
     },
     {
       "feature": "pr_+1: gasket-land annulus continuity behind the seat",
-      "measured_solid_fraction": 0.9999999999999987,
+      "measured_solid_fraction": 0.9999999999999988,
       "minimum_solid_fraction": 1.0,
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY",

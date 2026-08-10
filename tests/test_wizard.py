@@ -67,8 +67,8 @@ def _wizard_values(xy: float, z: float, **over: float) -> dict[str, float]:
         "cable": over.pop("cable", 0.0),
         "sheet": over.pop("sheet", 2.0),
         "gap": over.pop("gap", 1.5),
-        "dflange": over.pop("dflange", 3.0),
-        "pflange": over.pop("pflange", 4.0),
+        "dflange": over.pop("dflange", 1.0),
+        "pflange": over.pop("pflange", 3.75),
     }
     # Enough of a DOM for the file to load: it wires up listeners at the
     # bottom, and compute() only ever reads .value.

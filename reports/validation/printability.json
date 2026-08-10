@@ -575,7 +575,7 @@
       "bounds_mm": [
         126.0,
         126.0,
-        7.5
+        5.5
       ],
       "largest_dimension_mm": 126.0,
       "build_volume_mm": [
@@ -588,7 +588,7 @@
       "margin_mm": [
         94.0,
         74.0,
-        242.5
+        244.5
       ],
       "status": "PASS",
       "evidence": "VERIFIED_DIGITALLY"

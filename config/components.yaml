@@ -56,9 +56,9 @@ active_drivers:
     mounting_hole_diameter_mm: 4.0
     mounting_holes: 4
     depth_mm: 62.9
-    flange_thickness_mm: 3.0
-    flange_thickness_evidence: ENGINEERING_ESTIMATE
-    flange_thickness_note: Not dimensioned on the published drawing; verify on coupon_active_driver before printing the cabinet.
+    flange_thickness_mm: 1.0
+    flange_thickness_evidence: MEASURED_ON_COMPONENT
+    flange_thickness_note: Calipered on the project owner's driver, 2026-08-10, after seating it in coupon_active_driver. The stamped steel flange is 1.0 mm. The 3.0 mm previously carried here was an estimate and was three times the truth, which would have left the clamp ring 1.5 mm clear of the flange. The factory foam ring must be peeled off first; our own gasket replaces it, and leaving both stacks two seals.
     cutout_evidence: DERIVED_FROM_MANUFACTURER_DRAWING
     cutout_note: >-
       Was 88.5 mm, taken off the dimensioned drawing where 88.5 is a frame
@@ -287,9 +287,9 @@ passive_radiators:
     mounting_hole_diameter_mm: 4.3
     mounting_holes: 4
     depth_mm: 29.72
-    flange_thickness_mm: 4.0
-    flange_thickness_evidence: ENGINEERING_ESTIMATE
-    flange_thickness_note: Not dimensioned on the published drawing; verify on coupon_passive_radiator before printing the cabinet.
+    flange_thickness_mm: 3.75
+    flange_thickness_evidence: MEASURED_ON_COMPONENT
+    flange_thickness_note: Calipered on the project owner's radiator, 2026-08-10. The 4.0 mm estimate was close; this is the measured value.
     displacement_l_estimate: 0.05
     adjustable_mass_thread: M5
     price_usd_each: 27.99

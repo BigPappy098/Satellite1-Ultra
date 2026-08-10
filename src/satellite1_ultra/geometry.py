@@ -157,7 +157,8 @@ class DesignParameters:
         0.9924,
         1.0000,
     )
-    driver_flange_thickness: float = 3.0
+    #: Stamped steel, measured on the component. Sets how deep the seat is cut.
+    driver_flange_thickness: float = 1.0
     driver_depth: float = 62.9
     driver_clamp_ring_diameter: float = 118.0
     driver_clamp_bolt_circle: float = 112.0
@@ -171,7 +172,7 @@ class DesignParameters:
     pr_axis_z: float = -136.0
     pr_cutout_diameter: float = 93.73
     pr_outer_diameter: float = 115.57
-    pr_flange_thickness: float = 4.0
+    pr_flange_thickness: float = 3.75
     pr_depth: float = 29.72
     pr_rear_excursion: float = 9.0
     pr_clamp_ring_diameter: float = 134.0

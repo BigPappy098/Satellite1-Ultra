@@ -2,24 +2,24 @@
   "status": "PASS",
   "evidence": "ENGINEERING_ESTIMATE",
   "method": "B-rep volume x material density, plus catalogued component masses",
-  "total_mass_g": 3558.108904357603,
+  "total_mass_g": 3564.483817230031,
   "center_of_gravity_mm": {
-    "x": -0.03655468690383685,
-    "y": -4.670091070159747,
-    "z": -140.13886513910418
+    "x": -0.03648930694772163,
+    "y": -4.755348264085554,
+    "z": -140.0897836221099
   },
-  "cg_height_above_support_mm": 98.16113486089583,
+  "cg_height_above_support_mm": 98.2102163778901,
   "support_polygon_mm": {
     "x_half": 92.0,
     "y_half": 92.0
   },
   "static_tipping_angles_deg": {
-    "+X": 43.15564856267881,
-    "-X": 43.13293077177384,
-    "+Y": 44.561523836414565,
-    "-Y": 41.65816938593792
+    "+X": 43.141337510968036,
+    "-X": 43.11866108861403,
+    "+Y": 44.572456522574186,
+    "-Y": 41.61615824741356
   },
-  "minimum_tipping_angle_deg": 41.65816938593792,
+  "minimum_tipping_angle_deg": 41.61615824741356,
   "ballast": {
     "material": "two removable 100 x 92 x 6 mm mild-steel plates",
     "mass_g": 866.64,
@@ -72,10 +72,10 @@
     },
     {
       "name": "main_cabinet",
-      "mass_g": 769.928389986642,
-      "x_mm": 1.3580494746561486e-06,
-      "y_mm": 2.240539838495537,
-      "z_mm": -143.4620442791151,
+      "mass_g": 776.3033028590702,
+      "x_mm": 1.3634520099427445e-06,
+      "y_mm": 1.7930936839758764,
+      "z_mm": -143.20939141804143,
       "basis": "ENGINEERING_ESTIMATE"
     },
     {
@@ -130,7 +130,7 @@
       "name": "active_driver_gasket",
       "mass_g": 0.29931519098338216,
       "x_mm": -6.91430056418085e-13,
-      "y_mm": -75.25000000000003,
+      "y_mm": -77.24999999999999,
       "z_mm": -100.00000000000004,
       "basis": "ENGINEERING_ESTIMATE"
     },
@@ -145,7 +145,7 @@
     {
       "name": "pr_+1_gasket",
       "mass_g": 0.6592973831759256,
-      "x_mm": 69.25000000000001,
+      "x_mm": 69.50000000000001,
       "y_mm": -9.705144637500435e-15,
       "z_mm": -135.99999999999926,
       "basis": "ENGINEERING_ESTIMATE"
@@ -153,7 +153,7 @@
     {
       "name": "pr_-1_gasket",
       "mass_g": 0.6592973831759253,
-      "x_mm": -69.25,
+      "x_mm": -69.49999999999997,
       "y_mm": -5.33240987579619e-15,
       "z_mm": -136.00000000000074,
       "basis": "ENGINEERING_ESTIMATE"

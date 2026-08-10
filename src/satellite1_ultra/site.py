@@ -602,8 +602,8 @@ pieces in front of you were printed from the older code, they no longer match
                         '<input type="number" id="dcut" step="0.05" value="0">'
                         '<div class="verdict" id="dcut_v"></div></div>'
                         '<div class="field"><label class="q" for="dflange">How thick is the speaker\'s metal rim? (mm)</label>'
-                        '<div class="help">Measure the flat outer lip of the speaker in four places.</div>'
-                        '<input type="number" id="dflange" step="0.01" value="3.00">'
+                        '<div class="help">Peel the factory foam ring off first, then measure the bare metal lip in four places. On the ND91-4 this is about 1.0 mm, not 3 &mdash; it is thin stamped steel. This number sets how deep the recess is cut, so guessing it leaves the clamp ring unable to reach the speaker.</div>'
+                        '<input type="number" id="dflange" step="0.01" placeholder="1.00">'
                         '<div class="verdict" id="dflange_v"></div></div>',
                     ),
                     _measurement_card(
@@ -617,7 +617,7 @@ pieces in front of you were printed from the older code, they no longer match
                         '<input type="number" id="pcut" step="0.05" value="0">'
                         '<div class="verdict" id="pcut_v"></div></div>'
                         '<div class="field"><label class="q" for="pflange">How thick is the radiator\'s rim? (mm)</label>'
-                        '<input type="number" id="pflange" step="0.01" value="4.00">'
+                        '<input type="number" id="pflange" step="0.01" placeholder="3.75">'
                         '<div class="verdict" id="pflange_v"></div></div>',
                     ),
                     _measurement_card(
