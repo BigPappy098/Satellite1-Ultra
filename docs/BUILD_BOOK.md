@@ -266,7 +266,7 @@ Check that you have all of it:
 - Every screw and insert in `FASTENERS.csv`.
 - Two steel ballast plates, deburred and dry.
 - Two matched radiator tuning masses, each weighed to
-  7.98 g within 0.02 g.
+  8.00 g within 0.02 g.
 - One red/black speaker lead with the correct plug.
 
 The screws all look similar, so identify them by length before you begin:
@@ -322,7 +322,7 @@ Stop as soon as the parts meet evenly. Do not keep turning "for luck".
 
 **Screws:** F04, 4 screws   **Seal:** G02   **Tools:** 2.0 mm hex; crimper or soldering iron; polarity tester
 
-**Do this:** Mark the red conductor positive. Connect red to the terminal marked + and black to -. Look into the driver opening before you fit anything: at the top, in line with the topmost corner of the recess, the wall is notched wider. The driver's terminals sit in line with one of its four corner tabs and stand proud enough that the basket will not pass the opening anywhere else, so rotate the driver until its terminals point straight up into that notch. It only goes in one way round, and that is also the way the wire needs to leave to reach the cable passage in the divider above. Center G02, seat the driver from the -Y/front side, fit the clamp ring, and tighten F04 in two diagonal passes to 0.35 N m; never exceed 0.45 N m.
+**Do this:** Peel the thin foam ring off the back of the driver's flange and throw it away; it is stuck on with tape, and G02 replaces it. Leaving both in place stacks two seals and neither compresses predictably. Mark the red conductor positive. Connect red to the terminal marked + and black to -. Look into the driver opening before you fit anything: at the top, in line with the topmost corner of the recess, the wall is notched wider. The driver's terminals sit in line with one of its four corner tabs and stand proud enough that the basket will not pass the opening anywhere else, so rotate the driver until its terminals point straight up into that notch. It only goes in one way round, and that is also the way the wire needs to leave to reach the cable passage in the divider above. Center G02, seat the driver from the -Y/front side, fit the clamp ring, and tighten F04 in two diagonal passes to 0.35 N m; never exceed 0.45 N m.
 
 **It is right when:** Ring bottoms evenly; G02 is continuous all the way round and covers all four unused driver mounting holes; cone moves outward on a brief 1.5 V positive polarity pulse.
 
